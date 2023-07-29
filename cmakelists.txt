@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.21.1)
+project(okapi)
+
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS})
+
+include_directories(dep)
+
+link_directories(dep/glfw)
+
+add_library(glad "dep/glad/glad.c")
+link_directories(dep/glfw)
+
+include_directories(src)
+add_executable(okapi
+src/main/main.c
+src/tools/tools.c
+src/math/math.c
+
+src/ecs/ecs.c
+
+src/graphics/window/window.c
+src/graphics/renderer/renderer.c
+src/graphics/renderer/texture.c
+src/graphics/renderer/shader.c
+src/graphics/renderer/vertexarray.c
+src/graphics/3D/model.c
+)
+
+target_link_libraries(okapi
+glfw3 
+glad 
+${OPENGL_LIBRARIES}
+"-framework Cocoa"
+"-framework IOKit")
+
+target_precompile_headers(okapi PUBLIC "src/pch.h")

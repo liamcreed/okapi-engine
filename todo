@@ -1,0 +1,22 @@
+
+GLTF
+    - Identical meshes
+    - Camera
+    - Lights
+    - Mesh name identification for ECS
+
+Instanced renderering
+
+- ECS
+    -Scenes
+
+- VULKAN
+- matrix dingen kloppend maken
+- quattternoons
+
+- rotate quad (https://www.youtube.com/watch?v=-SQ8TlFZHbY)
+- load images
+- available texture slots
+- gravity sim
+- limit framerate
+- camera class
