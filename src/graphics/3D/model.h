@@ -20,6 +20,7 @@ typedef struct
     vertex_array_t vertex_array;
     uint32_t index_offset;
     uint32_t index_count;
+    uint32_t index_type;
 } primitive_t;
 
 typedef struct

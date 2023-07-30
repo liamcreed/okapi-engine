@@ -10,7 +10,7 @@ typedef struct
     vec2_t mouse_pos;
 } window_t;
 
-void window_init(window_t *window);
+void window_create(window_t *window, vec2_t size, const char* title, bool vsync);
 void window_update(window_t *window);
 void window_exit(window_t *window);
 

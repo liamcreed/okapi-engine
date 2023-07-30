@@ -20,3 +20,17 @@ Instanced renderering
 - gravity sim
 - limit framerate
 - camera class
+
+
+uint32_t index_type = gltf_data->meshes[m].primitives[p].indices->component_type;
+                if (index_type == cgltf_component_type_r_8)
+                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_BYTE;
+                else if(index_type == cgltf_component_type_r_16)
+                    model->meshes[m].primitives[p].index_type = GL_SHORT;
+                else if(index_type == cgltf_component_type_r_16u)
+                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_SHORT;
+                else if(index_type == cgltf_component_type_r_32u)
+                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_BYTE;
+                else if(index_type == cgltf_component_type_r_32f)
+                    model->meshes[m].primitives[p].index_type = GL_FLOAT;
+                

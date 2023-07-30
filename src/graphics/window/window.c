@@ -11,10 +11,15 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
         scroll = 0;
     last_scroll = yoffset;
 }
-
-void window_init(window_t *window)
+void window_create(window_t *window, vec2_t size, const char* title, bool vsync)
 {
     window->closed = 1;
+    window->size = size;
+    window->title = title;
+    window->vsync = vsync;
+    window->fullscreen = 0;
+    window->minimized = 0;
+    
 
     if (!glfwInit())
     {
@@ -49,10 +54,7 @@ void window_init(window_t *window)
     else
         window->closed = 0;
 
-    window->vsync = 1;
-    window->fullscreen = 0;
-    window->minimized = 0;
-    glfwSwapInterval(0);
+    glfwSwapInterval(window->vsync);
 
     if (!window->cursor)
     {
@@ -61,6 +63,7 @@ void window_init(window_t *window)
 
     glfwSetScrollCallback(window->glfw, scroll_callback);
 }
+
 void window_update(window_t *window)
 {
     glfwSwapBuffers(window->glfw);

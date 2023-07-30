@@ -45,8 +45,6 @@ void renderer_clear(renderer_t *renderer);
 void renderer_start(renderer_t *renderer);
 void renderer_end(renderer_t *renderer);
 
-void renderer_draw_elements(renderer_t *renderer, uint32_t index_count);
-
 void renderer_batch_start(renderer_t *renderer);
 void renderer_batch_end(renderer_t *renderer);
 

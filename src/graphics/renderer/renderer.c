@@ -1,12 +1,17 @@
 #include "graphics/graphics.h"
 
-void renderer_create(renderer_t* renderer, vec4_t clear_color,  vec2_t resolution)
+void renderer_create(renderer_t *renderer, vec4_t clear_color, vec2_t resolution)
 {
     renderer->clear_color = clear_color;
     renderer->resolution = resolution;
 
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     
+
     // create white texture
     unsigned char white[4] = {255, 255, 255, 255};
     texture_t white_tex;
@@ -38,7 +43,7 @@ void renderer_create(renderer_t* renderer, vec4_t clear_color,  vec2_t resolutio
     vertex_array_unbind();
     vertex_array_unbind_buffers();
 
-    shader_create(&renderer->quad_shader,"res/shaders/quad_shader.vert", "res/shaders/quad_shader.frag");
+    shader_create(&renderer->quad_shader, "res/shaders/quad_shader.vert", "res/shaders/quad_shader.frag");
 
     int samplers[MAX_TEXTURE_COUNT];
     for (uint32_t i = 0; i < MAX_TEXTURE_COUNT; i++)
@@ -59,7 +64,6 @@ void renderer_create(renderer_t* renderer, vec4_t clear_color,  vec2_t resolutio
 
 void renderer_init(renderer_t *renderer)
 {
-    
 }
 
 void renderer_start(renderer_t *renderer)
@@ -75,7 +79,6 @@ void renderer_start(renderer_t *renderer)
 
 void renderer_end(renderer_t *renderer)
 {
-    
 }
 
 void renderer_clear(renderer_t *renderer)
@@ -85,7 +88,7 @@ void renderer_clear(renderer_t *renderer)
 
     if (glGetError() != 0)
     {
-        //printf(OPENGL_ERROR"%u\n", glGetError());
+        // printf(OPENGL_ERROR"%u\n", glGetError());
     }
 }
 
@@ -93,15 +96,11 @@ void renderer_batch_start(renderer_t *renderer)
 {
     shader_bind(&renderer->quad_shader);
 
-
     renderer->quad_vertices_p = renderer->quad_vertices;
     renderer->quad_index_count = 0;
     renderer->quad_texture_count = 1;
 }
-void renderer_draw_elements(renderer_t *renderer, uint32_t index_count)
-{
-    glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, NULL);
-}
+
 void renderer_batch_end(renderer_t *renderer)
 {
     size_t size = (uint8_t *)renderer->quad_vertices_p - (uint8_t *)renderer->quad_vertices;
@@ -118,7 +117,7 @@ void renderer_batch_end(renderer_t *renderer)
     shader_bind(&renderer->quad_shader);
 
     glDrawElements(GL_TRIANGLES, renderer->quad_index_count, GL_UNSIGNED_INT, 0);
-    
+
     for (uint32_t i = 0; i < renderer->quad_texture_count; i++)
     {
         texture_unbind(i);
@@ -142,7 +141,6 @@ void renderer_exit(renderer_t *renderer)
     glDeleteBuffers(1, &renderer->quad_vertex_array.ibo);
     glDeleteVertexArrays(1, &renderer->quad_vertex_array.vao);
 }
-
 
 void renderer_draw_quad(
     renderer_t *renderer,
@@ -261,24 +259,23 @@ void renderer_draw_sub_texture(
     renderer->quad_index_count += 6;
 }
 
-
 void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
 {
     model->transform = mat4_translate(mat4_new(1), pos);
-    if(size != 1)
+    if (size != 1)
         model->transform = mat4_scale(model->transform, size);
-    if(rotation.x != 0)
+    if (rotation.x != 0)
         model->transform = mat4_rotate_x(model->transform, rotation.x);
-    if(rotation.y != 0)
+    if (rotation.y != 0)
         model->transform = mat4_rotate_y(model->transform, rotation.y);
-    if(rotation.z != 0)
+    if (rotation.z != 0)
         model->transform = mat4_rotate_z(model->transform, rotation.z);
 
     shader_set_uniform_mat4(&renderer->model_3D_shader, "u_model", model->transform);
 
     shader_bind(&renderer->model_3D_shader);
     for (int m = 0; m < model->mesh_count; m++)
-    {   
+    {
         for (int p = 0; p < model->meshes[m].primitive_count; p++)
         {
             texture_bind(&model->meshes[m].primitives[p].material->base_color, 0);
@@ -286,7 +283,7 @@ void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t pos,
 
             vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 
-            glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, model->meshes[m].primitives[p].index_type, 0);
 
             texture_unbind(0);
             vertex_array_unbind();

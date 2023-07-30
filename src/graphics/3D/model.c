@@ -45,7 +45,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
         {
             printf(LOG_ERROR "[GLTF]: binary data validation unsuccesful\n");
             exit(-1);
-        }   
+        }
 
         if (gltf_data->buffers->data == NULL)
         {
@@ -85,14 +85,14 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 bool material_found;
                 for (int mat = 0; mat < material_count; mat++)
                 {
-                    printf("%s\n",gltf_data->meshes[m].primitives[p].material->name);
+                    printf("%s\n", gltf_data->meshes[m].primitives[p].material->name);
                     if (gltf_data->meshes[m].primitives[p].material->name == model->materials[mat].name)
                     {
                         model->meshes[m].primitives[p].material = &model->materials[mat];
                         material_found = true;
                     }
                 }
-                if(!material_found)
+                if (!material_found)
                 {
                     model->meshes[m].primitives[p].material = &model->materials[0];
                 }
@@ -112,6 +112,19 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 size_t indices_offset = gltf_data->meshes[m].primitives[p].indices->buffer_view->offset;
                 void *indices = buffer + indices_offset;
 
+                uint32_t index_type = gltf_data->meshes[m].primitives[p].indices->component_type;
+                if (index_type == cgltf_component_type_r_8)
+                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_BYTE;
+                else if (index_type == cgltf_component_type_r_16)
+                    model->meshes[m].primitives[p].index_type = GL_SHORT;
+                else if (index_type == cgltf_component_type_r_16u)
+                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_SHORT;
+                else if (index_type == cgltf_component_type_r_32u)
+                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_INT;
+                else if (index_type == cgltf_component_type_r_32f)
+                    model->meshes[m].primitives[p].index_type = GL_FLOAT;
+
+                printf(LOG_WARNING"%u\n", model->meshes[m].primitives[p].index_type);
                 size_t vertices_size = indices_offset - vertices_offset;
 
                 printf(LOG_GLTF "    buffer %p\n", buffer);
@@ -130,21 +143,25 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 {
                     size_t atr_offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
                     size_t atr_stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
-                    char* atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
+
+                    char *atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
                     if (strcmp(atr_name, "POSITION") == 0)
                     {
+                        printf(LOG_GLTF "POSITION: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(0, 3, atr_stride, atr_offset);
                     }
                     else if (strcmp(atr_name, "NORMAL") == 0)
                     {
+                        printf(LOG_GLTF "NORMAL: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(1, 3, atr_stride, atr_offset);
                     }
                     else if (strcmp(atr_name, "TEXCOORD_0") == 0)
                     {
+                        printf(LOG_GLTF "TEXCOORD_0: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(2, 2, atr_stride, atr_offset);
                     }
                 }
-                
+
                 vertex_array_create_ibo(&model->meshes[m].primitives[p].vertex_array, indices, indices_size, false);
                 vertex_array_unbind();
                 vertex_array_unbind_buffers();
