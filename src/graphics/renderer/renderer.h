@@ -26,6 +26,7 @@ typedef struct
     mat4_t proj_mat;
 
     shader_t model_3D_shader;
+    shader_t pp_shader;
 
 
     uint32_t quad_indices[MAX_QUAD_COUNT * 6];

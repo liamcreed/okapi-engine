@@ -31,7 +31,7 @@ void texture_create_from_file(texture_t *texture, const char *path, bool filter)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     if (filter)
     {
-    
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
@@ -41,7 +41,7 @@ void texture_create_from_file(texture_t *texture, const char *path, bool filter)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    if(channel_count == 4)
+    if (channel_count == 4)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture->size.x, texture->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, texture->size.x, texture->size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -80,6 +80,24 @@ void texture_create_from_data(texture_t *texture, unsigned char *data, vec2_t si
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void texture_create_framebuffer_tex(texture_t *texture, vec2_t size, bool filter)
+{
+    glGenTextures(1, &texture->id);
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    if (filter)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->id, 0);
 }
 
 void texture_update_data(texture_t *texture, unsigned char *data, vec2_t size)

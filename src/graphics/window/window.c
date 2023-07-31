@@ -2,19 +2,10 @@
 
 float lf = 0.0f;
 
-float scroll;
-float last_scroll;
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    scroll = yoffset;
-    if (scroll == last_scroll)
-        scroll = 0;
-    last_scroll = yoffset;
-}
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-    glViewport(0, 0, width*2, height*2);
-}
+    /* glViewport(0, 0, width, height); */
+}  
 
 void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
 {
@@ -34,9 +25,11 @@ void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
         printf(LOG_INFO "[OPENGL]: initialized GLFW!\n");
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
     window->glfw = glfwCreateWindow(window->size.x, window->size.y, window->title, NULL, NULL);
 
@@ -65,9 +58,7 @@ void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
         glfwSetInputMode(window->glfw, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
-    glfwSetScrollCallback(window->glfw, scroll_callback);
     glfwSetFramebufferSizeCallback(window->glfw, framebuffer_size_callback);
-
 }
 
 void window_update(window_t *window)
@@ -79,7 +70,11 @@ void window_update(window_t *window)
         window->closed = true;
     if (key_pressed(window, KEY_BACKSPACE))
         window->closed = true;
-    glfwGetWindowSize(window->glfw, (int *)&window->size.x, (int *)&window->size.y);
+    int size_x, size_y;
+    glfwGetWindowSize(window->glfw, &size_x, &size_y);
+    window->size.x = size_x;
+    window->size.y = size_y;
+    window->aspect = window->size.x / window->size.y;
 
     float cf = (float)glfwGetTime();
     window->dt = cf - lf;
@@ -94,21 +89,6 @@ void window_update(window_t *window)
     glfwGetCursorPos(window->glfw, &x, &y);
     window->mouse_pos.x = x;
     window->mouse_pos.y = y;
-
-    window->scroll = scroll;
-
-    window->aspect = window->size.x / window->size.y;
-
-    static vec2_t last_size;
-    if (last_size.x != window->size.x && !window->resized|| last_size.y != window->size.y && !window->resized)
-    {
-        window->resized = true;
-    }else
-    {
-         window->resized = false;
-    }
-
-    last_size = window->size;
 }
 void window_exit(window_t *window)
 {

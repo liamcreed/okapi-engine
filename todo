@@ -1,8 +1,8 @@
 
 OPENGL
     - Camera implementation
-    - Framuffer
-        If you want to render your whole screen to a texture of a smaller or larger size you need to call glViewport again (before rendering to your framebuffer) with the new dimensions of your texture, otherwise render commands will only fill part of the texture.
+    - Framebuffer alpha transparency
+    - vertex array attrubute type
     - Specular map
     - mist https://www.youtube.com/watch?v=qslBNLeSPUc
     - multiple lights

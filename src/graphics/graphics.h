@@ -7,7 +7,7 @@
 #include "graphics/renderer/texture.h"
 #include "graphics/renderer/camera.h"
 #include "graphics/3D/model.h"
-
+#include "graphics/renderer/framebuffer.h"
 #include "graphics/renderer/renderer.h"
 
 

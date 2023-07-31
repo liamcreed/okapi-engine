@@ -39,6 +39,7 @@ typedef struct
     uint32_t mesh_count;
 
     material_t* materials;
+    uint32_t material_count;
     mat4_t transform;
 } model_3D_t;
 

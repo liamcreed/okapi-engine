@@ -69,7 +69,7 @@ void renderer_start(renderer_t *renderer, camera_t *camera)
         renderer->proj_mat = mat4_ortho_aspect(renderer->window->aspect, camera->orthographic_size, camera->near, camera->far);
     else
         renderer->proj_mat = mat4_perspective(camera->fov, renderer->window->aspect, camera->near, camera->far);
-        
+
     /* renderer->view_mat = mat4_look_at((vec3_t){0, 0, 5}, (vec3_t){0, 0, 0}, (vec3_t){0, 1, 0}); */
 
     shader_set_uniform_mat4(&renderer->quad_shader, "u_view_mat", renderer->view_mat);
@@ -90,7 +90,7 @@ void renderer_clear(renderer_t *renderer)
 
     if (glGetError() != 0)
     {
-         printf(OPENGL_ERROR"%u\n", glGetError());
+        printf(OPENGL_ERROR "%u\n", glGetError());
     }
 }
 
@@ -138,10 +138,7 @@ void renderer_exit(renderer_t *renderer)
     }
 
     shader_delete(&renderer->quad_shader);
-
-    glDeleteBuffers(1, &renderer->quad_vertex_array.vbo);
-    glDeleteBuffers(1, &renderer->quad_vertex_array.ibo);
-    glDeleteVertexArrays(1, &renderer->quad_vertex_array.vao);
+    vertex_array_delete(&renderer->quad_vertex_array);
 }
 
 void renderer_draw_quad(

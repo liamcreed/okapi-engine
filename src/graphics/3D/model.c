@@ -7,6 +7,7 @@ char *get_full_path(const char *path, char *file_name)
 {
     int path_length = strlen(path);
     int l;
+
     for (int i = 0; i < path_length; i++)
     {
         if (path[path_length - i] == '/')
@@ -16,13 +17,15 @@ char *get_full_path(const char *path, char *file_name)
         }
     }
     char *directory = malloc(sizeof(char) * 100);
-    for (int i = 0; i < path_length - l; i++)
+    for (int i = 0; i < path_length - l + 1; i++)
     {
         directory[i] = path[i];
     }
-    char slash[100] = "/";
-    strcat(directory, slash);
+    directory[path_length-l+1] = '\0';
+    printf("%s\n", directory);
+
     strcat(directory, file_name);
+    printf("%s\n", directory);
     return directory;
 }
 
@@ -53,9 +56,9 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
             exit(-1);
         }
 
-        size_t material_count = gltf_data->materials_count;
-        printf(LOG_GLTF "Material count: %zu\n", material_count);
-        model->materials = malloc(material_count * sizeof(material_t));
+        model->material_count = gltf_data->materials_count;
+        printf(LOG_GLTF "Material count: %zu\n", model->material_count);
+        model->materials = malloc(model->material_count * sizeof(material_t));
 
         texture_t empty_color_map;
         unsigned char empty_color_data[] = {128, 128, 255, 255};
@@ -65,7 +68,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
         unsigned char empty_specular_data[] = {0, 0, 0, 255};
         texture_create_from_data(&empty_specular_map, empty_specular_data, (vec2_t){1, 1}, false);
 
-        for (int mat = 0; mat < material_count; mat++)
+        for (int mat = 0; mat < model->material_count; mat++)
         {
             model->materials[mat].name = strcat(gltf_data->materials[mat].name, "");
             printf(LOG_GLTF "Material: %s\n", model->materials[mat].name);
@@ -127,7 +130,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
             for (int p = 0; p < model->meshes[m].primitive_count; p++)
             {
                 bool material_found;
-                for (int mat = 0; mat < material_count; mat++)
+                for (int mat = 0; mat < model->material_count; mat++)
                 {
                     if (gltf_data->meshes[m].primitives[p].material->name == model->materials[mat].name)
                     {
@@ -220,7 +223,13 @@ void model_3D_delete(model_3D_t *model)
     {
         free(model->meshes[m].primitives);
     }
-
+    for (int m = 0; m < model->material_count; m++)
+    {
+        texture_delete(&model->materials->diffuse_map);
+        texture_delete(&model->materials->specular_map);
+        texture_delete(&model->materials->normal_map);
+    }
+    
     free(model->meshes);
     free(model->materials);
 }
