@@ -84,7 +84,7 @@ mat4_t mat4_ortho_aspect(float aspect, float size, float near, float far)
 
 mat4_t mat4_perspective(float fov, float aspect, float near, float far)
 {
-    mat4_t result;
+    mat4_t result = mat4_new(0);
 
     float f = tan((radians(fov)) / 2);
 
@@ -98,7 +98,7 @@ mat4_t mat4_perspective(float fov, float aspect, float near, float far)
 }
 mat4_t mat4_look_at(vec3_t eye, vec3_t center, vec3_t up)
 {
-    mat4_t result;
+    mat4_t result = mat4_new(0);
     vec3_t x, y, z;
 
     z = vec3_normalize(vec3_subtract(eye, center));

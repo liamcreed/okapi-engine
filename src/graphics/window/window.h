@@ -4,7 +4,7 @@ typedef struct
 {
     const char *title;
     vec2_t size;
-    bool closed, minimized, fullscreen, vsync, cursor;
+    bool closed, minimized, fullscreen, vsync, cursor, resized;
     GLFWwindow *glfw;
     float dt, aspect, scroll;
     vec2_t mouse_pos;

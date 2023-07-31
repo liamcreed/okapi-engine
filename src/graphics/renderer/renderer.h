@@ -14,13 +14,19 @@ typedef struct
     float tex_index;
 } quad_vertex_t;
 
+#pragma once
+
 typedef struct
 {
     vec4_t clear_color;
-    vec2_t resolution;
+    float resolution_scale;
+    window_t* window;
 
     mat4_t view_mat;
     mat4_t proj_mat;
+
+    shader_t model_3D_shader;
+
 
     uint32_t quad_indices[MAX_QUAD_COUNT * 6];
     uint32_t quad_index_count;
@@ -34,15 +40,14 @@ typedef struct
     vertex_array_t quad_vertex_array;
 
 
-    shader_t model_3D_shader;
+    
 } renderer_t;
 
-void renderer_create(renderer_t* renderer, vec4_t clear_color,  vec2_t resolution);
-void renderer_init(renderer_t *renderer);
+void renderer_create(renderer_t* renderer, window_t* window, vec4_t clear_color,  float resolution_scale);
 void renderer_exit(renderer_t *renderer);
 void renderer_clear(renderer_t *renderer);
 
-void renderer_start(renderer_t *renderer);
+void renderer_start(renderer_t *renderer, camera_t* camera);
 void renderer_end(renderer_t *renderer);
 
 void renderer_batch_start(renderer_t *renderer);

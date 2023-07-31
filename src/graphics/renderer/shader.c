@@ -4,6 +4,10 @@ void shader_create(shader_t* shader,const char *vert_file_path, const char *frag
 {
     long length;
     FILE *v_file = fopen(vert_file_path, "rb");
+    if(v_file == NULL)
+    {
+        printf(LOG_ERROR"[Shader]: Failed to open: %s\n", vert_file_path);
+    }
     fseek(v_file, 0, SEEK_END);
     length = ftell(v_file);
     fseek(v_file, 0, SEEK_SET);
@@ -11,9 +15,14 @@ void shader_create(shader_t* shader,const char *vert_file_path, const char *frag
     fread(v_source, 1, length, v_file);
     fclose(v_file);
     v_source[length] = '\0';
+    
 
     length = 0;
     FILE *f_file = fopen(frag_file_path, "rb");
+    if(f_file == NULL)
+    {
+        printf(LOG_ERROR"[Shader]: Failed to open: %s\n", frag_file_path);
+    }
     fseek(f_file, 0, SEEK_END);
     length = ftell(f_file);
     fseek(f_file, 0, SEEK_SET);

@@ -9,8 +9,9 @@ typedef struct
 
 typedef struct
 {
-    texture_t base_color;
-    float roughness;
+    texture_t diffuse_map;
+    texture_t specular_map;
+    texture_t normal_map;
     const char* name;
 } material_t;
 

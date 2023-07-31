@@ -1,36 +1,33 @@
 
-GLTF
+OPENGL
+    - Camera implementation
+    - Framuffer
+        If you want to render your whole screen to a texture of a smaller or larger size you need to call glViewport again (before rendering to your framebuffer) with the new dimensions of your texture, otherwise render commands will only fill part of the texture.
+    - Specular map
+    - mist https://www.youtube.com/watch?v=qslBNLeSPUc
+    - multiple lights
+    - inversing matrix 3D on the cpu
+    - Instanced renderering
+    - rotate quad (https://www.youtube.com/watch?v=-SQ8TlFZHbY)
+
+GLTF   
+    - Delete textures when destroing mesh
     - Identical meshes
-    - Camera
+    - Cubemap - frront facing
     - Lights
     - Mesh name identification for ECS
 
-Instanced renderering
 
 - ECS
     -Scenes
 
-- VULKAN
 - matrix dingen kloppend maken
 - quattternoons
 
-- rotate quad (https://www.youtube.com/watch?v=-SQ8TlFZHbY)
-- load images
+
 - available texture slots
 - gravity sim
 - limit framerate
-- camera class
 
 
-uint32_t index_type = gltf_data->meshes[m].primitives[p].indices->component_type;
-                if (index_type == cgltf_component_type_r_8)
-                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_BYTE;
-                else if(index_type == cgltf_component_type_r_16)
-                    model->meshes[m].primitives[p].index_type = GL_SHORT;
-                else if(index_type == cgltf_component_type_r_16u)
-                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_SHORT;
-                else if(index_type == cgltf_component_type_r_32u)
-                    model->meshes[m].primitives[p].index_type = GL_UNSIGNED_BYTE;
-                else if(index_type == cgltf_component_type_r_32f)
-                    model->meshes[m].primitives[p].index_type = GL_FLOAT;
-                
+

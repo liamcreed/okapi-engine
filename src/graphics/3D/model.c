@@ -57,21 +57,65 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
         printf(LOG_GLTF "Material count: %zu\n", material_count);
         model->materials = malloc(material_count * sizeof(material_t));
 
+        texture_t empty_color_map;
+        unsigned char empty_color_data[] = {128, 128, 255, 255};
+        texture_create_from_data(&empty_color_map, empty_color_data, (vec2_t){1, 1}, false);
+
+        texture_t empty_specular_map;
+        unsigned char empty_specular_data[] = {0, 0, 0, 255};
+        texture_create_from_data(&empty_specular_map, empty_specular_data, (vec2_t){1, 1}, false);
+
         for (int mat = 0; mat < material_count; mat++)
         {
             model->materials[mat].name = strcat(gltf_data->materials[mat].name, "");
             printf(LOG_GLTF "Material: %s\n", model->materials[mat].name);
 
-            char *base_color_path = get_full_path(file, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
-            texture_create_from_file(&model->materials[mat].base_color, base_color_path, false);
-            free(base_color_path);
+            // Base color
+            if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
+            {
+                
+                char *path = get_full_path(file, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
+                texture_create_from_file(&model->materials[mat].diffuse_map, path, true);
+                free(path);
+            }
+            else
+            {
+                model->materials[mat].diffuse_map = empty_color_map;
+                printf(LOG_WARNING "[GLTF]: No base color texture in material!\n");
+            }
+
+            // Specular map
+            if (gltf_data->materials[mat].specular.specular_texture.texture != NULL)
+            {
+                char *path = get_full_path(file, gltf_data->materials[mat].specular.specular_texture.texture->image->uri);
+                texture_create_from_file(&model->materials[mat].specular_map, path, true);
+                free(path);
+            }
+            else
+            {
+                model->materials[mat].specular_map= empty_specular_map;
+            } 
+
+            // Normal map
+            if (gltf_data->materials[mat].normal_texture.texture != NULL)
+            {
+                char *path = get_full_path(file, gltf_data->materials[mat].normal_texture.texture->image->uri);
+                texture_create_from_file(&model->materials[mat].normal_map, path, true);
+                free(path);
+            }
+            else
+            {
+                model->materials[mat].normal_map = empty_color_map;
+            }
+            
         }
 
         model->mesh_count = gltf_data->meshes_count;
         model->meshes = malloc(sizeof(mesh_t) * model->mesh_count);
-
+        
         printf(LOG_GLTF "Mesh Count: %u\n", model->mesh_count);
 
+        
         for (int m = 0; m < model->mesh_count; m++)
         {
             model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
@@ -85,7 +129,6 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 bool material_found;
                 for (int mat = 0; mat < material_count; mat++)
                 {
-                    printf("%s\n", gltf_data->meshes[m].primitives[p].material->name);
                     if (gltf_data->meshes[m].primitives[p].material->name == model->materials[mat].name)
                     {
                         model->meshes[m].primitives[p].material = &model->materials[mat];
@@ -124,7 +167,6 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 else if (index_type == cgltf_component_type_r_32f)
                     model->meshes[m].primitives[p].index_type = GL_FLOAT;
 
-                printf(LOG_WARNING"%u\n", model->meshes[m].primitives[p].index_type);
                 size_t vertices_size = indices_offset - vertices_offset;
 
                 printf(LOG_GLTF "    buffer %p\n", buffer);
@@ -145,6 +187,9 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                     size_t atr_stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
 
                     char *atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
+                    if (gltf_data->meshes[m].primitives[p].attributes[atr].data->component_type != cgltf_component_type_r_32f)
+                        printf(LOG_WARNING "[GLTF]]: Attribute is not of type float!\n");
+
                     if (strcmp(atr_name, "POSITION") == 0)
                     {
                         printf(LOG_GLTF "POSITION: offset: %zu, stride %zu\n", atr_offset, atr_stride);

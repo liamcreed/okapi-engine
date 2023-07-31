@@ -1,16 +1,18 @@
 #include "graphics/graphics.h"
 
-void renderer_create(renderer_t *renderer, vec4_t clear_color, vec2_t resolution)
+void renderer_create(renderer_t *renderer, window_t *window, vec4_t clear_color, float resolution_scale)
 {
+    renderer->window = window;
     renderer->clear_color = clear_color;
-    renderer->resolution = resolution;
+    renderer->resolution_scale = resolution_scale;
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // create white texture
     unsigned char white[4] = {255, 255, 255, 255};
@@ -53,22 +55,22 @@ void renderer_create(renderer_t *renderer, vec4_t clear_color, vec2_t resolution
 
     shader_set_uniform_int_arr(&renderer->quad_shader, "u_textures", samplers, MAX_TEXTURE_COUNT);
 
-    shader_set_uniform_mat4(&renderer->quad_shader, "u_view_mat", renderer->view_mat);
-    shader_set_uniform_mat4(&renderer->quad_shader, "u_proj_mat", renderer->proj_mat);
-
     renderer->quad_index_count = 0;
     renderer->quad_texture_count = 1;
 
-    shader_create(&renderer->model_3D_shader, "./res/shaders/basic.vert", "./res/shaders/basic.frag");
+    shader_create(&renderer->model_3D_shader, "./res/shaders/mesh.vert", "./res/shaders/mesh.frag");
 }
 
-void renderer_init(renderer_t *renderer)
-{
-}
-
-void renderer_start(renderer_t *renderer)
+void renderer_start(renderer_t *renderer, camera_t *camera)
 {
     renderer_clear(renderer);
+
+    if (camera->orthographic)
+        renderer->proj_mat = mat4_ortho_aspect(renderer->window->aspect, camera->orthographic_size, camera->near, camera->far);
+    else
+        renderer->proj_mat = mat4_perspective(camera->fov, renderer->window->aspect, camera->near, camera->far);
+        
+    /* renderer->view_mat = mat4_look_at((vec3_t){0, 0, 5}, (vec3_t){0, 0, 0}, (vec3_t){0, 1, 0}); */
 
     shader_set_uniform_mat4(&renderer->quad_shader, "u_view_mat", renderer->view_mat);
     shader_set_uniform_mat4(&renderer->quad_shader, "u_proj_mat", renderer->proj_mat);
@@ -88,7 +90,7 @@ void renderer_clear(renderer_t *renderer)
 
     if (glGetError() != 0)
     {
-        // printf(OPENGL_ERROR"%u\n", glGetError());
+         printf(OPENGL_ERROR"%u\n", glGetError());
     }
 }
 
@@ -278,8 +280,14 @@ void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t pos,
     {
         for (int p = 0; p < model->meshes[m].primitive_count; p++)
         {
-            texture_bind(&model->meshes[m].primitives[p].material->base_color, 0);
-            shader_set_uniform_int(&renderer->model_3D_shader, "base_color", 0);
+            texture_bind(&model->meshes[m].primitives[p].material->diffuse_map, 0);
+            shader_set_uniform_int(&renderer->model_3D_shader, "diffuse_map", 0);
+
+            /* texture_bind(&model->meshes[m].primitives[p].material->specular_map, 1);
+            shader_set_uniform_int(&renderer->model_3D_shader, "specular_map", 1);
+
+            texture_bind(&model->meshes[m].primitives[p].material->normal_map, 1);
+            shader_set_uniform_int(&renderer->model_3D_shader, "normal_map", 1); */
 
             vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 

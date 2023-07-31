@@ -11,7 +11,12 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
         scroll = 0;
     last_scroll = yoffset;
 }
-void window_create(window_t *window, vec2_t size, const char* title, bool vsync)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+{
+    glViewport(0, 0, width*2, height*2);
+}
+
+void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
 {
     window->closed = 1;
     window->size = size;
@@ -19,7 +24,6 @@ void window_create(window_t *window, vec2_t size, const char* title, bool vsync)
     window->vsync = vsync;
     window->fullscreen = 0;
     window->minimized = 0;
-    
 
     if (!glfwInit())
     {
@@ -62,6 +66,8 @@ void window_create(window_t *window, vec2_t size, const char* title, bool vsync)
     }
 
     glfwSetScrollCallback(window->glfw, scroll_callback);
+    glfwSetFramebufferSizeCallback(window->glfw, framebuffer_size_callback);
+
 }
 
 void window_update(window_t *window)
@@ -92,6 +98,17 @@ void window_update(window_t *window)
     window->scroll = scroll;
 
     window->aspect = window->size.x / window->size.y;
+
+    static vec2_t last_size;
+    if (last_size.x != window->size.x && !window->resized|| last_size.y != window->size.y && !window->resized)
+    {
+        window->resized = true;
+    }else
+    {
+         window->resized = false;
+    }
+
+    last_size = window->size;
 }
 void window_exit(window_t *window)
 {
