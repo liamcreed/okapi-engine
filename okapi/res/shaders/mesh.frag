@@ -10,6 +10,8 @@ uniform sampler2D diffuse_map;
 uniform sampler2D specular_map;
 uniform sampler2D normal_map;
 
+uniform vec3 cam_pos; 
+
 void main()
 {
     vec2 uv = vec2(v_uv.x, 1 - v_uv.y);
@@ -25,9 +27,17 @@ void main()
     light_direction = normalize(-light_direction); 
     float diff = 0.5 * max(dot(v_norm, light_direction), 0.0);
 
-    vec3 diffuse = diff * texture(diffuse_map, uv).rgb;  
+    vec3 diffuse = diff * texture(diffuse_map, uv).rgb; 
+
+    vec3 norm = normalize(v_norm);
+    vec3 spec_intensity = texture(specular_map, uv).rgb;
+    vec3 viewDir = normalize(cam_pos - v_pos);
+    vec3 reflectDir = reflect(-light_direction, norm);  
     
-    vec3 result = ambient + diffuse;
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = spec_intensity * spec;
+    
+    vec3 result = ambient + diffuse + specular;
     f_color = vec4(result, 1);
 
     float gamma = 2.2;

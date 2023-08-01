@@ -4,6 +4,9 @@ typedef struct
 {
     float fov, near, far;
 
+    vec3_t pos;
+    vec3_t front;
+    vec3_t up;
     
     bool orthographic;
     float orthographic_size;

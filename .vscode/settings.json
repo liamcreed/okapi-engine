@@ -2,6 +2,9 @@
     "files.associations": {
         "loop.h": "c",
         "api.h": "c",
-        "graphics.h": "c"
+        "graphics.h": "c",
+        "model.h": "c",
+        "shader.h": "c",
+        "camera.h": "c"
     }
 }

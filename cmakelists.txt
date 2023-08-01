@@ -32,6 +32,7 @@ src/graphics/renderer/shader.c
 src/graphics/renderer/vertexarray.c
 src/graphics/renderer/framebuffer.c
 src/graphics/3D/model.c
+src/graphics/3D/skybox.c
 )
 
 IF (WIN32)

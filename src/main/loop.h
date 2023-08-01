@@ -1,9 +1,7 @@
 #pragma once
 
 
-vec3_t cam_pos = (vec3_t){0, 1, 3};
-vec3_t cam_front = (vec3_t){0, 0, -1};
-vec3_t cam_up = (vec3_t){0, 1, 0};
+
 vec3_t direction;
 
 #define WINDOW_SIZE 800
@@ -51,7 +49,7 @@ void update()
     if (pitch < -89.0f)
         pitch = -89.0f;
 
-    cam_front = vec3_normalize(direction);
+    camera.front = vec3_normalize(direction);
 
     direction.x = cos(radians(yaw)) * cos(radians(pitch));
     direction.y = sin(radians(pitch));
@@ -59,19 +57,19 @@ void update()
 
     if (key_pressed(&window, KEY_A))
     {
-        cam_pos = vec3_subtract(cam_pos, vec3_scale(vec3_normalize(vec3_cross(cam_front, cam_up)), cam_speed));
+        camera.pos = vec3_subtract(camera.pos, vec3_scale(vec3_normalize(vec3_cross(camera.front, camera.up)), cam_speed));
     }
     if (key_pressed(&window, KEY_D))
     {
-        cam_pos = vec3_add(cam_pos, vec3_scale(vec3_normalize(vec3_cross(cam_front, cam_up)), cam_speed));
+        camera.pos = vec3_add(camera.pos, vec3_scale(vec3_normalize(vec3_cross(camera.front, camera.up)), cam_speed));
     }
     if (key_pressed(&window, KEY_W))
     {
-        cam_pos = vec3_add(cam_pos, vec3_scale(cam_front, cam_speed));
+        camera.pos = vec3_add(camera.pos, vec3_scale(camera.front, cam_speed));
     }
     if (key_pressed(&window, KEY_S))
     {
-        cam_pos = vec3_subtract(cam_pos, vec3_scale(cam_front, cam_speed));
+        camera.pos = vec3_subtract(camera.pos, vec3_scale(camera.front, cam_speed));
     }
     if (key_pressed(&window, KEY_F))
         fov = 100;

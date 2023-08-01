@@ -6,7 +6,7 @@
 void texture_create_from_file(texture_t *texture, const char *path, bool filter)
 {
     unsigned char *data;
-    stbi_set_flip_vertically_on_load(1);
+    stbi_set_flip_vertically_on_load(true);
     int channel_count;
     int x, y;
     data = stbi_load(path, &x, &y, &channel_count, 0);

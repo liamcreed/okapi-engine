@@ -90,47 +90,47 @@
 		{
 			"mimeType":"image/png",
 			"name":"Landscape",
-			"uri":"textures/Landscape.png"
+			"uri":"Landscape.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"Water",
-			"uri":"textures/Water.png"
+			"uri":"Water.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":124609,
+			"count":1933,
 			"max":[
-				5.853652477264404,
-				2.8137047290802,
-				5.857065677642822
+				5.854331016540527,
+				2.8124940395355225,
+				5.857412815093994
 			],
 			"min":[
-				-4.973962306976318,
-				-0.44742849469184875,
-				-4.973962306976318
+				-4.972707748413086,
+				-0.4509541690349579,
+				-4.973908424377441
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":124609,
+			"count":1933,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":124609,
+			"count":1933,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
-			"componentType":5125,
-			"count":743424,
+			"componentType":5123,
+			"count":11217,
 			"type":"SCALAR"
 		},
 		{
@@ -171,50 +171,50 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":1495308,
+			"byteLength":23196,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":1495308,
-			"byteOffset":1495308,
+			"byteLength":23196,
+			"byteOffset":23196,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":996872,
-			"byteOffset":2990616,
+			"byteLength":15464,
+			"byteOffset":46392,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":2973696,
-			"byteOffset":3987488,
+			"byteLength":22434,
+			"byteOffset":61856,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":48,
-			"byteOffset":6961184,
+			"byteOffset":84292,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":48,
-			"byteOffset":6961232,
+			"byteOffset":84340,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":32,
-			"byteOffset":6961280,
+			"byteOffset":84388,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":12,
-			"byteOffset":6961312,
+			"byteOffset":84420,
 			"target":34963
 		}
 	],
@@ -226,7 +226,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":6961324,
+			"byteLength":84432,
 			"uri":"landscape.bin"
 		}
 	]

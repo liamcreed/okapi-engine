@@ -143,3 +143,14 @@ void shader_set_uniform_vec4(shader_t *shader, const char *name, vec4_t data)
     }
     glProgramUniform4f(shader->id,loc, data.x, data.y, data.z, data.w);
 }
+
+void shader_set_uniform_vec3(shader_t *shader, const char *name, vec3_t data)
+{
+    int loc = glGetUniformLocation(shader->id, name);
+    if (loc == -1)
+    {
+        printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
+        exit(-1);
+    }
+    glProgramUniform3f(shader->id,loc, data.x, data.y, data.z);
+}

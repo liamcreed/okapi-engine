@@ -1,4 +1,13 @@
 #include "graphics/graphics.h"
+float quad_vertices[] = {
+    -1.0f, 1.0f, 0.0f, 1.0f,
+    -1.0f, -1.0f, 0.0f, 0.0f,
+    1.0f, -1.0f, 1.0f, 0.0f,
+
+    -1.0f, 1.0f, 0.0f, 1.0f,
+    1.0f, -1.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 1.0f, 1.0f};
+
 
 void renderer_create(renderer_t *renderer, window_t *window, vec4_t clear_color, float resolution_scale)
 {
@@ -58,11 +67,22 @@ void renderer_create(renderer_t *renderer, window_t *window, vec4_t clear_color,
     renderer->quad_index_count = 0;
     renderer->quad_texture_count = 1;
 
-    shader_create(&renderer->model_3D_shader, "./res/shaders/mesh.vert", "./res/shaders/mesh.frag");
+    shader_create(&renderer->mesh_shader, "./res/shaders/mesh.vert", "./res/shaders/mesh.frag");
+    shader_create(&renderer->skybox_shader, "./res/shaders/skybox.vert", "./res/shaders/skybox.frag");
+
+    framebuffer_create(&renderer->scene_buffer, (vec2_t){renderer->window->size.x * resolution_scale, renderer->window->size.y * resolution_scale}, false);
+    vertex_array_create(&renderer->scene_buffer_va);
+    vertex_array_create_vbo(&renderer->scene_buffer_va, quad_vertices, sizeof(quad_vertices), false);
+    vertex_array_push_attribute(0, 2, 4 * sizeof(float), 0);
+    vertex_array_push_attribute(1, 2, 4 * sizeof(float), 2 * sizeof(float));
+    vertex_array_unbind();
+    vertex_array_unbind_buffers();
+    shader_create(&renderer->pp_shader, "./res/shaders/pp.vert", "./res/shaders/pp.frag");
 }
 
 void renderer_start(renderer_t *renderer, camera_t *camera)
 {
+    framebuffer_bind(&renderer->scene_buffer);
     renderer_clear(renderer);
 
     if (camera->orthographic)
@@ -70,17 +90,38 @@ void renderer_start(renderer_t *renderer, camera_t *camera)
     else
         renderer->proj_mat = mat4_perspective(camera->fov, renderer->window->aspect, camera->near, camera->far);
 
-    /* renderer->view_mat = mat4_look_at((vec3_t){0, 0, 5}, (vec3_t){0, 0, 0}, (vec3_t){0, 1, 0}); */
+    renderer->view_mat = mat4_look_at((camera->pos), vec3_add(camera->pos, camera->front), camera->up);
 
     shader_set_uniform_mat4(&renderer->quad_shader, "u_view_mat", renderer->view_mat);
     shader_set_uniform_mat4(&renderer->quad_shader, "u_proj_mat", renderer->proj_mat);
 
-    shader_set_uniform_mat4(&renderer->model_3D_shader, "u_view", renderer->view_mat);
-    shader_set_uniform_mat4(&renderer->model_3D_shader, "u_proj", renderer->proj_mat);
+    shader_set_uniform_mat4(&renderer->mesh_shader, "u_view", renderer->view_mat);
+    shader_set_uniform_mat4(&renderer->mesh_shader, "u_proj", renderer->proj_mat);
+
+    mat4_t view = renderer->view_mat;
+    view.data[0][3] = 0;
+    view.data[1][3] = 0;
+    view.data[2][3] = 0;
+    view.data[3][3] = 1;
+
+    shader_set_uniform_mat4(&renderer->skybox_shader, "u_view", view);
+    shader_set_uniform_mat4(&renderer->skybox_shader, "u_proj", renderer->proj_mat);
+
 }
 
 void renderer_end(renderer_t *renderer)
 {
+    framebuffer_unbind();
+    glDisable(GL_DEPTH_TEST);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, renderer->window->size.x, renderer->window->size.y);
+
+    shader_bind(&renderer->pp_shader);
+    vertex_array_bind(&renderer->scene_buffer_va);
+    texture_bind(&renderer->scene_buffer.texture, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void renderer_clear(renderer_t *renderer)
@@ -258,7 +299,7 @@ void renderer_draw_sub_texture(
     renderer->quad_index_count += 6;
 }
 
-void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
+void renderer_draw_model_3D(renderer_t *renderer, camera_t* camera, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
 {
     model->transform = mat4_translate(mat4_new(1), pos);
     if (size != 1)
@@ -270,21 +311,23 @@ void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t pos,
     if (rotation.z != 0)
         model->transform = mat4_rotate_z(model->transform, rotation.z);
 
-    shader_set_uniform_mat4(&renderer->model_3D_shader, "u_model", model->transform);
+    shader_set_uniform_mat4(&renderer->mesh_shader, "u_model", model->transform);
 
-    shader_bind(&renderer->model_3D_shader);
+    shader_bind(&renderer->mesh_shader);
     for (int m = 0; m < model->mesh_count; m++)
     {
         for (int p = 0; p < model->meshes[m].primitive_count; p++)
         {
+            shader_set_uniform_vec3(&renderer->mesh_shader, "cam_pos", camera->pos);
+
             texture_bind(&model->meshes[m].primitives[p].material->diffuse_map, 0);
-            shader_set_uniform_int(&renderer->model_3D_shader, "diffuse_map", 0);
+            shader_set_uniform_int(&renderer->mesh_shader, "diffuse_map", 0);
 
-            /* texture_bind(&model->meshes[m].primitives[p].material->specular_map, 1);
-            shader_set_uniform_int(&renderer->model_3D_shader, "specular_map", 1);
+            texture_bind(&model->meshes[m].primitives[p].material->specular_map, 1);
+            shader_set_uniform_int(&renderer->mesh_shader, "specular_map", 1);
 
-            texture_bind(&model->meshes[m].primitives[p].material->normal_map, 1);
-            shader_set_uniform_int(&renderer->model_3D_shader, "normal_map", 1); */
+    /*         texture_bind(&model->meshes[m].primitives[p].material->normal_map, 1);
+            shader_set_uniform_int(&renderer->mesh_shader, "normal_map", 1);  */
 
             vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 
@@ -295,4 +338,18 @@ void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t pos,
         }
     }
     shader_unbind();
+}
+
+void renderer_draw_skybox(renderer_t *renderer, skybox_t *skybox)
+{
+    glDepthFunc(GL_LEQUAL);
+    shader_bind(&renderer->skybox_shader);
+    vertex_array_bind(&skybox->va);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->cubemap.id);
+
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    vertex_array_unbind();
+    glDepthFunc(GL_LESS);
 }

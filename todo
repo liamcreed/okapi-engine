@@ -1,6 +1,7 @@
 
 OPENGL
     - Camera implementation
+    - uniform buffer matrices
     - Framebuffer alpha transparency
     - vertex array attrubute type
     - Specular map

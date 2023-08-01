@@ -4,7 +4,7 @@ typedef struct
 {
     uint32_t id;
     vec2_t size;
-    int channel_count;
+    uint32_t channel_count;
 } texture_t;
 
 void texture_create_from_file(texture_t* texture,const char *path, bool filter);
