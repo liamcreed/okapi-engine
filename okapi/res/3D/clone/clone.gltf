@@ -27,20 +27,18 @@
 			"doubleSided":true,
 			"extensions":{
 				"KHR_materials_specular":{
-					"specularColorFactor":[
-						0,
-						0,
-						0
-					]
+					"specularColorTexture":{
+						"index":0
+					}
 				},
 				"KHR_materials_ior":{
 					"ior":1.4500000476837158
 				}
 			},
-			"name":"Material",
+			"name":"Material.001",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":0
+					"index":1
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.9292893409729004
@@ -67,20 +65,29 @@
 		{
 			"sampler":0,
 			"source":0
+		},
+		{
+			"sampler":0,
+			"source":1
 		}
 	],
 	"images":[
 		{
 			"mimeType":"image/png",
+			"name":"Image",
+			"uri":"tex/Image.png"
+		},
+		{
+			"mimeType":"image/png",
 			"name":"rep_inf_ep3trooper",
-			"uri":"rep_inf_ep3trooper.png"
+			"uri":"tex/rep_inf_ep3trooper.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":2689,
+			"count":2725,
 			"max":[
 				0.9294760227203369,
 				2.082674026489258,
@@ -96,13 +103,13 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":2689,
+			"count":2725,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":2689,
+			"count":2725,
 			"type":"VEC2"
 		},
 		{
@@ -115,26 +122,26 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":32268,
+			"byteLength":32700,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":32268,
-			"byteOffset":32268,
+			"byteLength":32700,
+			"byteOffset":32700,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":21512,
-			"byteOffset":64536,
+			"byteLength":21800,
+			"byteOffset":65400,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":10332,
-			"byteOffset":86048,
+			"byteOffset":87200,
 			"target":34963
 		}
 	],
@@ -146,7 +153,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":96380,
+			"byteLength":97532,
 			"uri":"clone.bin"
 		}
 	]

@@ -8,7 +8,6 @@ float quad_vertices[] = {
     1.0f, -1.0f, 1.0f, 0.0f,
     1.0f, 1.0f, 1.0f, 1.0f};
 
-
 void renderer_create(renderer_t *renderer, window_t *window, vec4_t clear_color, float resolution_scale)
 {
     renderer->window = window;
@@ -106,7 +105,6 @@ void renderer_start(renderer_t *renderer, camera_t *camera)
 
     shader_set_uniform_mat4(&renderer->skybox_shader, "u_view", view);
     shader_set_uniform_mat4(&renderer->skybox_shader, "u_proj", renderer->proj_mat);
-
 }
 
 void renderer_end(renderer_t *renderer)
@@ -299,7 +297,7 @@ void renderer_draw_sub_texture(
     renderer->quad_index_count += 6;
 }
 
-void renderer_draw_model_3D(renderer_t *renderer, camera_t* camera, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
+void renderer_draw_model_3D(renderer_t *renderer, camera_t *camera, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
 {
     model->transform = mat4_translate(mat4_new(1), pos);
     if (size != 1)
@@ -323,11 +321,11 @@ void renderer_draw_model_3D(renderer_t *renderer, camera_t* camera, model_3D_t *
             texture_bind(&model->meshes[m].primitives[p].material->diffuse_map, 0);
             shader_set_uniform_int(&renderer->mesh_shader, "diffuse_map", 0);
 
-            texture_bind(&model->meshes[m].primitives[p].material->specular_map, 1);
-            shader_set_uniform_int(&renderer->mesh_shader, "specular_map", 1);
+            texture_bind(&model->meshes[m].primitives[p].material->orm_map, 1);
+            shader_set_uniform_int(&renderer->mesh_shader, "orm_map", 1);
 
-    /*         texture_bind(&model->meshes[m].primitives[p].material->normal_map, 1);
-            shader_set_uniform_int(&renderer->mesh_shader, "normal_map", 1);  */
+            texture_bind(&model->meshes[m].primitives[p].material->normal_map, 2);
+            shader_set_uniform_int(&renderer->mesh_shader, "normal_map", 2);
 
             vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 

@@ -68,12 +68,12 @@ void cubemap_load_from_files(cubemap_t *cubemap, const char **files, uint32_t co
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                              0, GL_RGB, cubemap->size.x, cubemap->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
             stbi_image_free(data);
-            printf(LOG_INFO "Cubemap tex loaded at path: %s\n", files[i]);
         }
         else
         {
             printf(LOG_ERROR "Cubemap tex failed to load at path: %s\n", files[i]);
             stbi_image_free(data);
+            exit(-1);
         }
     }
     

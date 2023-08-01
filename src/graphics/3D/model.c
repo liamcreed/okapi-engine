@@ -22,10 +22,7 @@ char *get_full_path(const char *path, char *file_name)
         directory[i] = path[i];
     }
     directory[path_length-l+1] = '\0';
-    printf("%s\n", directory);
-
     strcat(directory, file_name);
-    printf("%s\n", directory);
     return directory;
 }
 
@@ -64,9 +61,9 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
         unsigned char empty_color_data[] = {128, 128, 255, 255};
         texture_create_from_data(&empty_color_map, empty_color_data, (vec2_t){1, 1}, false);
 
-        texture_t empty_specular_map;
-        unsigned char empty_specular_data[] = {0, 0, 0, 255};
-        texture_create_from_data(&empty_specular_map, empty_specular_data, (vec2_t){1, 1}, false);
+        texture_t empty_orm;
+        unsigned char empty_orm_data[] = {0, 255, 0, 0};
+        texture_create_from_data(&empty_orm, empty_orm_data, (vec2_t){1, 1}, false);
 
         for (int mat = 0; mat < model->material_count; mat++)
         {
@@ -77,7 +74,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
             if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
             {
                 char *path = get_full_path(file, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
-                texture_create_from_file(&model->materials[mat].diffuse_map, path, true);
+                texture_create_from_file(&model->materials[mat].diffuse_map, path, true, true);
                 free(path);
             }
             else
@@ -86,24 +83,25 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 printf(LOG_WARNING "[GLTF]: No base color texture in material!\n");
             }
 
-            // Specular map
-            if (gltf_data->materials[mat].specular.specular_texture.texture != NULL)
+            // Orm map
+            if (gltf_data->materials[mat].pbr_metallic_roughness.metallic_roughness_texture.texture != NULL)
             {
-                char *path = get_full_path(file, gltf_data->materials[mat].specular.specular_texture.texture->image->uri);
-                texture_create_from_file(&model->materials[mat].specular_map, path, true);
+                char *path = get_full_path(file, gltf_data->materials[mat].pbr_metallic_roughness.metallic_roughness_texture.texture->image->uri);
+                texture_create_from_file(&model->materials[mat].orm_map, path, true, true);
                 free(path);
             }
             else
             {
-                model->materials[mat].specular_map= empty_specular_map;
+                model->materials[mat].orm_map= empty_orm;
             } 
 
             // Normal map
             if (gltf_data->materials[mat].normal_texture.texture != NULL)
             {
                 char *path = get_full_path(file, gltf_data->materials[mat].normal_texture.texture->image->uri);
-                texture_create_from_file(&model->materials[mat].normal_map, path, true);
+                texture_create_from_file(&model->materials[mat].normal_map, path, true, false);
                 free(path);
+                
             }
             else
             {
@@ -183,7 +181,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 vertex_array_create(&model->meshes[m].primitives[p].vertex_array);
                 vertex_array_create_vbo(&model->meshes[m].primitives[p].vertex_array, vertices, vertices_size, false);
 
-                for (int atr = 0; atr < 3; atr++)
+                for (int atr = 0; atr < gltf_data->meshes[m].primitives[p].attributes_count; atr++)
                 {
                     size_t atr_offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
                     size_t atr_stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
@@ -207,6 +205,12 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                         printf(LOG_GLTF "TEXCOORD_0: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(2, 2, atr_stride, atr_offset);
                     }
+                    else if (strcmp(atr_name, "TANGENT") == 0)
+                    {
+                        printf(LOG_GLTF "TANGENT: offset: %zu, stride %zu\n", atr_offset, atr_stride);
+                        vertex_array_push_attribute(3, 4, atr_stride, atr_offset);
+                    }
+                    
                 }
 
                 vertex_array_create_ibo(&model->meshes[m].primitives[p].vertex_array, indices, indices_size, false);
@@ -225,7 +229,7 @@ void model_3D_delete(model_3D_t *model)
     for (int m = 0; m < model->material_count; m++)
     {
         texture_delete(&model->materials->diffuse_map);
-        texture_delete(&model->materials->specular_map);
+        texture_delete(&model->materials->orm_map);
         texture_delete(&model->materials->normal_map);
     }
     

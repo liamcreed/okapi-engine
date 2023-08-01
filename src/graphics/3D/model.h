@@ -10,7 +10,7 @@ typedef struct
 typedef struct
 {
     texture_t diffuse_map;
-    texture_t specular_map;
+    texture_t orm_map;
     texture_t normal_map;
     const char* name;
 } material_t;

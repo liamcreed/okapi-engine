@@ -2,12 +2,17 @@
 
 in vec3 v_pos;
 in vec3 v_norm;
-in vec2  v_uv;
+in vec2 v_uv;
+
+in mat3 v_tbn;
+in vec3 v_tang_pos;
+in vec3 v_tang_cam_pos;
+in vec3 v_tang_light_pos;
 
 out vec4 f_color;
 
 uniform sampler2D diffuse_map;
-uniform sampler2D specular_map;
+uniform sampler2D orm_map;
 uniform sampler2D normal_map;
 
 uniform vec3 cam_pos; 
@@ -18,28 +23,31 @@ void main()
 
     if(texture(diffuse_map, uv).a == 0)
         discard;
-
-    float ambient_strenght = 0.1;
-    vec3 ambient = ambient_strenght * texture(diffuse_map, uv).rgb;
-  	
-    vec3 light_direction = vec3(0,-10,-10);
     
-    light_direction = normalize(-light_direction); 
-    float diff = 0.5 * max(dot(v_norm, light_direction), 0.0);
-
-    vec3 diffuse = diff * texture(diffuse_map, uv).rgb; 
-
-    vec3 norm = normalize(v_norm);
-    vec3 spec_intensity = texture(specular_map, uv).rgb;
-    vec3 viewDir = normalize(cam_pos - v_pos);
-    vec3 reflectDir = reflect(-light_direction, norm);  
+    float roughness = texture(orm_map, uv).g;
     
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = spec_intensity * spec;
-    
+    vec3 normal = texture(normal_map, uv).rgb;
+    // transform normal vector to range [-1,1]
+    normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
+   
+    // get diffuse color
+    vec3 color = texture(diffuse_map, uv).rgb;
+    // ambient
+    vec3 ambient = 0.1 * color;
+    // diffuse
+    vec3 lightDir = normalize(v_tang_light_pos - v_tang_pos);
+    float diff = max(dot(lightDir, normal), 0.0);
+    vec3 diffuse = diff * color;
+    // specular
+    vec3 viewDir = normalize(v_tang_cam_pos - v_tang_pos);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+
+    vec3 specular = vec3(1 - roughness) * spec;
+
     vec3 result = ambient + diffuse + specular;
-    f_color = vec4(result, 1);
 
     float gamma = 2.2;
-    f_color.rgb = pow(f_color.rgb, vec3(1.0/gamma));
+    f_color = vec4(pow(result, vec3(1.0/gamma)), 1);
 }

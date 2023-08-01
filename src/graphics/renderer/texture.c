@@ -3,7 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>
 
-void texture_create_from_file(texture_t *texture, const char *path, bool filter)
+void texture_create_from_file(texture_t *texture, const char *path, bool filter, bool gamma)
 {
     unsigned char *data;
     stbi_set_flip_vertically_on_load(true);
@@ -41,10 +41,26 @@ void texture_create_from_file(texture_t *texture, const char *path, bool filter)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    if (channel_count == 4)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture->size.x, texture->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    if (gamma)
+    {
+        if (channel_count == 4)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture->size.x, texture->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        else
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, texture->size.x, texture->size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    }
     else
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, texture->size.x, texture->size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    {
+        if (channel_count == 4)
+        {
+            //normal map
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->size.x, texture->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        }
+            
+        else
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->size.x, texture->size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        }
+    }
     glGenerateMipmap(GL_TEXTURE_2D);
 
     free(data);
@@ -76,7 +92,7 @@ void texture_create_from_data(texture_t *texture, unsigned char *data, vec2_t si
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture->size.x, texture->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->size.x, texture->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);

@@ -6,7 +6,6 @@ renderer_t renderer;
 camera_t camera;
 #include "loop.h"
 
-
 #include "stb_image/stb_image.h"
 
 int main(void)
@@ -20,10 +19,10 @@ int main(void)
     model_3D_create_from_file(&scene, "./res/3D/landscape/landscape.gltf");
 
     model_3D_t clone_trooper;
-    model_3D_create_from_file(&clone_trooper, "./res/3D/clone/clone.gltf");
-    
+    model_3D_create_from_file(&clone_trooper, "./res/3D/monkey/monkey.gltf");
+
     camera_create_perspective(&camera, 45, 0.1, 100);
-    camera.pos = (vec3_t){0,.5,4};
+    camera.pos = (vec3_t){0, .5, 4};
 
     const char *cubemap_faces[6] = {
         "./res/textures/skybox/right.jpg",
@@ -48,8 +47,8 @@ int main(void)
 
         renderer_start(&renderer, &camera);
 
-        renderer_draw_model_3D(&renderer, &camera, &scene,  (vec3_t){}, .5, (vec3_t){});
-        renderer_draw_model_3D(&renderer, &camera, &clone_trooper, (vec3_t){0, 0.1, 2.5}, .2, (vec3_t){0, glfwGetTime() * 100, 0});
+        renderer_draw_model_3D(&renderer, &camera, &scene, (vec3_t){}, .5, (vec3_t){});
+        renderer_draw_model_3D(&renderer, &camera, &clone_trooper, (vec3_t){0, 0.5, 2.5}, .2, (vec3_t){0, glfwGetTime() * 1, 0});
 
         renderer_draw_skybox(&renderer, &skybox);
 

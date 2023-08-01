@@ -7,7 +7,7 @@ typedef struct
     uint32_t channel_count;
 } texture_t;
 
-void texture_create_from_file(texture_t* texture,const char *path, bool filter);
+void texture_create_from_file(texture_t* texture,const char *path, bool filter, bool gamma);
 void texture_create_from_data(texture_t* texture, unsigned char* data, vec2_t size, bool filter);
 void texture_create_framebuffer_tex(texture_t* texture, vec2_t size, bool filter);
 void texture_bind(texture_t *texture, uint32_t index);
