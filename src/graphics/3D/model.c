@@ -101,7 +101,6 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 char *path = get_full_path(file, gltf_data->materials[mat].normal_texture.texture->image->uri);
                 texture_create_from_file(&model->materials[mat].normal_map, path, true, false);
                 free(path);
-                
             }
             else
             {

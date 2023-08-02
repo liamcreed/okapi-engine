@@ -12,6 +12,7 @@ out mat3 v_tbn;
 out vec3 v_tang_pos;
 out vec3 v_tang_cam_pos;
 out vec3 v_tang_light_pos;
+out vec3 v_tang_dir_light_dir;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -34,10 +35,11 @@ void main()
     
     mat3 TBN = transpose(mat3(T, B, N));    
     v_tang_cam_pos  = TBN * cam_pos;
-    v_tang_light_pos = TBN * vec3(0,1,3);
+    v_tang_light_pos = TBN * vec3(0,10,10);
+    v_tang_dir_light_dir = TBN * vec3(0,-1,-1);
     v_tang_pos  = TBN * v_pos;
 
-   // v_norm = mat3(transpose(inverse(u_model))) * a_norm; 
+//v_norm = mat3(transpose(inverse(u_model))) * a_norm; 
    // v_uv = a_uv;
    // v_pos = vec3(u_model * vec4(a_pos, 1.0));
 }

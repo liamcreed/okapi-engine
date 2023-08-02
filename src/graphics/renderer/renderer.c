@@ -89,7 +89,7 @@ void renderer_start(renderer_t *renderer, camera_t *camera)
     else
         renderer->proj_mat = mat4_perspective(camera->fov, renderer->window->aspect, camera->near, camera->far);
 
-    renderer->view_mat = mat4_look_at((camera->pos), vec3_add(camera->pos, camera->front), camera->up);
+    
 
     shader_set_uniform_mat4(&renderer->quad_shader, "u_view_mat", renderer->view_mat);
     shader_set_uniform_mat4(&renderer->quad_shader, "u_proj_mat", renderer->proj_mat);
@@ -300,14 +300,14 @@ void renderer_draw_sub_texture(
 void renderer_draw_model_3D(renderer_t *renderer, camera_t *camera, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
 {
     model->transform = mat4_translate(mat4_new(1), pos);
-    if (size != 1)
-        model->transform = mat4_scale(model->transform, size);
     if (rotation.x != 0)
         model->transform = mat4_rotate_x(model->transform, rotation.x);
     if (rotation.y != 0)
         model->transform = mat4_rotate_y(model->transform, rotation.y);
     if (rotation.z != 0)
         model->transform = mat4_rotate_z(model->transform, rotation.z);
+    if (size != 1)
+        model->transform = mat4_scale(model->transform, size);
 
     shader_set_uniform_mat4(&renderer->mesh_shader, "u_model", model->transform);
 

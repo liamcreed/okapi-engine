@@ -3,10 +3,6 @@
 		"generator":"Khronos glTF Blender I/O v3.6.27",
 		"version":"2.0"
 	},
-	"extensionsUsed":[
-		"KHR_materials_specular",
-		"KHR_materials_ior"
-	],
 	"scene":0,
 	"scenes":[
 		{
@@ -25,23 +21,18 @@
 	"materials":[
 		{
 			"doubleSided":true,
-			"extensions":{
-				"KHR_materials_specular":{
-					"specularColorTexture":{
-						"index":0
-					}
-				},
-				"KHR_materials_ior":{
-					"ior":1.4500000476837158
-				}
-			},
 			"name":"Material.001",
+			"normalTexture":{
+				"index":0
+			},
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":1
 				},
 				"metallicFactor":0,
-				"roughnessFactor":0.9292893409729004
+				"metallicRoughnessTexture":{
+					"index":2
+				}
 			}
 		}
 	],
@@ -53,9 +44,10 @@
 					"attributes":{
 						"POSITION":0,
 						"NORMAL":1,
-						"TEXCOORD_0":2
+						"TEXCOORD_0":2,
+						"TANGENT":3
 					},
-					"indices":3,
+					"indices":4,
 					"material":0
 				}
 			]
@@ -69,25 +61,34 @@
 		{
 			"sampler":0,
 			"source":1
+		},
+		{
+			"sampler":0,
+			"source":2
 		}
 	],
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"Image",
-			"uri":"tex/Image.png"
+			"name":"normal_map",
+			"uri":"textures/normal_map.png"
 		},
 		{
 			"mimeType":"image/png",
 			"name":"rep_inf_ep3trooper",
-			"uri":"tex/rep_inf_ep3trooper.png"
+			"uri":"textures/rep_inf_ep3trooper.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"orm_map",
+			"uri":"textures/orm_map.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":2725,
+			"count":1478,
 			"max":[
 				0.9294760227203369,
 				2.082674026489258,
@@ -103,17 +104,23 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":2725,
+			"count":1478,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":2725,
+			"count":1478,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
+			"componentType":5126,
+			"count":1478,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":4,
 			"componentType":5123,
 			"count":5166,
 			"type":"SCALAR"
@@ -122,26 +129,32 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":32700,
+			"byteLength":17736,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":32700,
-			"byteOffset":32700,
+			"byteLength":17736,
+			"byteOffset":17736,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":21800,
-			"byteOffset":65400,
+			"byteLength":11824,
+			"byteOffset":35472,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":23648,
+			"byteOffset":47296,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":10332,
-			"byteOffset":87200,
+			"byteOffset":70944,
 			"target":34963
 		}
 	],
@@ -153,7 +166,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":97532,
+			"byteLength":81276,
 			"uri":"clone.bin"
 		}
 	]

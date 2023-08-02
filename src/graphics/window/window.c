@@ -1,11 +1,6 @@
 #include "graphics/graphics.h"
 
-float lf = 0.0f;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    /* glViewport(0, 0, width, height); */
-}  
 
 void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
 {
@@ -57,8 +52,6 @@ void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
     {
         glfwSetInputMode(window->glfw, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
-
-    glfwSetFramebufferSizeCallback(window->glfw, framebuffer_size_callback);
 }
 
 void window_update(window_t *window)
@@ -76,9 +69,7 @@ void window_update(window_t *window)
     window->size.y = size_y;
     window->aspect = window->size.x / window->size.y;
 
-    float cf = (float)glfwGetTime();
-    window->dt = cf - lf;
-    lf = cf;
+    
 
     if (key_pressed(window, KEY_ESCAPE) && window->cursor)
         glfwSetInputMode(window->glfw, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -89,6 +80,11 @@ void window_update(window_t *window)
     glfwGetCursorPos(window->glfw, &x, &y);
     window->mouse_pos.x = x;
     window->mouse_pos.y = y;
+
+    static float lf = 0.0f;
+    float cf = (float)glfwGetTime();
+    window->dt = cf - lf;
+    lf = cf;
 }
 void window_exit(window_t *window)
 {

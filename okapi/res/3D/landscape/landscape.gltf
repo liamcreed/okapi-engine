@@ -8,8 +8,7 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0,
-				1
+				0
 			]
 		}
 	],
@@ -17,10 +16,6 @@
 		{
 			"mesh":0,
 			"name":"Plane"
-		},
-		{
-			"mesh":1,
-			"name":"Plane.001"
 		}
 	],
 	"materials":[
@@ -33,17 +28,6 @@
 				},
 				"metallicFactor":0
 			}
-		},
-		{
-			"doubleSided":true,
-			"name":"Water",
-			"pbrMetallicRoughness":{
-				"baseColorTexture":{
-					"index":1
-				},
-				"metallicFactor":0,
-				"roughnessFactor":0
-			}
 		}
 	],
 	"meshes":[
@@ -54,24 +38,11 @@
 					"attributes":{
 						"POSITION":0,
 						"NORMAL":1,
-						"TEXCOORD_0":2
+						"TEXCOORD_0":2,
+						"TANGENT":3
 					},
-					"indices":3,
+					"indices":4,
 					"material":0
-				}
-			]
-		},
-		{
-			"name":"Plane.001",
-			"primitives":[
-				{
-					"attributes":{
-						"POSITION":4,
-						"NORMAL":5,
-						"TEXCOORD_0":6
-					},
-					"indices":7,
-					"material":1
 				}
 			]
 		}
@@ -80,29 +51,20 @@
 		{
 			"sampler":0,
 			"source":0
-		},
-		{
-			"sampler":0,
-			"source":1
 		}
 	],
 	"images":[
 		{
 			"mimeType":"image/png",
 			"name":"Landscape",
-			"uri":"Landscape.png"
-		},
-		{
-			"mimeType":"image/png",
-			"name":"Water",
-			"uri":"Water.png"
+			"uri":"textures/Landscape.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1933,
+			"count":1940,
 			"max":[
 				5.854331016540527,
 				2.8124940395355225,
@@ -118,103 +80,57 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1933,
+			"count":1940,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1933,
+			"count":1940,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
-			"componentType":5123,
-			"count":11217,
-			"type":"SCALAR"
+			"componentType":5126,
+			"count":1940,
+			"type":"VEC4"
 		},
 		{
 			"bufferView":4,
-			"componentType":5126,
-			"count":4,
-			"max":[
-				10.895318031311035,
-				0.16523972153663635,
-				10.243295669555664
-			],
-			"min":[
-				-9.093445777893066,
-				0.16523972153663635,
-				-9.745468139648438
-			],
-			"type":"VEC3"
-		},
-		{
-			"bufferView":5,
-			"componentType":5126,
-			"count":4,
-			"type":"VEC3"
-		},
-		{
-			"bufferView":6,
-			"componentType":5126,
-			"count":4,
-			"type":"VEC2"
-		},
-		{
-			"bufferView":7,
 			"componentType":5123,
-			"count":6,
+			"count":11217,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":23196,
+			"byteLength":23280,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":23196,
-			"byteOffset":23196,
+			"byteLength":23280,
+			"byteOffset":23280,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":15464,
-			"byteOffset":46392,
+			"byteLength":15520,
+			"byteOffset":46560,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":31040,
+			"byteOffset":62080,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":22434,
-			"byteOffset":61856,
-			"target":34963
-		},
-		{
-			"buffer":0,
-			"byteLength":48,
-			"byteOffset":84292,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":48,
-			"byteOffset":84340,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":32,
-			"byteOffset":84388,
-			"target":34962
-		},
-		{
-			"buffer":0,
-			"byteLength":12,
-			"byteOffset":84420,
+			"byteOffset":93120,
 			"target":34963
 		}
 	],
@@ -226,7 +142,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":84432,
+			"byteLength":115556,
 			"uri":"landscape.bin"
 		}
 	]

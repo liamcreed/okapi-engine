@@ -1,267 +1,54 @@
-#include "pch.h"
 #include "math/math.h"
 
-vec3_t vec3_add(vec3_t v1, vec3_t v2)
+quat_t quat_angle_axis(float angle,vec3_t axis)
 {
-    return (vec3_t){v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
+    quat_t result;
+    float half_angle = radians(angle/2);
+    
+    result.x = axis.x * sin(half_angle);
+    result.y = axis.y * sin(half_angle);
+    result.z = axis.z * sin(half_angle);
+    result.w = cos(half_angle);
+    
+    return quat_normalize(result);
 }
-vec3_t vec3_subtract(vec3_t v1, vec3_t v2)
+quat_t quat_from_euler(vec3_t euler)
 {
-    return (vec3_t){v1.x - v2.x, v1.y - v2.y, v1.z - v2.z};
-}
-vec3_t vec3_cross(vec3_t v1, vec3_t v2)
-{
-    return (vec3_t){
-        v1.y * v2.z - v1.z * v2.y,
-        v1.z * v2.x - v1.x * v2.z,
-        v1.x * v2.y - v1.y * v2.x};
-}
-vec3_t vec3_scale(vec3_t v, float s)
-{
-    return (vec3_t){v.x * s, v.y * s, v.z * s};
+    quat_t x = quat_angle_axis(euler.x, (vec3_t){1.0f, 0.0f, 0.0f});
+    quat_t y = quat_angle_axis(euler.y, (vec3_t){0.0f, 1.0f, 0.0f});;
+    quat_t z = quat_angle_axis(euler.z, (vec3_t){0.0f, 0.0f, 1.0f});;
+
+    quat_t result = quat_multiply(x, y);
+    return quat_multiply(quat_multiply(x, y), z);
 }
 
-float vec3_dot(vec3_t v1, vec3_t v2)
+quat_t quat_normalize(quat_t quat)
 {
-    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    float lenght = sqrt((quat.x * quat.x) + (quat.y * quat.y) + (quat.z * quat.z) + (quat.w * quat.w));
+    return (quat_t){quat.x/lenght, quat.y/lenght, quat.z/lenght, quat.w/lenght};
 }
-vec3_t vec3_normalize(vec3_t v)
+quat_t quat_conjugate(quat_t quat)
 {
-    float length = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-    return (vec3_t){v.x / length, v.y / length, v.z / length};
-}
-
-void vec3_print(vec3_t vector)
-{
-    printf("Vec3_t: x:%f y:%f z:%f\n", vector.x, vector.y, vector.z);
+    return (quat_t){-quat.x, -quat.y, -quat.z, quat.w};
 }
 
-mat4_t mat4_new(float value)
+/* t = 2 * cross(q.xyz, v)
+v' = v + q.w * t + cross(q.xyz, t) */
+
+quat_t quat_multiply(quat_t q1, quat_t q2)
 {
-    mat4_t matrix;
-    for (int i = 0; i < 4; i++)
+    return (quat_t)
     {
-        for (int j = 0; j < 4; j++)
-        {
-            if (i == j)
-                matrix.data[i][j] = value;
-            else
-                matrix.data[i][j] = 0;
-        }
-    }
-    return matrix;
+        (q1.x * q2.w) + (q1.w * q2.x) + (q1.y * q2.z) - (q1.z * q2.y),  
+        (q1.y * q2.w) + (q1.w * q2.y) + (q1.z * q2.x) - (q1.x * q2.z), 
+        (q1.z * q2.w) + (q1.w * q2.z) + (q1.x * q2.y) - (q1.y * q2.x),
+        (q1.w * q2.w) - (q1.x * q2.x) - (q1.y * q2.y) - (q1.z * q2.z),  
+    };
 }
-mat4_t mat4_ortho(float left, float right, float top, float bottom, float near, float far)
+void quat_print(quat_t q)
 {
-    mat4_t result;
-
-    result.data[0][0] = 2 / (right - left);
-    result.data[1][0] = 0;
-    result.data[2][0] = 0;
-    result.data[3][0] = 0;
-
-    result.data[0][1] = 0;
-    result.data[1][1] = 2 / (top - bottom);
-    result.data[2][1] = 0;
-    result.data[3][1] = 0;
-
-    result.data[0][2] = 0;
-    result.data[1][2] = 0;
-    result.data[2][2] = -2 / (far - near);
-    result.data[3][2] = 0;
-
-    result.data[0][3] = -((right + left) / (right - left));
-    result.data[1][3] = -((top + bottom) / (top - bottom));
-    result.data[2][3] = -((far + near) / (far - near));
-    result.data[3][3] = 1;
-
-    return result;
+    printf("Quaternion: x: %f, y: %f, z: %f, w: %f\n", q.x, q.y, q.z, q.w);
 }
-mat4_t mat4_ortho_aspect(float aspect, float size, float near, float far)
-{
-    return mat4_ortho(-aspect * size, aspect * size, size, -size, near, far);
-}
-
-mat4_t mat4_perspective(float fov, float aspect, float near, float far)
-{
-    mat4_t result = mat4_new(0);
-
-    float f = tan((radians(fov)) / 2);
-
-    result.data[0][0] = 1 / (aspect * f);
-    result.data[1][1] = 1 / f;
-    result.data[2][2] = -(far + near) / (far - near);
-    result.data[2][3] = -(2 * far * near) / (far - near);
-    result.data[3][2] = -1;
-
-    return result;
-}
-mat4_t mat4_look_at(vec3_t eye, vec3_t center, vec3_t up)
-{
-    mat4_t result = mat4_new(0);
-    vec3_t x, y, z;
-
-    z = vec3_normalize(vec3_subtract(eye, center));
-    y = up;
-    x = vec3_normalize(vec3_cross(y, z));
-    y = vec3_cross(z, x);
-    x = vec3_normalize(x);
-    y = vec3_normalize(y);
-
-    result.data[0][0] = x.x;
-    result.data[0][1] = x.y;
-    result.data[0][2] = x.z;
-    result.data[0][3] = -vec3_dot(x, eye);
-    result.data[1][0] = y.x;
-    result.data[1][1] = y.y;
-    result.data[1][2] = y.z;
-    result.data[1][3] = -vec3_dot(y, eye);
-    result.data[2][0] = z.x;
-    result.data[2][1] = z.y;
-    result.data[2][2] = z.z;
-    result.data[2][3] = -vec3_dot(z, eye);
-    result.data[3][0] = 0;
-    result.data[3][1] = 0;
-    result.data[3][2] = 0;
-    result.data[3][3] = 1.0f;
-
-    return result;
-}
-mat4_t mat4_translate(mat4_t matrix, vec3_t vector)
-{
-    mat4_t result = matrix;
-    result.data[0][3] = matrix.data[0][0] * vector.x + matrix.data[0][1] * vector.y + matrix.data[0][2] * vector.z + matrix.data[0][3];
-    result.data[1][3] = matrix.data[1][0] * vector.x + matrix.data[1][1] * vector.y + matrix.data[1][2] * vector.z + matrix.data[1][3];
-    result.data[2][3] = matrix.data[2][0] * vector.x + matrix.data[2][1] * vector.y + matrix.data[2][2] * vector.z + matrix.data[2][3];
-    result.data[3][3] = matrix.data[3][0] * vector.x + matrix.data[3][1] * vector.y + matrix.data[3][2] * vector.z + matrix.data[3][3];
-    return result;
-}
-mat4_t mat4_rotate_x(mat4_t matrix, float deg)
-{
-    mat4_t result = mat4_new(1);
-    float rad = radians(deg);
-
-    result.data[1][1] = cos(rad);
-    result.data[1][2] = -sin(rad);
-    result.data[2][1] = sin(rad);
-    result.data[2][2] = cos(rad);
-
-    result = mat4_multiply(matrix, result);
-    return result;
-}
-mat4_t mat4_rotate_y(mat4_t matrix, float deg)
-{
-    mat4_t result = mat4_new(1);
-    float rad = radians(deg);
-
-    result.data[0][0] = cos(rad);
-    result.data[0][2] = -sin(rad);
-    result.data[2][0] = sin(rad);
-    result.data[2][2] = cos(rad);
-
-    result = mat4_multiply(matrix, result);
-    return result;
-}
-mat4_t mat4_rotate_z(mat4_t matrix, float deg)
-{
-    mat4_t result = mat4_new(1);
-    float rad = radians(deg);
-
-    result.data[0][0] = cos(rad);
-    result.data[0][1] = -sin(rad);
-    result.data[1][0] = sin(rad);
-    result.data[1][1] = cos(rad);
-
-    result = mat4_multiply(matrix, result);
-    return result;
-}
-mat4_t mat4_scale(mat4_t matrix, float factor)
-{
-    mat4_t result = mat4_new(1);
-    result.data[0][0] = factor;
-    result.data[1][1] = factor;
-    result.data[2][2] = factor;
-    result = mat4_multiply(matrix, result);
-    return result;
-}
-mat4_t mat4_multiply(mat4_t mat1, mat4_t mat2)
-{
-    mat4_t result;
-    /* result.data[0][0] = mat1.data[0][0] * mat2.data[0][0] + mat1.data[1][0] * mat2.data[0][1] + mat1.data[2][0] * mat2.data[0][2] + mat1.data[3][0] * mat2.data[0][3];
-
-    result.data[0][1] = mat1.data[0][1] * mat2.data[0][0] + mat1.data[1][1] * mat2.data[0][1] + mat1.data[2][1] * mat2.data[0][2] + mat1.data[3][1] * mat2.data[0][3];
-    result.data[0][2] = mat1.data[0][2] * mat2.data[0][0] + mat1.data[1][2] * mat2.data[0][1] + mat1.data[2][2] * mat2.data[0][2] + mat1.data[3][2] * mat2.data[0][3];
-    result.data[0][3] = mat1.data[0][3] * mat2.data[0][0] + mat1.data[1][3] * mat2.data[0][1] + mat1.data[2][3] * mat2.data[0][2] + mat1.data[3][3] * mat2.data[0][3];
-
-    result.data[1][0] = mat1.data[0][0] * mat2.data[1][0] + mat1.data[1][0] * mat2.data[1][1] + mat1.data[2][0] * mat2.data[1][2] + mat1.data[3][0] * mat2.data[1][3];
-    result.data[1][1] = mat1.data[0][1] * mat2.data[1][0] + mat1.data[1][1] * mat2.data[1][1] + mat1.data[2][1] * mat2.data[1][2] + mat1.data[3][1] * mat2.data[1][3];
-    result.data[1][2] = mat1.data[0][2] * mat2.data[1][0] + mat1.data[1][2] * mat2.data[1][1] + mat1.data[2][2] * mat2.data[1][2] + mat1.data[3][2] * mat2.data[1][3];
-    result.data[1][3] = mat1.data[0][3] * mat2.data[1][0] + mat1.data[1][3] * mat2.data[1][1] + mat1.data[2][3] * mat2.data[1][2] + mat1.data[3][3] * mat2.data[1][3];
-
-    result.data[2][0] = mat1.data[0][0] * mat2.data[2][0] + mat1.data[1][0] * mat2.data[2][1] + mat1.data[2][0] * mat2.data[2][2] + mat1.data[3][0] * mat2.data[2][3];
-    result.data[2][1] = mat1.data[0][1] * mat2.data[2][0] + mat1.data[1][1] * mat2.data[2][1] + mat1.data[2][1] * mat2.data[2][2] + mat1.data[3][1] * mat2.data[2][3];
-    result.data[2][2] = mat1.data[0][2] * mat2.data[2][0] + mat1.data[1][2] * mat2.data[2][1] + mat1.data[2][2] * mat2.data[2][2] + mat1.data[3][2] * mat2.data[2][3];
-    result.data[2][3] = mat1.data[0][3] * mat2.data[2][0] + mat1.data[1][3] * mat2.data[2][1] + mat1.data[2][3] * mat2.data[2][2] + mat1.data[3][3] * mat2.data[2][3];
-
-    result.data[3][0] = mat1.data[0][0] * mat2.data[3][0] + mat1.data[1][0] * mat2.data[3][1] + mat1.data[2][0] * mat2.data[3][2] + mat1.data[3][0] * mat2.data[3][3];
-    result.data[3][1] = mat1.data[0][1] * mat2.data[3][0] + mat1.data[1][1] * mat2.data[3][1] + mat1.data[2][1] * mat2.data[3][2] + mat1.data[3][1] * mat2.data[3][3];
-    result.data[3][2] = mat1.data[0][2] * mat2.data[3][0] + mat1.data[1][2] * mat2.data[3][1] + mat1.data[2][2] * mat2.data[3][2] + mat1.data[3][2] * mat2.data[3][3];
-    result.data[3][3] = mat1.data[0][3] * mat2.data[3][0] + mat1.data[1][3] * mat2.data[3][1] + mat1.data[2][3] * mat2.data[3][2] + mat1.data[3][3] * mat2.data[3][3]; */
-
-    result.data[0][0] = mat1.data[0][0] * mat2.data[0][0] + mat1.data[0][1] * mat2.data[1][0] + mat1.data[0][2] * mat2.data[2][0] + mat1.data[0][3] * mat2.data[3][0];
-    result.data[0][1] = mat1.data[0][0] * mat2.data[0][1] + mat1.data[0][1] * mat2.data[1][1] + mat1.data[0][2] * mat2.data[2][1] + mat1.data[0][3] * mat2.data[3][1];
-    result.data[0][2] = mat1.data[0][0] * mat2.data[0][2] + mat1.data[0][1] * mat2.data[1][2] + mat1.data[0][2] * mat2.data[2][2] + mat1.data[0][3] * mat2.data[3][2];
-    result.data[0][3] = mat1.data[0][0] * mat2.data[0][3] + mat1.data[0][1] * mat2.data[1][3] + mat1.data[0][2] * mat2.data[2][3] + mat1.data[0][3] * mat2.data[3][3];
-    result.data[1][0] = mat1.data[1][0] * mat2.data[0][0] + mat1.data[1][1] * mat2.data[1][0] + mat1.data[1][2] * mat2.data[2][0] + mat1.data[1][3] * mat2.data[3][0];
-    result.data[1][1] = mat1.data[1][0] * mat2.data[0][1] + mat1.data[1][1] * mat2.data[1][1] + mat1.data[1][2] * mat2.data[2][1] + mat1.data[1][3] * mat2.data[3][1];
-    result.data[1][2] = mat1.data[1][0] * mat2.data[0][2] + mat1.data[1][1] * mat2.data[1][2] + mat1.data[1][2] * mat2.data[2][2] + mat1.data[1][3] * mat2.data[3][2];
-    result.data[1][3] = mat1.data[1][0] * mat2.data[0][3] + mat1.data[1][1] * mat2.data[1][3] + mat1.data[1][2] * mat2.data[2][3] + mat1.data[1][3] * mat2.data[3][3];
-    result.data[2][0] = mat1.data[2][0] * mat2.data[0][0] + mat1.data[2][1] * mat2.data[1][0] + mat1.data[2][2] * mat2.data[2][0] + mat1.data[2][3] * mat2.data[3][0];
-    result.data[2][1] = mat1.data[2][0] * mat2.data[0][1] + mat1.data[2][1] * mat2.data[1][1] + mat1.data[2][2] * mat2.data[2][1] + mat1.data[2][3] * mat2.data[3][1];
-    result.data[2][2] = mat1.data[2][0] * mat2.data[0][2] + mat1.data[2][1] * mat2.data[1][2] + mat1.data[2][2] * mat2.data[2][2] + mat1.data[2][3] * mat2.data[3][2];
-    result.data[2][3] = mat1.data[2][0] * mat2.data[0][3] + mat1.data[2][1] * mat2.data[1][3] + mat1.data[2][2] * mat2.data[2][3] + mat1.data[2][3] * mat2.data[3][3];
-    result.data[3][0] = mat1.data[3][0] * mat2.data[0][0] + mat1.data[3][1] * mat2.data[1][0] + mat1.data[3][2] * mat2.data[2][0] + mat1.data[3][3] * mat2.data[3][0];
-    result.data[3][1] = mat1.data[3][0] * mat2.data[0][1] + mat1.data[3][1] * mat2.data[1][1] + mat1.data[3][2] * mat2.data[2][1] + mat1.data[3][3] * mat2.data[3][1];
-    result.data[3][2] = mat1.data[3][0] * mat2.data[0][2] + mat1.data[3][1] * mat2.data[1][2] + mat1.data[3][2] * mat2.data[2][2] + mat1.data[3][3] * mat2.data[3][2];
-    result.data[3][3] = mat1.data[3][0] * mat2.data[0][3] + mat1.data[3][1] * mat2.data[1][3] + mat1.data[3][2] * mat2.data[2][3] + mat1.data[3][3] * mat2.data[3][3];
-    return result;
-}
-mat4_t mat4_inverse(mat4_t matrix)
-{
-    mat4_t result;
-    result.data[0][0] = matrix.data[0][0];
-    result.data[0][1] = matrix.data[1][0];
-    result.data[0][2] = matrix.data[2][0];
-    result.data[0][3] = 0.0f;
-    result.data[1][0] = matrix.data[0][1];
-    result.data[1][1] = matrix.data[1][1];
-    result.data[1][2] = matrix.data[2][1];
-    result.data[1][3] = 0.0f;
-    result.data[2][0] = matrix.data[0][2];
-    result.data[2][1] = matrix.data[1][2];
-    result.data[2][2] = matrix.data[2][2];
-    result.data[2][3] = 0.0f;
-    result.data[3][0] = -(matrix.data[3][0] * result.data[0][0] + matrix.data[3][1] * result.data[1][0] + matrix.data[3][2] * result.data[2][0]);
-    result.data[3][1] = -(matrix.data[3][0] * result.data[0][1] + matrix.data[3][1] * result.data[1][1] + matrix.data[3][2] * result.data[2][1]);
-    result.data[3][2] = -(matrix.data[3][0] * result.data[0][2] + matrix.data[3][1] * result.data[1][2] + matrix.data[3][2] * result.data[2][2]);
-    result.data[3][3] = 1.0f;
-    return result;
-}
-
-void mat4_print(mat4_t mat)
-{
-    printf("Matrix\n");
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            printf("%f ", mat.data[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
 float lerp(float a, float b, float f)
 {
     return (a * (1.0 - f)) + (b * f);
@@ -269,5 +56,5 @@ float lerp(float a, float b, float f)
 
 float radians(float deg)
 {
-    return deg * (M_PI / 180);
+    return (float)(deg * (M_PI / 180.0));
 }

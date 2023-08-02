@@ -8,6 +8,7 @@ in mat3 v_tbn;
 in vec3 v_tang_pos;
 in vec3 v_tang_cam_pos;
 in vec3 v_tang_light_pos;
+in vec3 v_tang_dir_light_dir;
 
 out vec4 f_color;
 
@@ -27,25 +28,23 @@ void main()
     float roughness = texture(orm_map, uv).g;
     
     vec3 normal = texture(normal_map, uv).rgb;
-    // transform normal vector to range [-1,1]
-    normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
+    normal = normalize(normal * 2.0 - 1.0); 
    
-    // get diffuse color
-    vec3 color = texture(diffuse_map, uv).rgb;
-    // ambient
-    vec3 ambient = 0.1 * color;
+    vec3 diffuse_color = texture(diffuse_map, uv).rgb;
+
+    vec3 ambient = 0.1 * diffuse_color;
+
     // diffuse
-    vec3 lightDir = normalize(v_tang_light_pos - v_tang_pos);
-    float diff = max(dot(lightDir, normal), 0.0);
-    vec3 diffuse = diff * color;
+    vec3 light_dir = normalize(-v_tang_dir_light_dir);
+    float diff = max(dot(light_dir, normal), 0.0);
+    vec3 diffuse = diff * diffuse_color;
+
     // specular
-    vec3 viewDir = normalize(v_tang_cam_pos - v_tang_pos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+    vec3 cam_dir = normalize(v_tang_cam_pos - v_tang_pos);
+    vec3 halfway_dir = normalize(light_dir + cam_dir);  
+    float spec = pow(max(dot(normal, halfway_dir), 0.0), 32.0);
 
     vec3 specular = vec3(1 - roughness) * spec;
-
     vec3 result = ambient + diffuse + specular;
 
     float gamma = 2.2;

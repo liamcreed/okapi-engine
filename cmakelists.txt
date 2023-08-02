@@ -21,6 +21,8 @@ add_executable(okapi
 src/main/main.c
 src/tools/tools.c
 src/math/math.c
+src/math/vec.c
+src/math/mat4.c
 
 src/ecs/ecs.c
 
