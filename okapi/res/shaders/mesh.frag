@@ -22,7 +22,7 @@ void main()
 {
     vec2 uv = vec2(v_uv.x, 1 - v_uv.y);
 
-    if(texture(diffuse_map, uv).a == 0)
+    if(texture(diffuse_map, uv).a < 1)
         discard;
     
     float roughness = texture(orm_map, uv).g;
@@ -48,5 +48,5 @@ void main()
     vec3 result = ambient + diffuse + specular;
 
     float gamma = 2.2;
-    f_color = vec4(pow(result, vec3(1.0/gamma)), 1);
+    f_color = vec4(pow(result, vec3(1.0/gamma)), texture(diffuse_map, uv).a);
 }

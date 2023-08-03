@@ -22,18 +22,15 @@ quat_t quat_from_euler(vec3_t euler)
     return quat_multiply(quat_multiply(x, y), z);
 }
 
-quat_t quat_normalize(quat_t quat)
+quat_t quat_normalize(quat_t q)
 {
-    float lenght = sqrt((quat.x * quat.x) + (quat.y * quat.y) + (quat.z * quat.z) + (quat.w * quat.w));
-    return (quat_t){quat.x/lenght, quat.y/lenght, quat.z/lenght, quat.w/lenght};
+    float lenght = sqrt((q.x * q.x) + (q.y * q.y) + (q.z * q.z) + (q.w * q.w));
+    return (quat_t){q.x/lenght, q.y/lenght, q.z/lenght, q.w/lenght};
 }
-quat_t quat_conjugate(quat_t quat)
+quat_t quat_conjugate(quat_t q)
 {
-    return (quat_t){-quat.x, -quat.y, -quat.z, quat.w};
+    return (quat_t){-q.x, -q.y, -q.z, q.w};
 }
-
-/* t = 2 * cross(q.xyz, v)
-v' = v + q.w * t + cross(q.xyz, t) */
 
 quat_t quat_multiply(quat_t q1, quat_t q2)
 {
@@ -48,6 +45,12 @@ quat_t quat_multiply(quat_t q1, quat_t q2)
 void quat_print(quat_t q)
 {
     printf("Quaternion: x: %f, y: %f, z: %f, w: %f\n", q.x, q.y, q.z, q.w);
+}
+
+quat_t quat_lerp(quat_t q1, quat_t q2, float f)
+{
+    quat_t result = (quat_t){0,0,0,1};
+    return result;
 }
 float lerp(float a, float b, float f)
 {

@@ -21,7 +21,7 @@ char *get_full_path(const char *path, char *file_name)
     {
         directory[i] = path[i];
     }
-    directory[path_length-l+1] = '\0';
+    directory[path_length - l + 1] = '\0';
     strcat(directory, file_name);
     return directory;
 }
@@ -35,7 +35,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
     if (gltf_result != cgltf_result_success)
     {
         printf(LOG_ERROR "[GLTF]: Failed to parse |%s|\n", file);
-        return;
+        exit(-1);
     }
     else
     {
@@ -54,7 +54,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
         }
 
         model->material_count = gltf_data->materials_count;
-        printf(LOG_GLTF "Material count: %zu\n", model->material_count);
+        //printf(LOG_GLTF "Material count: %zu\n", model->material_count);
         model->materials = malloc(model->material_count * sizeof(material_t));
 
         texture_t empty_color_map;
@@ -62,13 +62,13 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
         texture_create_from_data(&empty_color_map, empty_color_data, (vec2_t){1, 1}, false);
 
         texture_t empty_orm;
-        unsigned char empty_orm_data[] = {0, 255, 0, 0};
+        unsigned char empty_orm_data[] = {255, 255, 0, 255};
         texture_create_from_data(&empty_orm, empty_orm_data, (vec2_t){1, 1}, false);
 
         for (int mat = 0; mat < model->material_count; mat++)
         {
             model->materials[mat].name = strcat(gltf_data->materials[mat].name, "");
-            printf(LOG_GLTF "Material: %s\n", model->materials[mat].name);
+            //printf(LOG_GLTF "Material: %s\n", model->materials[mat].name);
 
             // Base color
             if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
@@ -92,8 +92,8 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
             }
             else
             {
-                model->materials[mat].orm_map= empty_orm;
-            } 
+                model->materials[mat].orm_map = empty_orm;
+            }
 
             // Normal map
             if (gltf_data->materials[mat].normal_texture.texture != NULL)
@@ -106,22 +106,20 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
             {
                 model->materials[mat].normal_map = empty_color_map;
             }
-            
         }
 
         model->mesh_count = gltf_data->meshes_count;
         model->meshes = malloc(sizeof(mesh_t) * model->mesh_count);
-        
-        printf(LOG_GLTF "Mesh Count: %u\n", model->mesh_count);
 
-        
+        //printf(LOG_GLTF "Mesh Count: %u\n", model->mesh_count);
+
         for (int m = 0; m < model->mesh_count; m++)
         {
             model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
             model->meshes[m].primitives = malloc(model->meshes[m].primitive_count * sizeof(primitive_t));
 
-            printf(LOG_GLTF "Prime count: %u\n", model->meshes[m].primitive_count);
-            printf(LOG_GLTF "Mesh name: %s\n", gltf_data->meshes[m].name);
+            //printf(LOG_GLTF "Prime count: %u\n", model->meshes[m].primitive_count);
+            //printf(LOG_GLTF "Mesh name: %s\n", gltf_data->meshes[m].name);
 
             for (int p = 0; p < model->meshes[m].primitive_count; p++)
             {
@@ -143,7 +141,7 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
                 // indices segmentaion fault
 
                 model->meshes[m].primitives[p].index_count = gltf_data->meshes[m].primitives[p].indices->count;
-                printf(LOG_GLTF "Index count: %u\n", model->meshes[m].primitives[p].index_count);
+                //printf(LOG_GLTF "Index count: %u\n", model->meshes[m].primitives[p].index_count);
 
                 void *buffer = gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->data;
                 size_t vertices_offset = gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->offset;
@@ -168,14 +166,14 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
 
                 size_t vertices_size = indices_offset - vertices_offset;
 
-                printf(LOG_GLTF "    buffer %p\n", buffer);
-                printf(LOG_GLTF "    vertices %p\n", vertices);
-                printf(LOG_GLTF "    vertices size %zu\n", vertices_size);
-                printf(LOG_GLTF "    vertices offset %zu\n", vertices_offset);
+                //printf(LOG_GLTF "    buffer %p\n", buffer);
+                //printf(LOG_GLTF "    vertices %p\n", vertices);
+                //printf(LOG_GLTF "    vertices size %zu\n", vertices_size);
+                //printf(LOG_GLTF "    vertices offset %zu\n", vertices_offset);
 
-                printf(LOG_GLTF "    indices %p\n", indices);
-                printf(LOG_GLTF "    indices size %zu\n", indices_size);
-                printf(LOG_GLTF "    indices offset %zu\n", indices_offset);
+                //printf(LOG_GLTF "    indices %p\n", indices);
+                //printf(LOG_GLTF "    indices size %zu\n", indices_size);
+                //printf(LOG_GLTF "    indices offset %zu\n", indices_offset);
 
                 vertex_array_create(&model->meshes[m].primitives[p].vertex_array);
                 vertex_array_create_vbo(&model->meshes[m].primitives[p].vertex_array, vertices, vertices_size, false);
@@ -187,31 +185,31 @@ void model_3D_create_from_file(model_3D_t *model, const char *file)
 
                     char *atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
                     if (gltf_data->meshes[m].primitives[p].attributes[atr].data->component_type != cgltf_component_type_r_32f)
+                    {
                         printf(LOG_WARNING "[GLTF]]: Attribute is not of type float!\n");
-
+                    }
+                
                     if (strcmp(atr_name, "POSITION") == 0)
                     {
-                        printf(LOG_GLTF "POSITION: offset: %zu, stride %zu\n", atr_offset, atr_stride);
+                        //printf(LOG_GLTF "POSITION: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(0, 3, atr_stride, atr_offset);
                     }
                     else if (strcmp(atr_name, "NORMAL") == 0)
                     {
-                        printf(LOG_GLTF "NORMAL: offset: %zu, stride %zu\n", atr_offset, atr_stride);
+                        //printf(LOG_GLTF "NORMAL: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(1, 3, atr_stride, atr_offset);
                     }
                     else if (strcmp(atr_name, "TEXCOORD_0") == 0)
                     {
-                        printf(LOG_GLTF "TEXCOORD_0: offset: %zu, stride %zu\n", atr_offset, atr_stride);
+                        //printf(LOG_GLTF "TEXCOORD_0: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(2, 2, atr_stride, atr_offset);
                     }
                     else if (strcmp(atr_name, "TANGENT") == 0)
                     {
-                        printf(LOG_GLTF "TANGENT: offset: %zu, stride %zu\n", atr_offset, atr_stride);
+                        //printf(LOG_GLTF "TANGENT: offset: %zu, stride %zu\n", atr_offset, atr_stride);
                         vertex_array_push_attribute(3, 4, atr_stride, atr_offset);
                     }
-                    
                 }
-
                 vertex_array_create_ibo(&model->meshes[m].primitives[p].vertex_array, indices, indices_size, false);
                 vertex_array_unbind();
                 vertex_array_unbind_buffers();
@@ -231,7 +229,7 @@ void model_3D_delete(model_3D_t *model)
         texture_delete(&model->materials->orm_map);
         texture_delete(&model->materials->normal_map);
     }
-    
+
     free(model->meshes);
     free(model->materials);
 }

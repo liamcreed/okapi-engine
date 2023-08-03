@@ -7,6 +7,12 @@ typedef struct
     uint32_t ibo;
 } vertex_array_t;
 
+typedef enum 
+{
+    atr_float,
+    atr_int,
+}va_type_t;
+
 void vertex_array_create(vertex_array_t *vertex_array);
 void vertex_array_create_vbo(vertex_array_t *vertex_array, void *vertices, size_t vertices_size, bool dynamic);
 void vertex_array_create_ibo(vertex_array_t *vertex_array, void *indices, size_t indices_size, bool dynamic);

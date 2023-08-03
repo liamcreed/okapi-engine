@@ -21,18 +21,12 @@
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.001",
-			"normalTexture":{
-				"index":0
-			},
+			"name":"Clone",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":1
+					"index":0
 				},
-				"metallicFactor":0,
-				"metallicRoughnessTexture":{
-					"index":2
-				}
+				"metallicFactor":0
 			}
 		}
 	],
@@ -57,31 +51,13 @@
 		{
 			"sampler":0,
 			"source":0
-		},
-		{
-			"sampler":0,
-			"source":1
-		},
-		{
-			"sampler":0,
-			"source":2
 		}
 	],
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"normal_map",
-			"uri":"textures/normal_map.png"
-		},
-		{
-			"mimeType":"image/png",
 			"name":"rep_inf_ep3trooper",
 			"uri":"textures/rep_inf_ep3trooper.png"
-		},
-		{
-			"mimeType":"image/png",
-			"name":"orm_map",
-			"uri":"textures/orm_map.png"
 		}
 	],
 	"accessors":[

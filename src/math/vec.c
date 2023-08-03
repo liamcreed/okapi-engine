@@ -35,15 +35,12 @@ vec3_t vec3_multiply_quat(vec3_t v, quat_t q)
     vec3_t u = (vec3_t){q.x, q.y, q.z};
     float s = q.w;
 
-
     vec3_t a = vec3_scale(u, 2.0f * vec3_dot(u, v));
     vec3_t b = vec3_scale(v, s*s - vec3_dot(u, u));              
     vec3_t c = vec3_scale(vec3_cross(u, v), (2.0f * s)); 
     
     return vec3_add(vec3_add(a,b),c);
 }
-
-
 
 void vec3_print(vec3_t vector)
 {

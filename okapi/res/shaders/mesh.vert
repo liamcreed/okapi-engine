@@ -39,7 +39,4 @@ void main()
     v_tang_dir_light_dir = TBN * vec3(0,-1,-1);
     v_tang_pos  = TBN * v_pos;
 
-//v_norm = mat3(transpose(inverse(u_model))) * a_norm; 
-   // v_uv = a_uv;
-   // v_pos = vec3(u_model * vec4(a_pos, 1.0));
 }

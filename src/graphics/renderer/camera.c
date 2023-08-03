@@ -9,7 +9,7 @@ void camera_create_perspective(camera_t* camera, float fov, float near, float fa
     camera->orthographic_size = 1;
     camera->front = (vec3_t){0,0,-1};
     camera->up = (vec3_t){0,1,0};
-    camera->yaw = -90;
+    camera->yaw = 0;
 }
 void camera_create_orthographic(camera_t* camera, float orthograpic_size)
 {

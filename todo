@@ -1,45 +1,52 @@
 
-OPENGL
-    - normal maps:
+Math
+    - cal MVP on CPU
+    - precalculating variables like x * y
+    - dot product quat
+    - more funcs for structs
 
-
-
-
+Lighting
     - lighting system multiple lights;
     - Shadows only for directtional light
+    - Bloom
+    - mist https://www.youtube.com/watch?v=qslBNLeSPUc
 
-
-    - Camera implementation
+OPengl
     - mipmap size
     - uniform buffer matrices
-    - bloom
     - Framebuffer alpha transparency
     - vertex array attrubute type in functtion
-    - mist https://www.youtube.com/watch?v=qslBNLeSPUc
     - inversing matrix 3D on the cpu
     - Instanced renderering
     - rotate quad (https://www.youtube.com/watch?v=-SQ8TlFZHbY)
 
+2D renderer:
+
 GLTF   
-    
     - Identical meshes
-    - Cubemap - frront facing
     - Lights
     - Mesh name identification for ECS
+    - fixen waarom sommige meshes er niett zijn
 
-
+Physics 
+    - maak 1 mesh met alle static collision
+    - dynamic collision met enemies
 - ECS
     -Scenes
-
-- matrix dingen kloppend maken
-
-- quattternoons
-    - https://gamedev.stackexchange.com/questions/188762/understanding-how-to-use-quaternion-to-rotate-object
-
 
 - available texture slots
 - gravity sim
 - limit framerate
 
 
+Post processing:
+    Chromatic abberation
+    vec3 col;
+    float amount = 0.001;
+    col.r = texture( u_texture, vec2(v_uv.x+amount,v_uv.y)).r;
+    col.g = texture( u_texture, v_uv).g;
+    col.b = texture( u_texture, vec2(v_uv.x-amount,v_uv.y)).b;
 
+	col *= (1.0 - amount * 0.5);
+    
+    f_color = vec4(col, 1.0f);
