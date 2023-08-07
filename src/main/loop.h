@@ -3,11 +3,11 @@
 vec3_t direction;
 
 #define WINDOW_SIZE 800
-float last_x = WINDOW_SIZE / 2;
-float last_y = WINDOW_SIZE / 2;
-float yaw = -90;
-float pitch = 0;
-float fov = 45;
+f32 last_x = WINDOW_SIZE / 2;
+f32 last_y = WINDOW_SIZE / 2;
+f32 yaw = -90;
+f32 pitch = 0;
+f32 fov = 45;
 bool first_mouse = true;
 
 void init()
@@ -16,11 +16,11 @@ void init()
 
 void update()
 {
-    float speed = 1 * window.dt;
-    const float cam_speed = 1 * window.dt;
+    f32 speed = 1 * window.dt;
+    const f32 cam_speed = 1 * window.dt;
 
-    float x_pos = window.mouse_pos.x;
-    float y_pos = window.mouse_pos.y;
+    f32 x_pos = window.mouse_pos.x;
+    f32 y_pos = window.mouse_pos.y;
 
     if (first_mouse)
     {
@@ -29,12 +29,12 @@ void update()
         first_mouse = false;
     }
 
-    float x_offset = x_pos - last_x;
-    float y_offset = last_y - y_pos;
+    f32 x_offset = x_pos - last_x;
+    f32 y_offset = last_y - y_pos;
     last_x = x_pos;
     last_y = y_pos;
 
-    const float sensitivity = 0.1f;
+    const f32 sensitivity = 0.1f;
     x_offset *= sensitivity;
     y_offset *= sensitivity;
 
@@ -78,10 +78,10 @@ void update()
 
 
 vec3_t player_pos = (vec3_t){0, 0, 2.5};
-    float player_y_rot = 0;
+    f32 player_y_rot = 0;
 
-    float last_x = window.size.x / 2;
-    float last_y = window.size.y / 2;
+    f32 last_x = window.size.x / 2;
+    f32 last_y = window.size.y / 2;
     bool first_mouse = true;
 
 
@@ -92,8 +92,8 @@ vec3_t player_pos = (vec3_t){0, 0, 2.5};
 
 
 
-float x_pos = window.mouse_pos.x;
-float y_pos = window.mouse_pos.y;
+f32 x_pos = window.mouse_pos.x;
+f32 y_pos = window.mouse_pos.y;
 
 if (first_mouse)
 {
@@ -102,26 +102,26 @@ if (first_mouse)
     first_mouse = false;
 }
 
-float x_offset = x_pos - last_x;
-float y_offset = last_y - y_pos;
+f32 x_offset = x_pos - last_x;
+f32 y_offset = last_y - y_pos;
 last_x = x_pos;
 last_y = y_pos;
 
-const float sensitivity = 0.1f;
+const f32 sensitivity = 0.1f;
 x_offset *= sensitivity;
 y_offset *= sensitivity;
 
 camera.pitch += y_offset;
 camera.yaw += x_offset;
 
-static float radius = 5;
+static f32 radius = 5;
 if (key_pressed(&window, KEY_UP))
     radius += 10 * window.dt;
 else if (key_pressed(&window, KEY_DOWN))
     radius -= 10 * window.dt;
 
-float x;
-float z;
+f32 x;
+f32 z;
 if (key_pressed(&window, KEY_A))
     x = -1;
 else if (key_pressed(&window, KEY_D))
@@ -144,19 +144,19 @@ if (x != 0 && z != 0)
 if (x != 0 || z != 0)
     player_y_rot = -camera.yaw;
 
-float speed = radius * window.dt;
+f32 speed = radius * window.dt;
 if (key_pressed(&window, KEY_LEFT_SHIFT))
     speed *= 2;
 
-quat_t cam_quat = quat_from_euler((vec3_t){0, -camera.yaw, 0});
+vec4_t cam_quat = quat_from_euler((vec3_t){0, -camera.yaw, 0});
 vec3_t speed_vec = (vec3_t){x * speed, 0, z *speed};
 vec3_t movement = vec3_multiply_quat(speed_vec, cam_quat);
 player_pos = vec3_add(player_pos, movement);
 
-float hor_dist = radius * cos(radians(camera.pitch));
-float vert_dist = radius * sin(radians(camera.pitch));
-float cam_x_offset = hor_dist * sin(radians(180 - camera.yaw));
-float cam_z_offset = hor_dist * cos(radians(180 - camera.yaw));
+f32 hor_dist = radius * cos(radians(camera.pitch));
+f32 vert_dist = radius * sin(radians(camera.pitch));
+f32 cam_x_offset = hor_dist * sin(radians(180 - camera.yaw));
+f32 cam_z_offset = hor_dist * cos(radians(180 - camera.yaw));
 
 camera.pos.x = player_pos.x - cam_x_offset;
 camera.pos.y = lerp(camera.pos.y, player_pos.y - vert_dist, 0.8);

@@ -25,7 +25,7 @@ void ecs_reset_entity_values(ecs_scene_t *scene, entity_t e)
 
 entity_t ecs_create_entity(ecs_scene_t *scene, const char *name)
 {
-    unsigned int e = 0;
+    u32 e = 0;
 
     if (scene->entity_count != MAX_ENTITIES)
     {
@@ -60,7 +60,7 @@ void ecs_delete_entity(ecs_scene_t *scene, entity_t *entity)
 
 void ecs_update(ecs_scene_t *scene, window_t *window, renderer_t *renderer)
 {
-    for (unsigned int i = 1; i <= scene->entity_count; i++)
+    for (u32 i = 1; i <= scene->entity_count; i++)
     {
         if (scene->data_components[i].active)
         {

@@ -2,11 +2,11 @@
 
 typedef struct
 {
-    float fov, near, far;
+    f32 fov, near, far;
     
     bool orthographic;
-    float orthographic_size;
+    f32 orthographic_size;
 } camera_t;
 
-void camera_create_perspective(camera_t *camera, float fov, float near, float far);
-void camera_create_orthographic(camera_t *camera, float orthograpic_size);
+void camera_create_perspective(camera_t *camera);
+void camera_create_orthographic(camera_t *camera);

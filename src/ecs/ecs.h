@@ -1,14 +1,14 @@
 #pragma once
 
 #define MAX_ENTITIES 100
-typedef uint32_t entity_t;
+typedef u32 entity_t;
 
 typedef struct
 {
     const char *name;
     const char *type;
     bool active;
-    int layer;
+    i32 layer;
 } data_component_s;
 
 typedef struct
@@ -21,7 +21,7 @@ typedef struct
 
 typedef struct
 {
-    int entity_count;
+    u32 entity_count;
     data_component_s data_components[MAX_ENTITIES + 1];
     transform_component_s transform_components[MAX_ENTITIES + 1];
 } ecs_scene_t;

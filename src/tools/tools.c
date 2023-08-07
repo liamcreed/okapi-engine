@@ -7,10 +7,10 @@ void write_data_to_binary_file(unsigned char* buffer, const char* file_path)
 
 char *get_full_path_from_other(const char *path, char *file_name)
 {
-    int path_length = strlen(path);
-    int l;
+    u32 path_length = strlen(path);
+    u32 l;
 
-    for (int i = 0; i < path_length; i++)
+    for (u32 i = 0; i < path_length; i++)
     {
         if (path[path_length - i] == '/')
         {
@@ -19,7 +19,7 @@ char *get_full_path_from_other(const char *path, char *file_name)
         }
     }
     char *directory = malloc(sizeof(char) * 100);
-    for (int i = 0; i < path_length - l + 1; i++)
+    for (u32 i = 0; i < path_length - l + 1; i++)
     {
         directory[i] = path[i];
     }

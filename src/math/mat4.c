@@ -1,11 +1,11 @@
 #include "math/math.h"
 
-mat4_t mat4_new(float value)
+mat4_t mat4_new(f32 value)
 {
     mat4_t m;
-    for (int i = 0; i < 4; i++)
+    for (u32 i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 4; j++)
+        for (u32 j = 0; j < 4; j++)
         {
             if (i == j)
                 m.data[i][j] = value;
@@ -15,7 +15,7 @@ mat4_t mat4_new(float value)
     }
     return m;
 }
-mat4_t mat4_ortho(float left, float right, float top, float bottom, float near, float far)
+mat4_t mat4_ortho(f32 left, f32 right, f32 top, f32 bottom, f32 near, f32 far)
 {
     mat4_t result;
 
@@ -41,15 +41,15 @@ mat4_t mat4_ortho(float left, float right, float top, float bottom, float near, 
 
     return result;
 }
-mat4_t mat4_ortho_aspect(float aspect, float size, float near, float far)
+mat4_t mat4_ortho_aspect(f32 aspect, f32 size, f32 near, f32 far)
 {
     return mat4_ortho(-aspect * size, aspect * size, size, -size, near, far);
 }
 
-mat4_t mat4_perspective(float fov, float aspect, float near, float far)
+mat4_t mat4_perspective(f32 fov, f32 aspect, f32 near, f32 far)
 {
     mat4_t result;
-    float f = tan((radians(fov)) / 2);
+    f32 f = tan((radians(fov)) / 2);
 
     result.data[0][0] = 1 / (aspect * f);
     result.data[1][0] = 0;
@@ -61,7 +61,7 @@ mat4_t mat4_perspective(float fov, float aspect, float near, float far)
     result.data[2][1] = 0;
     result.data[3][1] = 0;
 
-    float far_min_near = far - near;
+    f32 far_min_near = far - near;
     result.data[0][2] = 0;
     result.data[1][2] = 0;
     result.data[2][2] = -(far + near) / far_min_near;
@@ -117,31 +117,31 @@ mat4_t mat4_translate(mat4_t m, vec3_t vector)
     result.data[3][3] = m.data[3][0] * vector.x + m.data[3][1] * vector.y + m.data[3][2] * vector.z + m.data[3][3];
     return result;
 }
-mat4_t mat4_rotate_x(mat4_t m, float deg)
+mat4_t mat4_rotate_x(mat4_t m, f32 deg)
 {
-    quat_t q = quat_angle_axis(deg, (vec3_t){1,0,0});
+    vec4_t q = quat_angle_axis(deg, (vec3_t){1,0,0});
     return mat4_multiply(m, mat4_from_quat(q));
 }
-mat4_t mat4_rotate_y(mat4_t m, float deg)
+mat4_t mat4_rotate_y(mat4_t m, f32 deg)
 {
-    quat_t q = quat_angle_axis(deg, (vec3_t){0,1,0});
+    vec4_t q = quat_angle_axis(deg, (vec3_t){0,1,0});
     return mat4_multiply(m, mat4_from_quat(q));
 }
-mat4_t mat4_rotate_z(mat4_t m, float deg)
+mat4_t mat4_rotate_z(mat4_t m, f32 deg)
 {
-    quat_t q = quat_angle_axis(deg, (vec3_t){0,0,1});
+    vec4_t q = quat_angle_axis(deg, (vec3_t){0,0,1});
     return mat4_multiply(m, mat4_from_quat(q));
 }
 
 mat4_t mat4_rotate(mat4_t m, vec3_t v)
 {
-    quat_t q = quat_from_euler(v);
+    vec4_t q = quat_from_euler(v);
     return mat4_multiply(m, mat4_from_quat(q));
 }   
 
 
 
-mat4_t mat4_scale(mat4_t m, float factor)
+mat4_t mat4_scale(mat4_t m, f32 factor)
 {
     mat4_t result = mat4_new(1);
     result.data[0][0] = factor;
@@ -154,11 +154,11 @@ mat4_t mat4_multiply(mat4_t m1, mat4_t m2)
 {
     mat4_t result = mat4_new(0);
 
-    for (int i = 0; i < 4; i++)
+    for (u32 i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 4; j++)
+        for (u32 j = 0; j < 4; j++)
         {
-            for (int k = 0; k < 4; k++)
+            for (u32 k = 0; k < 4; k++)
             {
                 result.data[i][j] += m1.data[i][k] * m2.data[k][j];
             }
@@ -190,17 +190,17 @@ mat4_t mat4_inverse(mat4_t m)
     result.data[3][3] = 1.0f; */
 }
 
-mat4_t mat4_from_quat(quat_t q)
+mat4_t mat4_from_quat(vec4_t q)
 {
-    float xy = q.x * q.y;
-    float xz = q.x * q.z;
-    float xw = q.x * q.w;
-    float yz = q.y * q.z;
-    float yw = q.y * q.w;
-    float zw = q.z * q.w;
-    float xx = q.x * q.x;
-    float yy = q.y * q.y;
-    float zz = q.z * q.z;
+    f32 xy = q.x * q.y;
+    f32 xz = q.x * q.z;
+    f32 xw = q.x * q.w;
+    f32 yz = q.y * q.z;
+    f32 yw = q.y * q.w;
+    f32 zw = q.z * q.w;
+    f32 xx = q.x * q.x;
+    f32 yy = q.y * q.y;
+    f32 zz = q.z * q.z;
 
     mat4_t result;
     /* result.data[0][0] = 1 - 2 * (yy + zz);
@@ -244,7 +244,7 @@ mat4_t mat4_from_quat(quat_t q)
     result.data[3][3] = 1;
     return result;
 }
-mat4_t mat4_1D_to_2D(float* m)
+mat4_t mat4_1D_to_2D(f32* m)
 {
     mat4_t result;
     /* result.data[0][0] = m[0];
@@ -293,9 +293,9 @@ mat4_t mat4_1D_to_2D(float* m)
 void mat4_print(mat4_t mat)
 {
     printf("Matrix\n");
-    for (int i = 0; i < 4; i++)
+    for (u32 i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 4; j++)
+        for (u32 j = 0; j < 4; j++)
         {
             printf("%f ", mat.data[i][j]);
         }

@@ -2,7 +2,11 @@ TODO:
 
 rework image system
 rework frambuffer system
+    window resize create framebuffer again;
 
+geometry shader for skeletons
+
+check for creating if everthing is initialized
 export images as binary file
 export gltf data as binary
 

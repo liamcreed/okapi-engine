@@ -14,8 +14,7 @@ void window_create(window_t *window)
         printf(LOG_ERROR "[OPENGL]: failed to init GLFW!\n");
         exit(-1);
     }
-    else
-        printf(LOG_INFO "[OPENGL]: initialized GLFW!\n");
+   
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -34,10 +33,7 @@ void window_create(window_t *window)
         printf(LOG_ERROR "[OPENGL]: failed to init GLAD!\n");
         exit(-1);
     }
-    else
-    {
-        printf(LOG_INFO "[OPENGL]: initialized GLAD!\n");
-    }
+
 
     if (window == NULL)
         printf("[ERROR]: Failed to create GLFW window!\n");
@@ -61,7 +57,7 @@ void window_update(window_t *window)
         window->closed = true;
     if (key_pressed(window, KEY_BACKSPACE))
         window->closed = true;
-    int size_x, size_y;
+    i32 size_x, size_y;
     glfwGetWindowSize(window->glfw, &size_x, &size_y);
     window->size.x = size_x;
     window->size.y = size_y;
@@ -72,20 +68,20 @@ void window_update(window_t *window)
     else if (key_pressed(window, KEY_ESCAPE) && !window->cursor)
         glfwSetInputMode(window->glfw, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-    double x, y;
+    f64 x, y;
     glfwGetCursorPos(window->glfw, &x, &y);
     window->mouse_pos.x = x;
     window->mouse_pos.y = y;
 
-    static float lf = 0.0f;
-    float cf = (float)glfwGetTime();
+    static f32 lf = 0.0f;
+    f32 cf = (f32)glfwGetTime();
     window->dt = cf - lf;
     lf = cf;
 
     //----FPS----//
-    static float count;
+    static f32 count;
     count++;
-    static float average;
+    static f32 average;
     if (count <= 100)
     {
         average += 1 / window->dt / 100;

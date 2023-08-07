@@ -11,5 +11,11 @@
     "window.zoomLevel": -0.9,
     "git.ignoreMissingGitWarning": true,
     "cmake.configureOnOpen": true,
-    "workbench.colorTheme": "crayon-vscode"
+    "workbench.colorTheme": "crayon-vscode",
+    "hexeditor.columnWidth": 16,
+    "hexeditor.showDecodedText": true,
+    "hexeditor.defaultEndianness": "little",
+    "hexeditor.inspectorType": "aside",
+    "workbench.activityBar.visible": false,
+    "C_Cpp.formatting":"vcFormat"
 }

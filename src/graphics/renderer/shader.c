@@ -1,13 +1,12 @@
 #include "graphics/graphics.h"
 
-void shader_create(shader_t *shader, const char *vert_file_path, const char *frag_file_path)
+void shader_create(shader_t* shader)
 {
     long length;
-    FILE *v_file = fopen(vert_file_path, "rb");
+    FILE *v_file = fopen(shader->v_path, "rb");
     if (v_file == NULL)
-    {
-        printf(LOG_ERROR "[Shader]: Failed to open: %s\n", vert_file_path);
-    }
+        printf(LOG_ERROR "[Shader]: Failed to open: %s\n", shader->v_path);
+
     fseek(v_file, 0, SEEK_END);
     length = ftell(v_file);
     fseek(v_file, 0, SEEK_SET);
@@ -17,11 +16,10 @@ void shader_create(shader_t *shader, const char *vert_file_path, const char *fra
     v_source[length] = '\0';
 
     length = 0;
-    FILE *f_file = fopen(frag_file_path, "rb");
+    FILE *f_file = fopen(shader->f_path, "rb");
     if (f_file == NULL)
-    {
-        printf(LOG_ERROR "[Shader]: Failed to open: %s\n", frag_file_path);
-    }
+        printf(LOG_ERROR "[Shader]: Failed to open: %s\n", shader->f_path);
+
     fseek(f_file, 0, SEEK_END);
     length = ftell(f_file);
     fseek(f_file, 0, SEEK_SET);
@@ -32,28 +30,24 @@ void shader_create(shader_t *shader, const char *vert_file_path, const char *fra
 
     const char *v_src = v_source;
     const char *f_src = f_source;
-    /*     printf("%s\n", v_src);
-        printf("%s\n", f_src); */
 
-    uint32_t v_shader;
+    u32 v_shader;
     v_shader = glCreateShader(GL_VERTEX_SHADER);
 
     glShaderSource(v_shader, 1, &v_src, NULL);
     glCompileShader(v_shader);
 
-    int succ;
+    i32 succ;
     char log[512];
     glGetShaderiv(v_shader, GL_COMPILE_STATUS, &succ);
     if (!succ)
     {
         glGetShaderInfoLog(v_shader, 512, NULL, log);
-        printf(LOG_ERROR "[%s]: %s\n", vert_file_path, log);
+        printf(LOG_ERROR "[%s]: %s\n", shader->v_path, log);
         exit(-1);
     }
-    else
-        printf(LOG_INFO "[shader]: compiled vertex shader succesfully!\n");
 
-    uint32_t f_shader;
+    u32 f_shader;
     f_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(f_shader, 1, &f_src, NULL);
     glCompileShader(f_shader);
@@ -62,7 +56,7 @@ void shader_create(shader_t *shader, const char *vert_file_path, const char *fra
     if (!succ)
     {
         glGetShaderInfoLog(f_shader, 512, NULL, log);
-        printf(LOG_ERROR "[%s]: %s\n", frag_file_path, log);
+        printf(LOG_ERROR "[%s]: %s\n", shader->f_path, log);
         exit(-1);
     }
 
@@ -98,7 +92,7 @@ void shader_delete(shader_t *shader)
 
 void shader_set_uniform_mat4(shader_t *shader, const char *name, mat4_t matrix)
 {
-    int loc = glGetUniformLocation(shader->id, name);
+    i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
     {
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
@@ -107,9 +101,9 @@ void shader_set_uniform_mat4(shader_t *shader, const char *name, mat4_t matrix)
     
     glProgramUniformMatrix4fv(shader->id, loc, 1, GL_TRUE, &matrix.data[0][0]);
 }
-void shader_set_uniform_mat4_arr(shader_t *shader, const char *name, mat4_t* matrices, uint32_t count)
+void shader_set_uniform_mat4_arr(shader_t *shader, const char *name, mat4_t* matrices, u32 count)
 {
-    int loc = glGetUniformLocation(shader->id, name);
+    i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
     {
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
@@ -119,9 +113,9 @@ void shader_set_uniform_mat4_arr(shader_t *shader, const char *name, mat4_t* mat
     glProgramUniformMatrix4fv(shader->id, loc, count, GL_TRUE, &matrices->data[0][0]);
 }
 
-void shader_set_uniform_int(shader_t *shader, const char *name, int data)
+void shader_set_uniform_int(shader_t *shader, const char *name, i32 data)
 {
-    int loc = glGetUniformLocation(shader->id, name);
+    i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
     {
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
@@ -130,9 +124,9 @@ void shader_set_uniform_int(shader_t *shader, const char *name, int data)
     glProgramUniform1i(shader->id, loc, data);
 }
 
-void shader_set_uniform_int_arr(shader_t *shader, const char *name, int *data, uint32_t count)
+void shader_set_uniform_int_arr(shader_t *shader, const char *name, i32 *data, u32 count)
 {
-    int loc = glGetUniformLocation(shader->id, name);
+    i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
     {
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
@@ -142,7 +136,7 @@ void shader_set_uniform_int_arr(shader_t *shader, const char *name, int *data, u
 }
 void shader_set_uniform_vec4(shader_t *shader, const char *name, vec4_t data)
 {
-    int loc = glGetUniformLocation(shader->id, name);
+    i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
     {
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
@@ -153,7 +147,7 @@ void shader_set_uniform_vec4(shader_t *shader, const char *name, vec4_t data)
 
 void shader_set_uniform_vec3(shader_t *shader, const char *name, vec3_t data)
 {
-    int loc = glGetUniformLocation(shader->id, name);
+    i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
     {
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);

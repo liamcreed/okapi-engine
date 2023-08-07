@@ -3,10 +3,10 @@
 typedef struct mesh_joint_t mesh_joint_t;
 struct mesh_joint_t
 {
-    uint32_t id;
+    u32 id;
     char *name;
     mesh_joint_t *children;
-    uint32_t child_count;
+    u32 child_count;
     mesh_joint_t *parent;
     mat4_t inverse_bind_transform;
 };
@@ -14,19 +14,19 @@ struct mesh_joint_t
 typedef struct
 {
     vec3_t scale;
-    float time;
+    f32 time;
 } key_frame_scale_t;
 
 typedef struct
 {
-    quat_t rotation;
-    float time;
+    vec4_t rotation;
+    f32 time;
 } key_frame_rot_t;
 
 typedef struct
 {
     vec3_t position;
-    float time;
+    f32 time;
 } key_frame_trans_t;
 
 #define MAX_KEY_FRAME_COUNT 1
@@ -42,10 +42,10 @@ typedef struct
 {
     const char *name;
     mesh_joint_t root_joint;
-    uint32_t joint_count;
+    u32 joint_count;
 } mesh_armature_t;
 
-void mesh_animation_play(mesh_armature_t *armature, mesh_animation_t *animation, float dt);
+void mesh_animation_play(mesh_armature_t *armature, mesh_animation_t *animation, f32 dt);
 
 
 typedef struct
@@ -56,37 +56,35 @@ typedef struct
     const char *name;
 } mesh_material_t;
 
-typedef struct
+typedef struct 
 {
-    vec3_t position;
-    vec3_t normal;
-    vec2_t uv;
-    //vec4_t tangent;
-    //vec4_t joint_id;
-    //vec4_t weights;
-} mesh_vertex_t;
+    size_t size;
+    size_t offset;
+    size_t stride;
+}mesh_vertex_attribute_t;
 
-
+#define MAX_ATTRIBUTE_COUNT 7
 typedef struct
 {
     mesh_material_t *material;
     vertex_array_t vertex_array;
 
-    mesh_vertex_t* vertices;
-    uint32_t vertex_count;
+    void* vertices;
+    u32 vertex_size;
     
-    uint32_t* indices;
-    uint32_t index_count;
-    uint32_t index_type;
+    u32* indices;
+    u32 index_count;
+    u32 index_type;
 
-    uint32_t attribute_count;
+    u32 attribute_count;
+    mesh_vertex_attribute_t attributes[MAX_ATTRIBUTE_COUNT]
 } mesh_primitive_t;
 
 #define MAX_PRIMITIVE_COUNT 8
 typedef struct
 {
     mesh_primitive_t primitives[MAX_PRIMITIVE_COUNT];
-    uint32_t primitive_count;
+    u32 primitive_count;
 
     const char *name;
 } mesh_t;
@@ -97,16 +95,17 @@ typedef struct
 typedef struct
 {
     mesh_t meshes[MAX_MESH_COUNT];
-    uint32_t mesh_count;
+    u32 mesh_count;
 
     mesh_material_t materials[MAX_MATERIAL_COUNT];
-    uint32_t material_count;
+    u32 material_count;
+
     mat4_t transform;
 
-    mesh_armature_t armature;
+    /* mesh_armature_t armature;
 
     mesh_animation_t animations[MAX_ANIMATIONS_COUNT];
-    uint32_t animation_count;
+    u32 animation_count; */
 } model_3D_t;
 
 void model_3D_create_from_file(model_3D_t *model, const char *path);

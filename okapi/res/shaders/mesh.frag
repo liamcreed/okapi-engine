@@ -28,10 +28,11 @@ void main()
     vec3 light_dir = normalize(-vec3(-1,0, -1));
     float diff = max(dot(v_norm, light_dir), 0.0);
 
-    float max = 0.2;
-    if(diff > max)
+    if(diff > 0.3)
+        diff = 0.5;
+    else if( diff > 0.04)
         diff = 0.3;
-    else if(diff < max)
+    else if(diff < 0.1)
         diff = 0;
     
     vec3 diffuse = diff * diffuse_color;
