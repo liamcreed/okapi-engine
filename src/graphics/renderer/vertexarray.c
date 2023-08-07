@@ -66,9 +66,19 @@ void vertex_array_unbind()
 {
     glBindVertexArray(0);
 }
-void vertex_array_push_attribute(uint32_t index, uint32_t size, size_t stride, size_t offset)
+void vertex_array_push_attribute_f(uint32_t index, uint32_t size, size_t stride, size_t offset)
 {
     glVertexAttribPointer(index, size, GL_FLOAT, GL_FALSE, stride, (void *)offset);
+    glEnableVertexAttribArray(index);
+}
+void vertex_array_push_attribute_i(uint32_t index, uint32_t size, size_t stride, size_t offset)
+{
+    glVertexAttribIPointer(index, size, GL_INT, stride, (void *)offset);
+    glEnableVertexAttribArray(index);
+}
+void vertex_array_push_attribute_ub(uint32_t index, uint32_t size, size_t stride, size_t offset)
+{
+    glVertexAttribIPointer(index, size, GL_UNSIGNED_BYTE, stride, (void *)offset);
     glEnableVertexAttribArray(index);
 }
 void vertex_array_delete(vertex_array_t *vertex_array)

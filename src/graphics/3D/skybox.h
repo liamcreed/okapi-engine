@@ -16,4 +16,4 @@ typedef struct
 
 void cubemap_load_from_files(cubemap_t* cubemap, const char** files, uint32_t count, bool filter);
 
-void skybox_load_from_files(skybox_t* skybox, const char** files, bool filter);
+void skybox_create_from_files(skybox_t* skybox, const char** files, bool filter);

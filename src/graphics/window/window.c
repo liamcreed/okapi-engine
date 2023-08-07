@@ -1,15 +1,13 @@
 #include "graphics/graphics.h"
 
-
-
-void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
+void window_create(window_t *window)
 {
-    window->closed = 1;
-    window->size = size;
-    window->title = title;
-    window->vsync = vsync;
-    window->fullscreen = 0;
-    window->minimized = 0;
+    window->closed = true;
+    window->aspect = window->size.x/window->size.y;
+    
+    window->fullscreen = false;
+    window->minimized = false;
+    window->cursor = true;
 
     if (!glfwInit())
     {
@@ -18,7 +16,7 @@ void window_create(window_t *window, vec2_t size, const char *title, bool vsync)
     }
     else
         printf(LOG_INFO "[OPENGL]: initialized GLFW!\n");
-
+    
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -69,8 +67,6 @@ void window_update(window_t *window)
     window->size.y = size_y;
     window->aspect = window->size.x / window->size.y;
 
-    
-
     if (key_pressed(window, KEY_ESCAPE) && window->cursor)
         glfwSetInputMode(window->glfw, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     else if (key_pressed(window, KEY_ESCAPE) && !window->cursor)
@@ -85,6 +81,23 @@ void window_update(window_t *window)
     float cf = (float)glfwGetTime();
     window->dt = cf - lf;
     lf = cf;
+
+    //----FPS----//
+    static float count;
+    count++;
+    static float average;
+    if (count <= 100)
+    {
+        average += 1 / window->dt / 100;
+    }
+    else
+    {
+        char str[100];
+        sprintf(str, "OKAPI -  FPS: %i", (int)average);
+        glfwSetWindowTitle(window->glfw, str);
+        average = 0;
+        count = 0;
+    }
 }
 void window_exit(window_t *window)
 {

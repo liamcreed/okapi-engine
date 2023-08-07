@@ -170,7 +170,9 @@ mat4_t mat4_multiply(mat4_t m1, mat4_t m2)
 mat4_t mat4_inverse(mat4_t m)
 {
     mat4_t result;
-    result.data[0][0] = m.data[0][0];
+    
+    return result;
+    /* result.data[0][0] = m.data[0][0];
     result.data[0][1] = m.data[1][0];
     result.data[0][2] = m.data[2][0];
     result.data[0][3] = 0.0f;
@@ -185,8 +187,7 @@ mat4_t mat4_inverse(mat4_t m)
     result.data[3][0] = -(m.data[3][0] * result.data[0][0] + m.data[3][1] * result.data[1][0] + m.data[3][2] * result.data[2][0]);
     result.data[3][1] = -(m.data[3][0] * result.data[0][1] + m.data[3][1] * result.data[1][1] + m.data[3][2] * result.data[2][1]);
     result.data[3][2] = -(m.data[3][0] * result.data[0][2] + m.data[3][1] * result.data[1][2] + m.data[3][2] * result.data[2][2]);
-    result.data[3][3] = 1.0f;
-    return result;
+    result.data[3][3] = 1.0f; */
 }
 
 mat4_t mat4_from_quat(quat_t q)
@@ -197,31 +198,96 @@ mat4_t mat4_from_quat(quat_t q)
     float yz = q.y * q.z;
     float yw = q.y * q.w;
     float zw = q.z * q.w;
-    float x_sqr = q.x * q.x;
-    float y_sqr = q.y * q.y;
-    float z_sqr = q.z * q.z;
+    float xx = q.x * q.x;
+    float yy = q.y * q.y;
+    float zz = q.z * q.z;
 
     mat4_t result;
-    result.data[0][0] = 1 - 2 * (y_sqr + z_sqr);
+    /* result.data[0][0] = 1 - 2 * (yy + zz);
     result.data[1][0] = 2 * (xy - zw);
     result.data[2][0] = 2 * (xz + yw);
     result.data[3][0] = 0;
 
     result.data[0][1] = 2 * (xy + zw);
-    result.data[1][1] = 1 - 2 * (x_sqr + z_sqr);
+    result.data[1][1] = 1 - 2 * (xx + zz);
     result.data[2][1] = 2 * (yz - xw);
     result.data[3][1] = 0;
 
     result.data[0][2] = 2 * (xz - yw);
     result.data[1][2] = 2 * (yz + xw);
-    result.data[2][2] = 1 - 2 * (x_sqr + y_sqr);
+    result.data[2][2] = 1 - 2 * (xx + yy);
     result.data[3][2] = 0;
 
     result.data[0][3] = 0;
     result.data[1][3] = 0;
     result.data[2][3] = 0;
+    result.data[3][3] = 1; */
+
+    result.data[0][0] = 1 - 2 * (yy + zz);
+    result.data[0][1] = 2 * (xy - zw);
+    result.data[0][2] = 2 * (xz + yw);
+    result.data[0][3] = 0;
+
+    result.data[1][0] = 2 * (xy + zw);
+    result.data[1][1] = 1 - 2 * (xx + zz);
+    result.data[1][2] = 2 * (yz - xw);
+    result.data[1][3] = 0;
+
+    result.data[2][0] = 2 * (xz - yw);
+    result.data[2][1] = 2 * (yz + xw);
+    result.data[2][2] = 1 - 2 * (xx + yy);
+    result.data[2][3] = 0;
+
+    result.data[3][0] = 0;
+    result.data[3][1] = 0;
+    result.data[3][2] = 0;
     result.data[3][3] = 1;
     return result;
+}
+mat4_t mat4_1D_to_2D(float* m)
+{
+    mat4_t result;
+    /* result.data[0][0] = m[0];
+    result.data[0][1] = m[1];
+    result.data[0][2] = m[2];
+    result.data[0][3] = m[3];
+
+    result.data[1][0] = m[4];
+    result.data[1][1] = m[5];
+    result.data[1][2] = m[6];
+    result.data[1][3] = m[7];
+
+    result.data[2][0] = m[8];
+    result.data[2][1] = m[9];
+    result.data[2][2] = m[10];
+    result.data[2][3] = m[11];
+
+    result.data[3][0] = m[12];
+    result.data[3][1] = m[13];
+    result.data[3][2] = m[14];
+    result.data[3][3] = m[15]; */
+
+    result.data[0][0] = m[0];
+    result.data[1][0] = m[1];
+    result.data[2][0] = m[2];
+    result.data[3][0] = m[3];
+    
+    result.data[0][1] = m[4];
+    result.data[1][1] = m[5];
+    result.data[2][1] = m[6];
+    result.data[3][1] = m[7];
+
+    result.data[0][2] = m[8];
+    result.data[1][2] = m[9];
+    result.data[2][2] = m[10];
+    result.data[3][2] = m[11];
+
+    result.data[0][3] = m[12];
+    result.data[1][3] = m[13];
+    result.data[2][3] = m[14];
+    result.data[3][3] = m[15];
+    return result;
+    
 }
 
 void mat4_print(mat4_t mat)
@@ -231,7 +297,7 @@ void mat4_print(mat4_t mat)
     {
         for (int j = 0; j < 4; j++)
         {
-            printf("%f ", mat.data[j][i]);
+            printf("%f ", mat.data[i][j]);
         }
         printf("\n");
     }

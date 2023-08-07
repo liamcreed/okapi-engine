@@ -93,7 +93,7 @@ void cubemap_load_from_files(cubemap_t *cubemap, const char **files, uint32_t co
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
-void skybox_load_from_files(skybox_t *skybox, const char **files, bool filter)
+void skybox_create_from_files(skybox_t *skybox, const char **files, bool filter)
 {
     skybox->vertices = skybox_vertices;
     if(skybox->vertices == NULL)
@@ -103,7 +103,7 @@ void skybox_load_from_files(skybox_t *skybox, const char **files, bool filter)
 
     vertex_array_create(&skybox->va);
     vertex_array_create_vbo(&skybox->va, skybox->vertices, sizeof(skybox_vertices), false);
-    vertex_array_push_attribute(0, 3, 3 * sizeof(float), 0);
+    vertex_array_push_attribute_f(0, 3, 3 * sizeof(float), 0);
     vertex_array_unbind();
     vertex_array_unbind_buffers(); 
 }

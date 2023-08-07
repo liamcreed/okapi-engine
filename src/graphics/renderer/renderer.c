@@ -1,4 +1,5 @@
 #include "graphics/graphics.h"
+
 float quad_vertices[] = {
     -1.0f, 1.0f, 0.0f, 1.0f,
     -1.0f, -1.0f, 0.0f, 0.0f,
@@ -8,29 +9,32 @@ float quad_vertices[] = {
     1.0f, -1.0f, 1.0f, 0.0f,
     1.0f, 1.0f, 1.0f, 1.0f};
 
-void renderer_create(renderer_t *renderer, window_t *window, vec4_t clear_color, float resolution_scale)
+void renderer_create(renderer_t *renderer)
 {
-    renderer->window = window;
-    renderer->clear_color = clear_color;
-    renderer->resolution_scale = resolution_scale;
-
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    /* glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK); */
+    /*glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);*/
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     shader_create(&renderer->mesh_shader, "./res/shaders/mesh.vert", "./res/shaders/mesh.frag");
+    shader_create(&renderer->anim_mesh_shader, "./res/shaders/mesh.vert", "./res/shaders/mesh.frag");
     shader_create(&renderer->skybox_shader, "./res/shaders/skybox.vert", "./res/shaders/skybox.frag");
     shader_create(&renderer->quad_shader, "res/shaders/quad.vert", "res/shaders/quad.frag");
 
-    framebuffer_create(&renderer->scene_buffer, (vec2_t){renderer->window->size.x * resolution_scale, renderer->window->size.y * resolution_scale}, false);
+    if(renderer->resolution.x == 0)
+        renderer->resolution = renderer->window->size;
+        
+    vec3_print((vec3_t){renderer->resolution.x, renderer->resolution.y});
+    framebuffer_create(&renderer->scene_buffer, renderer->resolution, true, true, true, 0);
+    framebuffer_create(&renderer->pp_buffer, renderer->resolution, true, false, false, 0);
+
     vertex_array_create(&renderer->scene_buffer_va);
     vertex_array_create_vbo(&renderer->scene_buffer_va, quad_vertices, sizeof(quad_vertices), false);
-    vertex_array_push_attribute(0, 2, 4 * sizeof(float), 0);
-    vertex_array_push_attribute(1, 2, 4 * sizeof(float), 2 * sizeof(float));
+    vertex_array_push_attribute_f(0, 2, 4 * sizeof(float), 0);
+    vertex_array_push_attribute_f(1, 2, 4 * sizeof(float), 2 * sizeof(float));
     vertex_array_unbind();
     vertex_array_unbind_buffers();
     shader_create(&renderer->pp_shader, "./res/shaders/pp.vert", "./res/shaders/pp.frag");
@@ -38,11 +42,28 @@ void renderer_create(renderer_t *renderer, window_t *window, vec4_t clear_color,
 
 void renderer_start(renderer_t *renderer)
 {
-    framebuffer_bind(&renderer->scene_buffer);
-    renderer_clear(renderer);
+    int u = glGetError();
+    if (u != 0)
+    {
+        printf(OPENGL_ERROR "%u\n", u);
+        exit(-1);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer->scene_buffer.fbo);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, renderer->scene_buffer.size.x, renderer->scene_buffer.size.y);
+
+    glClearColor(renderer->clear_color.x, renderer->clear_color.y, renderer->clear_color.z, renderer->clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader_set_uniform_mat4(&renderer->mesh_shader, "u_view", renderer->view_mat);
     shader_set_uniform_mat4(&renderer->mesh_shader, "u_proj", renderer->proj_mat);
+
+    shader_set_uniform_mat4(&renderer->quad_shader, "u_view", renderer->view_mat);
+    shader_set_uniform_mat4(&renderer->quad_shader, "u_proj", renderer->proj_mat);
+
+    shader_set_uniform_mat4(&renderer->anim_mesh_shader, "u_view", renderer->view_mat);
+    shader_set_uniform_mat4(&renderer->anim_mesh_shader, "u_proj", renderer->proj_mat);
 
     mat4_t view = renderer->view_mat;
     view.data[0][3] = 0;
@@ -56,7 +77,11 @@ void renderer_start(renderer_t *renderer)
 
 void renderer_end(renderer_t *renderer)
 {
-    framebuffer_unbind();
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->scene_buffer.fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->pp_buffer.fbo);
+    glBlitFramebuffer(0, 0, renderer->scene_buffer.size.x, renderer->scene_buffer.size.y, 0, 0, renderer->scene_buffer.size.x, renderer->scene_buffer.size.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -65,74 +90,62 @@ void renderer_end(renderer_t *renderer)
 
     shader_bind(&renderer->pp_shader);
     vertex_array_bind(&renderer->scene_buffer_va);
-    texture_bind(&renderer->scene_buffer.texture, 0);
+    texture_bind(&renderer->pp_buffer.texture, 0);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void renderer_clear(renderer_t *renderer)
 {
-    glClearColor(renderer->clear_color.x, renderer->clear_color.y, renderer->clear_color.z, renderer->clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    int u = glGetError();
-    if (u != 0)
-    {
-        printf(OPENGL_ERROR "%u\n", u);
-    }
 }
-
-
 
 void renderer_exit(renderer_t *renderer)
 {
     shader_delete(&renderer->mesh_shader);
+    shader_delete(&renderer->anim_mesh_shader);
     shader_delete(&renderer->pp_shader);
     shader_delete(&renderer->quad_shader);
     vertex_array_delete(&renderer->scene_buffer_va);
 }
 
-void renderer_draw_model_3D(renderer_t *renderer, camera_t *camera, model_3D_t *model, vec3_t pos, float size, vec3_t rotation)
+void renderer_draw_model_3D(renderer_t *renderer, camera_t *camera, model_3D_t *model, vec3_t pos, float size, quat_t rotation)
 {
-    model->transform = mat4_translate(mat4_new(1), pos);
-     if (rotation.x != 0 && rotation.y != 0 && rotation.z != 0)
-        model->transform = mat4_rotate(model->transform, rotation); 
-    else if (rotation.x != 0)
-        model->transform = mat4_rotate_x(model->transform, rotation.x);
-    else if (rotation.y != 0)
-        model->transform = mat4_rotate_y(model->transform, rotation.y);
-    else if (rotation.z != 0)
-        model->transform = mat4_rotate_z(model->transform, rotation.z);  
-    model->transform = mat4_rotate(model->transform, rotation); 
-    if (size != 1)
-        model->transform = mat4_scale(model->transform, size);
-
-    shader_set_uniform_mat4(&renderer->mesh_shader, "u_model", model->transform);
-
-    shader_bind(&renderer->mesh_shader);
-    for (int m = 0; m < model->mesh_count; m++)
+    if (model->mesh_count != 0)
     {
-        for (int p = 0; p < model->meshes[m].primitive_count; p++)
+        model->transform = mat4_translate(mat4_new(1), pos);
+        if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
+            model->transform = mat4_multiply(model->transform, mat4_from_quat(rotation));
+        if (size != 1)
+            model->transform = mat4_scale(model->transform, size);
+
+        shader_t *shader = &renderer->mesh_shader;
+
+        shader_set_uniform_mat4(shader, "u_model", model->transform);
+
+        for (int m = 0; m < model->mesh_count; m++)
         {
-            shader_set_uniform_vec3(&renderer->mesh_shader, "cam_pos", camera->pos);
+            for (int p = 0; p < model->meshes[m].primitive_count; p++)
+            {
+                shader_bind(shader);
 
-            texture_bind(&model->meshes[m].primitives[p].material->diffuse_map, 0);
-            shader_set_uniform_int(&renderer->mesh_shader, "diffuse_map", 0);
+                texture_bind(&model->meshes[m].primitives[p].material->diffuse_map, 0);
+                shader_set_uniform_int(shader, "u_diffuse_map", 0);
 
-            texture_bind(&model->meshes[m].primitives[p].material->orm_map, 1);
-            shader_set_uniform_int(&renderer->mesh_shader, "orm_map", 1);
+/*                 texture_bind(&model->meshes[m].primitives[p].material->orm_map, 1);
+                shader_set_uniform_int(shader, "u_orm_map", 1);
 
-            texture_bind(&model->meshes[m].primitives[p].material->normal_map, 2);
-            shader_set_uniform_int(&renderer->mesh_shader, "normal_map", 2);
+                texture_bind(&model->meshes[m].primitives[p].material->normal_map, 2);
+                shader_set_uniform_int(shader, "u_normal_map", 2); */
 
-            vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
+                vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 
-            glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, model->meshes[m].primitives[p].index_type, 0);
+                glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, model->meshes[m].primitives[p].index_type, 0);
 
-            texture_unbind(0);
-            vertex_array_unbind();
+                texture_unbind(0);
+                vertex_array_unbind();
+            }
         }
+        shader_unbind();
     }
-    shader_unbind();
 }
 
 void renderer_draw_skybox(renderer_t *renderer, skybox_t *skybox)

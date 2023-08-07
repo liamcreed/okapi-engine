@@ -6,11 +6,11 @@ typedef struct
     vec2_t size;
     bool closed, minimized, fullscreen, vsync, cursor, resized;
     GLFWwindow *glfw;
-    float dt, aspect, scroll;
+    float dt, aspect;
     vec2_t mouse_pos;
 } window_t;
 
-void window_create(window_t *window, vec2_t size, const char* title, bool vsync);
+void window_create(window_t *window);
 void window_update(window_t *window);
 void window_exit(window_t *window);
 

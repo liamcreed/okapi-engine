@@ -34,7 +34,6 @@ typedef struct
     float data[4][4];
 } mat4_t;
 
-
 float vec3_dot(vec3_t v1, vec3_t v2);
 vec3_t vec3_normalize(vec3_t v);
 vec3_t vec3_subtract(vec3_t v1, vec3_t v2);
@@ -68,6 +67,7 @@ mat4_t mat4_rotate(mat4_t m, vec3_t v);
 mat4_t mat4_translate(mat4_t m, vec3_t vector);
 mat4_t mat4_multiply(mat4_t m1, mat4_t m2);
 mat4_t mat4_inverse(mat4_t m);
+mat4_t mat4_1D_to_2D(float* m);
 void mat4_print(mat4_t mat);
 
 

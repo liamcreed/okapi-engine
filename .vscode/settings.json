@@ -8,7 +8,8 @@
         "camera.h": "c",
         "mat4.h": "c",
         "math.h": "c",
-        "vec.h": "c"
+        "vec.h": "c",
+        "cgltf.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

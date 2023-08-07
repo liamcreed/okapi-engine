@@ -104,7 +104,19 @@ void shader_set_uniform_mat4(shader_t *shader, const char *name, mat4_t matrix)
         printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
         exit(-1);
     }
+    
     glProgramUniformMatrix4fv(shader->id, loc, 1, GL_TRUE, &matrix.data[0][0]);
+}
+void shader_set_uniform_mat4_arr(shader_t *shader, const char *name, mat4_t* matrices, uint32_t count)
+{
+    int loc = glGetUniformLocation(shader->id, name);
+    if (loc == -1)
+    {
+        printf(LOG_ERROR "[shader]: no uniform with name %s found!\n", name);
+        exit(-1);
+    }
+    
+    glProgramUniformMatrix4fv(shader->id, loc, count, GL_TRUE, &matrices->data[0][0]);
 }
 
 void shader_set_uniform_int(shader_t *shader, const char *name, int data)

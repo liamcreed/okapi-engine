@@ -1,9 +1,19 @@
+TODO:
+
+rework image system
+rework frambuffer system
+
+export images as binary file
+export gltf data as binary
+
+
 
 Math
-    - cal MVP on CPU
-    - precalculating variables like x * y
+    - inverse bind matrix
+    - cal VP on CPU
     - dot product quat
     - more funcs for structs
+    - rotation on camera direction axis
 
 Lighting
     - lighting system multiple lights;
@@ -12,15 +22,16 @@ Lighting
     - mist https://www.youtube.com/watch?v=qslBNLeSPUc
 
 OPengl
-    - mipmap size
+    - MULTISAMPLE FRAMEBUFFER STRUCT OPTION
     - uniform buffer matrices
     - Framebuffer alpha transparency
-    - vertex array attrubute type in functtion
+    - vertex array attrubute type in function
     - inversing matrix 3D on the cpu
     - Instanced renderering
-    - rotate quad (https://www.youtube.com/watch?v=-SQ8TlFZHbY)
 
 2D renderer:
+    - QUADs
+    - UI
 
 GLTF   
     - Identical meshes

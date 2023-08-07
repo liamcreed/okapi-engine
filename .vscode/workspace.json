@@ -1,0 +1,15 @@
+{
+    "editor.scrollbar.horizontal": "hidden",
+    "editor.scrollbar.horizontalScrollbarSize": 0,
+    "editor.scrollbar.vertical": "hidden",
+    "editor.scrollbar.verticalScrollbarSize": 0,
+    "editor.folding": false,
+    "editor.glyphMargin": false,
+    "editor.bracketPairColorization.enabled": false,
+    "editor.lightbulb.enabled": false,
+    "editor.minimap.enabled": false,
+    "window.zoomLevel": -0.9,
+    "git.ignoreMissingGitWarning": true,
+    "cmake.configureOnOpen": true,
+    "workbench.colorTheme": "crayon-vscode"
+}

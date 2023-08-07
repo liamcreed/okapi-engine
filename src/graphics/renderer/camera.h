@@ -3,15 +3,7 @@
 typedef struct
 {
     float fov, near, far;
-
-    vec3_t pos;
-    vec3_t front;
-    vec3_t up;
-
-    float pitch;
-    float yaw;
-    float roll;
-
+    
     bool orthographic;
     float orthographic_size;
 } camera_t;
