@@ -1,6 +1,6 @@
 #include "graphics/graphics.h"
 
-void skeleton_create_hierarchy(mesh_joint_t *root)
+void skeleton_create_hierarchy(mesh_joint_t* root)
 {
     root->name = "bone";
 
@@ -15,30 +15,13 @@ void skeleton_create_hierarchy(mesh_joint_t *root)
     }
 }
 
-/* mesh_vertex_t vertices[] =
-{
-    (mesh_vertex_t){(vec3_t){0.5,0.5,0.0}, (vec3_t){0,0,0}, (vec2_t){1.0, 1.0}},
-    (mesh_vertex_t){(vec3_t){0.5,-0.5,0.0}, (vec3_t){0,0,0}, (vec2_t){1.0, 0.0}},
-    (mesh_vertex_t){(vec3_t){-0.5,-0.5,0.0}, (vec3_t){0,0,0}, (vec2_t){0.0, 0.0}},
-    (mesh_vertex_t){(vec3_t){-0.5,0.5,0.0}, (vec3_t){0,0,0}, (vec2_t){0.0, 1.0}}
-};  */
-
-/* FILE *file;
-   file = fopen(path, "rb");
-   fseek(file, 0, SEEK_END);
-   u32 length = ftell(file);
-   fseek(file, 0, SEEK_SET);
-   unsigned char *buffer = malloc(length);
-   fread(buffer, 1, length, file);
-   printf("%u\n", length); */
-
 #define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
 
-void model_3D_create_from_file(model_3D_t *model, const char *path)
+void model_3D_create_from_file(model_3D_t* model, const char* path)
 {
-    cgltf_options gltf_options = {0};
-    cgltf_data *gltf_data = NULL;
+    cgltf_options gltf_options = { 0 };
+    cgltf_data* gltf_data = NULL;
     cgltf_result gltf_result = cgltf_parse_file(&gltf_options, path, &gltf_data);
     if (gltf_result != cgltf_result_success)
     {
@@ -58,27 +41,34 @@ void model_3D_create_from_file(model_3D_t *model, const char *path)
         exit(-1);
     }
 
-    void *buffer = malloc(gltf_data->buffers->size);
+    void* buffer = malloc(gltf_data->buffers->size);
     memcpy(buffer, gltf_data->buffers->data, gltf_data->buffers->size);
     model->material_count = gltf_data->materials_count;
     model->mesh_count = gltf_data->meshes_count;
 
-    texture_t empty_color_map;
-    unsigned char empty_color_data[] = {128, 128, 255, 255};
-    empty_color_map.data = empty_color_data;
-    empty_color_map.channel_count = 4;
-    empty_color_map.size = (vec2_t){1, 1};
-    empty_color_map.sRGB = true;
-    texture_create_from_data(&empty_color_map);
+    u8 empty_color_data[] = { 128, 128, 255, 255 };
+    texture_t empty_color_map = (texture_t)
+    {
+        .data = empty_color_data,
+        .channel_count = 4,
+        .width = 1,
+        .height = 1,
+        .sRGB = true
+    };
+    texture_init(&empty_color_map);
 
-    texture_t empty_orm_map;
-    unsigned char empty_orm_data[] = {255, 255, 0, 255};
-    empty_orm_map.data = empty_orm_data;
-    empty_orm_map.channel_count = 4;
-    empty_orm_map.size = (vec2_t){1, 1};
-    texture_create_from_data(&empty_orm_map);
+    u8 empty_orm_data[] = { 255, 255, 0, 255 };
+    texture_t empty_orm_map = (texture_t)
+    {
+        .data = empty_orm_data,
+        .channel_count = 4,
+        .width = 1,
+        .height = 1,
+        .sRGB = true
+    };
+    texture_init(&empty_orm_map);
 
-    for (u32 mat = 0; mat < model->material_count; mat++)
+    for (i32 mat = 0; mat < model->material_count; mat++)
     {
         model->materials[mat].name = strcat(gltf_data->materials[mat].name, "");
         printf(LOG_GLTF "Material: %s\n", model->materials[mat].name);
@@ -86,28 +76,29 @@ void model_3D_create_from_file(model_3D_t *model, const char *path)
         // Base color
         if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
         {
-            char *image_path = get_full_path_from_other(path, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
-            printf("%s\n", image_path);
+            char* image_path = get_full_path_from_other(path, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
             model->materials[mat].diffuse_map.sRGB = true;
-            texture_create_from_png(&model->materials[mat].diffuse_map, image_path);
+            texture_create_from_TGA(&model->materials[mat].diffuse_map, image_path);
+            texture_init(&model->materials[mat].diffuse_map);
             free(image_path);
         }
         else
             printf(LOG_WARNING "[GLTF]: No base color texture in material!\n");
-        
+
+
         model->materials[mat].orm_map = empty_orm_map;
 
         model->materials[mat].normal_map = empty_color_map;
     }
 
-    for (u32 m = 0; m < model->mesh_count; m++)
+
+    for (i32 m = 0; m < model->mesh_count; m++)
     {
         model->meshes[m].primitive_count = 1;
-        for (u32 p = 0; p < model->meshes[m].primitive_count; p++)
+        for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
-
             bool material_found;
-            for (u32 mat = 0; mat < model->material_count; mat++)
+            for (i32 mat = 0; mat < model->material_count; mat++)
             {
                 if (gltf_data->meshes[m].primitives[p].material->name == model->materials[mat].name)
                 {
@@ -125,10 +116,10 @@ void model_3D_create_from_file(model_3D_t *model, const char *path)
 
             size_t vertices_offset = gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->offset;
 
-            void *vertices = buffer + vertices_offset;
+            void* vertices = buffer + vertices_offset;
             size_t indices_size = gltf_data->meshes[m].primitives[p].indices->buffer_view->size;
             size_t indices_offset = gltf_data->meshes[m].primitives[p].indices->buffer_view->offset;
-            void *indices = buffer + indices_offset;
+            void* indices = buffer + indices_offset;
 
             u32 index_type = gltf_data->meshes[m].primitives[p].indices->component_type;
             if (index_type == cgltf_component_type_r_8)
@@ -149,12 +140,12 @@ void model_3D_create_from_file(model_3D_t *model, const char *path)
 
             model->meshes[m].primitives[p].attribute_count = gltf_data->meshes[m].primitives[p].attributes_count;
 
-            for (u32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
+            for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
             {
                 size_t atr_offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
                 size_t atr_stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
 
-                char *atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
+                char* atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
 
                 if (strcmp(atr_name, "POSITION") == 0)
                 {
@@ -179,17 +170,17 @@ void model_3D_create_from_file(model_3D_t *model, const char *path)
     printf("created model\n");
 }
 
-void model_3D_delete(model_3D_t *model)
+void model_3D_delete(model_3D_t* model)
 {
-    for (u32 m = 0; m < model->material_count; m++)
+    for (i32 m = 0; m < model->material_count; m++)
     {
         texture_delete(&model->materials->diffuse_map);
         texture_delete(&model->materials->orm_map);
         texture_delete(&model->materials->normal_map);
     }
-    for (u32 m = 0; m < model->mesh_count; m++)
+    for (i32 m = 0; m < model->mesh_count; m++)
     {
-        for (u32 p = 0; p < model->meshes[m].primitive_count; p++)
+        for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
             free(model->meshes[m].primitives[p].vertices);
             free(model->meshes[m].primitives[p].indices);

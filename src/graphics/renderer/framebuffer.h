@@ -5,7 +5,6 @@ typedef struct
 {
     u32 fbo;
     u32 rbo;
-    vec2_t resolution;
     texture_t texture;
 
     bool color, depth, stencil;

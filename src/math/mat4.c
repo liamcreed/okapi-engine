@@ -141,12 +141,12 @@ mat4_t mat4_rotate(mat4_t m, vec3_t v)
 
 
 
-mat4_t mat4_scale(mat4_t m, f32 factor)
+mat4_t mat4_scale(mat4_t m, vec3_t size)
 {
     mat4_t result = mat4_new(1);
-    result.data[0][0] = factor;
-    result.data[1][1] = factor;
-    result.data[2][2] = factor;
+    result.data[0][0] = size.x;
+    result.data[1][1] = size.y;
+    result.data[2][2] = size.z;
     result = mat4_multiply(m, result);
     return result;
 }

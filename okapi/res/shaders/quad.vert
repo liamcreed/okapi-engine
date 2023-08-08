@@ -16,6 +16,6 @@ void main()
 {
     gl_Position = u_proj * u_view * u_model * vec4(a_pos, 1.0);
 
-    v_pos    = a_pos;
-    v_uv     = a_uv;
+    v_pos = a_pos;
+    v_uv = a_uv;
 }

@@ -3,7 +3,7 @@
 void window_create(window_t *window)
 {
     window->closed = true;
-    window->aspect = window->size.x/window->size.y;
+    window->aspect = window->width/window->height;
     
     window->fullscreen = false;
     window->minimized = false;
@@ -23,7 +23,7 @@ void window_create(window_t *window)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    window->glfw = glfwCreateWindow(window->size.x, window->size.y, window->title, NULL, NULL);
+    window->glfw = glfwCreateWindow(window->width, window->height, window->title, NULL, NULL);
 
     glfwMakeContextCurrent(window->glfw);
 
@@ -59,9 +59,9 @@ void window_update(window_t *window)
         window->closed = true;
     i32 size_x, size_y;
     glfwGetWindowSize(window->glfw, &size_x, &size_y);
-    window->size.x = size_x;
-    window->size.y = size_y;
-    window->aspect = window->size.x / window->size.y;
+    window->width = size_x;
+    window->height = size_y;
+    window->aspect = (float)window->width /  (float)window->height;
 
     if (key_pressed(window, KEY_ESCAPE) && window->cursor)
         glfwSetInputMode(window->glfw, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -89,7 +89,7 @@ void window_update(window_t *window)
     else
     {
         char str[100];
-        sprintf(str, "OKAPI -  FPS: %i", (int)average);
+        sprintf(str, "%s -  FPS: %i", window->title, (int)average);
         glfwSetWindowTitle(window->glfw, str);
         average = 0;
         count = 0;

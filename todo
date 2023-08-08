@@ -1,20 +1,16 @@
 TODO:
 
-rework image system
 rework frambuffer system
-    window resize create framebuffer again;
 
 geometry shader for skeletons
 
 check for creating if everthing is initialized
-export images as binary file
-export gltf data as binary
 
+export gltf data as binary
 
 
 Math
     - inverse bind matrix
-    - cal VP on CPU
     - dot product quat
     - more funcs for structs
     - rotation on camera direction axis
@@ -26,7 +22,6 @@ Lighting
     - mist https://www.youtube.com/watch?v=qslBNLeSPUc
 
 OPengl
-    - MULTISAMPLE FRAMEBUFFER STRUCT OPTION
     - uniform buffer matrices
     - Framebuffer alpha transparency
     - vertex array attrubute type in function
@@ -41,18 +36,12 @@ GLTF
     - Identical meshes
     - Lights
     - Mesh name identification for ECS
-    - fixen waarom sommige meshes er niett zijn
 
-Physics 
-    - maak 1 mesh met alle static collision
-    - dynamic collision met enemies
-- ECS
-    -Scenes
 
-- available texture slots
-- gravity sim
-- limit framerate
-
+Window:
+    - window resize    create framebuffer again;
+    - scroll input
+    - clean up
 
 Post processing:
     Chromatic abberation

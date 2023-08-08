@@ -1,6 +1,6 @@
 #include "tools/tools.h"
 
-void write_data_to_binary_file(unsigned char* buffer, const char* file_path)
+void write_data_to_binary_file(u8* buffer, const char* file_path)
 {
 
 }

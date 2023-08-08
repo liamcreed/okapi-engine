@@ -2,7 +2,7 @@
 
 void framebuffer_create(framebuffer_t* framebuffer)
 {
-    if (framebuffer->resolution.x == 0 || framebuffer->resolution.y == 0)
+    if (framebuffer->texture.width == 0 || framebuffer->texture.height == 0)
         printf(LOG_WARNING"[Framebuffer]: resolution is x: 0, y: 0 !!\n");
 
     printf("%i\n", framebuffer->color);
@@ -16,7 +16,7 @@ void framebuffer_create(framebuffer_t* framebuffer)
     {
         glGenTextures(1, &framebuffer->texture.id);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, framebuffer->texture.id);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, framebuffer->resolution.x, framebuffer->resolution.y, GL_TRUE);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, framebuffer->texture.width, framebuffer->texture.height, GL_TRUE);
 
         i32 u = glGetError();
         if (u != 0)
@@ -32,7 +32,7 @@ void framebuffer_create(framebuffer_t* framebuffer)
         {
             glGenRenderbuffers(1, &framebuffer->rbo);
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->rbo);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER, framebuffer->samples, GL_DEPTH24_STENCIL8, framebuffer->resolution.x, framebuffer->resolution.y);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, framebuffer->samples, GL_DEPTH24_STENCIL8, framebuffer->texture.width, framebuffer->texture.height);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, framebuffer->rbo);
         }
     }
@@ -42,9 +42,9 @@ void framebuffer_create(framebuffer_t* framebuffer)
         glBindTexture(GL_TEXTURE_2D, framebuffer->texture.id);
 
         if (framebuffer->color)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer->resolution.x, framebuffer->resolution.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer->texture.width, framebuffer->texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         else if (framebuffer->color)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, framebuffer->resolution.x, framebuffer->resolution.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, framebuffer->texture.width, framebuffer->texture.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -57,7 +57,7 @@ void framebuffer_create(framebuffer_t* framebuffer)
         {
             glGenRenderbuffers(1, &framebuffer->rbo);
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->rbo);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, framebuffer->resolution.x, framebuffer->resolution.y);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, framebuffer->texture.width, framebuffer->texture.height);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, framebuffer->rbo);
         }
     }
@@ -75,7 +75,7 @@ void framebuffer_bind(framebuffer_t* framebuffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->fbo);
     glEnable(GL_DEPTH_TEST);
-    glViewport(0, 0, framebuffer->resolution.x, framebuffer->resolution.y);
+    glViewport(0, 0, framebuffer->texture.width, framebuffer->texture.height);
 }
 void framebuffer_unbind()
 {
