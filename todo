@@ -2,12 +2,19 @@ TODO:
 
 rework frambuffer system
 
+opengl error checking
+
 geometry shader for skeletons
 
 check for creating if everthing is initialized
 
 export gltf data as binary
 
+Renderer: support for using custom shadedr like 
+renderer_draw(shader * )
+{
+    shader bind(etc)
+}
 
 Math
     - inverse bind matrix

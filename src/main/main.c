@@ -17,7 +17,7 @@ int main()
         .window = &window,
         .clear_color = (vec4_t){.7, .9, 1, .5},
         .width = 200,
-        .height = 200
+        .height = 150
     };
 
     renderer_create(&renderer);
@@ -32,12 +32,15 @@ int main()
     camera_create_perspective(&camera);
 
     model_3D_t player_model = {};
-    model_3D_create_from_file(&player_model, "./res/3D/knight/knight.gltf");
+    model_3D_load_from_GLTF(&player_model, "./res/3D/knight/knight.gltf");
+
+
+
 
     texture_t texture = {};
     texture.sRGB = true;
-    texture_create_from_TGA(&texture, "./res/textures/sprite.tga");
-    texture_init(&texture);
+    texture_load_from_TGA(&texture, "./res/textures/sprite.tga");
+    texture_create(&texture);
 
     while (!window.closed)
     {

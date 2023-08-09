@@ -28,11 +28,11 @@ typedef struct
     bool filter, sRGB;
 } texture_t;
 
-void texture_create_from_TGA(texture_t *texture, const char *path);
+void texture_load_from_TGA(texture_t *texture, const char *path);
 void texture_export_to_bin(texture_t* texture, const char* path);
 void texture_TGA_to_bin(const char* TGA, const char* bin);
-void texture_create_from_bin(texture_t *texture, const char *path);
-void texture_init(texture_t *texture);
+void texture_load_from_bin(texture_t *texture, const char *path);
+void texture_create(texture_t *texture);
 void texture_bind(texture_t *texture, u32 index);
 void texture_unbind(u32 index);
 void texture_delete(texture_t *texture);

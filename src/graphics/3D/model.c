@@ -1,8 +1,14 @@
 #include "graphics/graphics.h"
 
-void skeleton_create_hierarchy(mesh_joint_t* root)
+#define CGLTF_IMPLEMENTATION
+#include "cgltf/cgltf.h"
+
+void skeleton_create_hierarchy(mesh_joint_t* root, cgltf_node* node)
 {
-    root->name = "bone";
+    strncpy(root->name, node->name, sizeof(root->name) -1);
+    root->name[sizeof(root->name) - 1] = '\0';
+
+    root->child_count = node->children_count;
 
     if (root->child_count > 0)
     {
@@ -10,15 +16,68 @@ void skeleton_create_hierarchy(mesh_joint_t* root)
         for (u32 i = 0; i < root->child_count; i++)
         {
             root->children[i].parent = root;
-            skeleton_create_hierarchy(&root->children[i]);
+            skeleton_create_hierarchy(&root->children[i], node->children[i]);
         }
     }
 }
 
-#define CGLTF_IMPLEMENTATION
-#include "cgltf/cgltf.h"
 
-void model_3D_create_from_file(model_3D_t* model, const char* path)
+
+void model_3D_create(model_3D_t* model)
+{
+    for (i32 m = 0; m < model->mesh_count; m++)
+    {
+        for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
+        {
+            bool material_found;
+            for (i32 mat = 0; mat < model->material_count; mat++)
+            {
+                if (model->meshes[m].primitives[p].material->name == model->materials[mat].name)
+                {
+                    model->meshes[m].primitives[p].material = &model->materials[mat];
+                    material_found = true;
+                }
+            }
+            if (!material_found)
+            {
+                model->meshes[m].primitives[p].material = &model->materials[0];
+            }
+
+            vertex_array_create(&model->meshes[m].primitives[p].vertex_array);
+            vertex_array_create_vbo(&model->meshes[m].primitives[p].vertex_array, model->meshes[m].primitives[p].vertices, model->meshes[m].primitives[p].vertices_size, false);
+
+            model->meshes[m].primitives[p].attribute_count = model->meshes[m].primitives[p].attribute_count;
+
+            for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
+            {
+                if (atr > MAX_ATTRIBUTE_COUNT)
+                {
+                    printf(LOG_WARNING"[MODEL 3D]: exceeding maximum attributes for %s!\n", model->meshes[m].name);
+                }
+                size_t atr_offset = model->meshes[m].primitives[p].attributes[atr].offset;
+                size_t atr_stride = model->meshes[m].primitives[p].attributes[atr].stride;
+
+                if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "POSITION") == 0)
+                {
+                    vertex_array_push_attribute_f(0, 3, atr_stride, atr_offset);
+                }
+                else if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "NORMAL") == 0)
+                {
+                    vertex_array_push_attribute_f(1, 3, atr_stride, atr_offset);
+                }
+                else if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "TEXCOORD_0") == 0)
+                {
+                    vertex_array_push_attribute_f(2, 2, atr_stride, atr_offset);
+                }
+            }
+            vertex_array_create_ibo(&model->meshes[m].primitives[p].vertex_array, model->meshes[m].primitives[p].indices, model->meshes[m].primitives[p].indices_size, false);
+            vertex_array_unbind();
+            vertex_array_unbind_buffers();
+        }
+    }
+}
+
+void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 {
     cgltf_options gltf_options = { 0 };
     cgltf_data* gltf_data = NULL;
@@ -41,11 +100,6 @@ void model_3D_create_from_file(model_3D_t* model, const char* path)
         exit(-1);
     }
 
-    void* buffer = malloc(gltf_data->buffers->size);
-    memcpy(buffer, gltf_data->buffers->data, gltf_data->buffers->size);
-    model->material_count = gltf_data->materials_count;
-    model->mesh_count = gltf_data->meshes_count;
-
     u8 empty_color_data[] = { 128, 128, 255, 255 };
     texture_t empty_color_map = (texture_t)
     {
@@ -55,7 +109,7 @@ void model_3D_create_from_file(model_3D_t* model, const char* path)
         .height = 1,
         .sRGB = true
     };
-    texture_init(&empty_color_map);
+    texture_create(&empty_color_map);
 
     u8 empty_orm_data[] = { 255, 255, 0, 255 };
     texture_t empty_orm_map = (texture_t)
@@ -66,41 +120,55 @@ void model_3D_create_from_file(model_3D_t* model, const char* path)
         .height = 1,
         .sRGB = true
     };
-    texture_init(&empty_orm_map);
+    texture_create(&empty_orm_map);
 
+    model->material_count = gltf_data->materials_count;
     for (i32 mat = 0; mat < model->material_count; mat++)
     {
-        model->materials[mat].name = strcat(gltf_data->materials[mat].name, "");
-        printf(LOG_GLTF "Material: %s\n", model->materials[mat].name);
+        strncpy(model->materials[mat].name, gltf_data->materials[mat].name, sizeof(model->materials[mat].name) - 1);
+        model->materials[mat].name[sizeof(model->materials[mat].name) - 1] = '\0';
 
-        // Base color
         if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
         {
             char* image_path = get_full_path_from_other(path, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
             model->materials[mat].diffuse_map.sRGB = true;
-            texture_create_from_TGA(&model->materials[mat].diffuse_map, image_path);
-            texture_init(&model->materials[mat].diffuse_map);
+            texture_load_from_TGA(&model->materials[mat].diffuse_map, image_path);
+            texture_create(&model->materials[mat].diffuse_map);
             free(image_path);
         }
         else
+        {
+            model->materials[mat].diffuse_map = empty_color_map;
             printf(LOG_WARNING "[GLTF]: No base color texture in material!\n");
-
+        }
 
         model->materials[mat].orm_map = empty_orm_map;
-
         model->materials[mat].normal_map = empty_color_map;
     }
 
+    model->animation_count = gltf_data->animations_count;
+    for (i32 a = 0; a < model->animation_count; a++)
+    {
+        strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
+        model->animations[a].name[sizeof(model->animations[a].name)-1] = '\0';
+    }
+    
 
+    model->mesh_count = gltf_data->meshes_count;
     for (i32 m = 0; m < model->mesh_count; m++)
     {
-        model->meshes[m].primitive_count = 1;
+        strncpy(model->meshes[m].name, gltf_data->meshes[m].name, sizeof(model->meshes[m].name) - 1);
+        model->meshes[m].name[sizeof(model->meshes[m].name) - 1] = '\0';
+
+        printf("%s\n", model->meshes[m].name);
+
+        model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
             bool material_found;
             for (i32 mat = 0; mat < model->material_count; mat++)
             {
-                if (gltf_data->meshes[m].primitives[p].material->name == model->materials[mat].name)
+                if (strcmp(gltf_data->meshes[m].primitives[p].material->name, model->materials[mat].name) == 0)
                 {
                     model->meshes[m].primitives[p].material = &model->materials[mat];
                     material_found = true;
@@ -112,14 +180,20 @@ void model_3D_create_from_file(model_3D_t* model, const char* path)
             }
 
             model->meshes[m].primitives[p].index_count = gltf_data->meshes[m].primitives[p].indices->count;
-            model->meshes[m].primitives[p].index_type = GL_UNSIGNED_INT;
+
+            void* buffer = malloc(gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->size);
+            memcpy(buffer, gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->data, gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->size);
 
             size_t vertices_offset = gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->offset;
-
-            void* vertices = buffer + vertices_offset;
-            size_t indices_size = gltf_data->meshes[m].primitives[p].indices->buffer_view->size;
             size_t indices_offset = gltf_data->meshes[m].primitives[p].indices->buffer_view->offset;
-            void* indices = buffer + indices_offset;
+
+            model->meshes[m].primitives[p].vertices_size = indices_offset - vertices_offset;
+            model->meshes[m].primitives[p].vertices = malloc(model->meshes[m].primitives[p].vertices_size);
+            memcpy(model->meshes[m].primitives[p].vertices, buffer + vertices_offset, model->meshes[m].primitives[p].vertices_size);
+
+            model->meshes[m].primitives[p].indices_size = gltf_data->meshes[m].primitives[p].indices->buffer_view->size;
+            model->meshes[m].primitives[p].indices = malloc(model->meshes[m].primitives[p].indices_size);
+            memcpy(model->meshes[m].primitives[p].indices, buffer + indices_offset, model->meshes[m].primitives[p].indices_size);
 
             u32 index_type = gltf_data->meshes[m].primitives[p].indices->component_type;
             if (index_type == cgltf_component_type_r_8)
@@ -133,40 +207,35 @@ void model_3D_create_from_file(model_3D_t* model, const char* path)
             else if (index_type == cgltf_component_type_r_32f)
                 model->meshes[m].primitives[p].index_type = GL_FLOAT;
 
-            size_t vertices_size = indices_offset - vertices_offset;
-
-            vertex_array_create(&model->meshes[m].primitives[p].vertex_array);
-            vertex_array_create_vbo(&model->meshes[m].primitives[p].vertex_array, vertices, vertices_size, false);
-
             model->meshes[m].primitives[p].attribute_count = gltf_data->meshes[m].primitives[p].attributes_count;
 
             for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
             {
-                size_t atr_offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
-                size_t atr_stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
-
-                char* atr_name = gltf_data->meshes[m].primitives[p].attributes[atr].name;
-
-                if (strcmp(atr_name, "POSITION") == 0)
-                {
-                    vertex_array_push_attribute_f(0, 3, atr_stride, atr_offset);
-                }
-                else if (strcmp(atr_name, "NORMAL") == 0)
-                {
-                    vertex_array_push_attribute_f(1, 3, atr_stride, atr_offset);
-                }
-                else if (strcmp(atr_name, "TEXCOORD_0") == 0)
-                {
-                    vertex_array_push_attribute_f(2, 2, atr_stride, atr_offset);
-                }
+                model->meshes[m].primitives[p].attributes[atr].offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
+                model->meshes[m].primitives[p].attributes[atr].stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
+                strncpy(model->meshes[m].primitives[p].attributes[atr].name, gltf_data->meshes[m].primitives[p].attributes[atr].name, sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1);
+                model->meshes[m].name[sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1] = '\0';
             }
-            vertex_array_create_ibo(&model->meshes[m].primitives[p].vertex_array, indices, indices_size, false);
-            vertex_array_unbind();
-            vertex_array_unbind_buffers();
+            free(buffer);
         }
     }
     free(gltf_data);
-    free(buffer);
+
+
+    FILE* file;
+    file = fopen("./res/3D/knight.okp3D", "wb");
+    fwrite(&model->mesh_count, sizeof(u32), 1, file);
+    for (i32 m = 0; m < model->mesh_count; m++)
+    {
+        fwrite(model->meshes[m].name, 1, 32, file);
+        fwrite(&model->meshes[m].primitive_count, sizeof(u32), 1, file);
+
+    }
+
+    fclose(file);
+
+
+    model_3D_create(model);
     printf("created model\n");
 }
 

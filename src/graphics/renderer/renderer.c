@@ -27,12 +27,12 @@ u32 quad_indices[] =
 
 void renderer_create(renderer_t* renderer)
 {
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_CULL_FACE);
+    GL(glEnable(GL_DEPTH_TEST));
+    GL(glDepthFunc(GL_LESS));
+    GL(glEnable(GL_CULL_FACE));
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    GL(glEnable(GL_BLEND));
+    GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     renderer->mesh_shader = (shader_t)
     {
@@ -71,7 +71,7 @@ void renderer_create(renderer_t* renderer)
         .height = 1,
         .channel_count = 4,
     };
-    texture_init(&renderer->white_tex);
+    texture_create(&renderer->white_tex);
 
 
     renderer->pp_shader = (shader_t)
@@ -114,19 +114,12 @@ void renderer_create(renderer_t* renderer)
 
 void renderer_start(renderer_t* renderer)
 {
-    int u = glGetError();
-    if (u != 0)
-    {
-        printf(OPENGL_ERROR "%u\n", u);
-        exit(-1);
-    }
+    GL(glBindFramebuffer(GL_FRAMEBUFFER, renderer->scene_buffer.fbo));
+    GL(glEnable(GL_DEPTH_TEST));
+    GL(glViewport(0, 0, renderer->scene_buffer.texture.width, renderer->scene_buffer.texture.height));
 
-    glBindFramebuffer(GL_FRAMEBUFFER, renderer->scene_buffer.fbo);
-    glEnable(GL_DEPTH_TEST);
-    glViewport(0, 0, renderer->scene_buffer.texture.width, renderer->scene_buffer.texture.height);
-
-    glClearColor(renderer->clear_color.x, renderer->clear_color.y, renderer->clear_color.z, renderer->clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GL(glClearColor(renderer->clear_color.x, renderer->clear_color.y, renderer->clear_color.z, renderer->clear_color.w));
+    GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     shader_set_uniform_mat4(&renderer->mesh_shader, "u_view", renderer->view_mat);
     shader_set_uniform_mat4(&renderer->mesh_shader, "u_proj", renderer->proj_mat);
@@ -140,21 +133,25 @@ void renderer_start(renderer_t* renderer)
 
 void renderer_end(renderer_t* renderer)
 {
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->scene_buffer.fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->pp_buffer.fbo);
-    glBlitFramebuffer(0, 0, renderer->scene_buffer.texture.width, renderer->scene_buffer.texture.height, 0, 0, renderer->scene_buffer.texture.width, renderer->scene_buffer.texture.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    GL(glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->scene_buffer.fbo));
+    GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->pp_buffer.fbo));
+    GL(glBlitFramebuffer(0, 0, renderer->scene_buffer.texture.width,
+        renderer->scene_buffer.texture.height, 0, 0,
+        renderer->scene_buffer.texture.width,
+        renderer->scene_buffer.texture.height,
+        GL_COLOR_BUFFER_BIT, GL_NEAREST));
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDisable(GL_DEPTH_TEST);
+    GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    GL(glDisable(GL_DEPTH_TEST));
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, renderer->window->width, renderer->window->height);
+    GL(glClearColor(1.0f, 1.0f, 1.0f, 1.0f));
+    GL(glClear(GL_COLOR_BUFFER_BIT));
+    GL(glViewport(0, 0, renderer->window->width, renderer->window->height));
 
     shader_bind(&renderer->pp_shader);
     vertex_array_bind(&renderer->scene_buffer_va);
     texture_bind(&renderer->pp_buffer.texture, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 }
 
 void renderer_clear(renderer_t* renderer)
@@ -178,8 +175,8 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
         transform = mat4_translate(mat4_new(1), position);
         if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
             transform = mat4_multiply(transform, mat4_from_quat(rotation));
-        if (size != 0)
-            transform = mat4_scale(transform, (vec3_t){size, size, size});
+        if (size != 0 || size != 1)
+            transform = mat4_scale(transform, (vec3_t) { size, size, size });
 
         shader_t* shader = &renderer->mesh_shader;
 
@@ -196,8 +193,9 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
 
                 vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 
-                glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, model->meshes[m].primitives[p].index_type, 0);
 
+                GL(glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, model->meshes[m].primitives[p].index_type, 0));
+                GL_check_error();
                 texture_unbind(0);
                 vertex_array_unbind();
             }
@@ -208,7 +206,7 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
 
 void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, vec3_t position, vec3_t size, vec4_t rotation)
 {
-    glDisable(GL_CULL_FACE);
+    GL(glDisable(GL_CULL_FACE));
     shader_bind(&renderer->quad_shader);
 
     if (texture == NULL)
@@ -222,14 +220,14 @@ void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, 
     transform = mat4_translate(mat4_new(1), position);
     if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
         transform = mat4_multiply(transform, mat4_from_quat(rotation));
-    if (size.x != 1 || size.y != 0)
+    if (size.x != 0 || size.y != 0)
         transform = mat4_scale(transform, size);
 
     shader_set_uniform_mat4(&renderer->quad_shader, "u_model", transform);
     shader_set_uniform_vec4(&renderer->quad_shader, "u_color", color);
 
     vertex_array_bind(&renderer->quad_va);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    GL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
     vertex_array_unbind();
-    glEnable(GL_CULL_FACE);
+    GL(glEnable(GL_CULL_FACE));
 }

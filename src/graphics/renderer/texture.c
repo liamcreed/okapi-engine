@@ -1,7 +1,7 @@
 
 #include "graphics/graphics.h"
 
-void texture_create_from_TGA(texture_t* texture, const char* path)
+void texture_load_from_TGA(texture_t* texture, const char* path)
 {
     FILE* file;
     file = fopen(path, "rb");
@@ -52,7 +52,7 @@ void texture_create_from_TGA(texture_t* texture, const char* path)
     fclose(file);
 }
 
-void texture_create_from_bin(texture_t* texture, const char* path)
+void texture_load_from_bin(texture_t* texture, const char* path)
 {
     FILE* file;
     file = fopen(path, "rb");
@@ -73,7 +73,7 @@ void texture_create_from_bin(texture_t* texture, const char* path)
 void texture_TGA_to_bin(const char* TGA, const char* bin)
 {
     texture_t texture = {};
-    texture_create_from_TGA(&texture, TGA);
+    texture_load_from_TGA(&texture, TGA);
     texture_export_to_bin(&texture, bin);
 }
 
@@ -88,7 +88,7 @@ void texture_export_to_bin(texture_t* texture, const char* path)
     fclose(file);
 }
 
-void texture_init(texture_t* texture)
+void texture_create(texture_t* texture)
 {
     if (texture->data == NULL)
         printf(LOG_WARNING "[texture]: data is empty!\n");
@@ -97,59 +97,71 @@ void texture_init(texture_t* texture)
     if (texture->width == 0 || texture->height == 0)
         printf(LOG_WARNING "[texture]: texure doesn't have a size!\n");
 
-    glGenTextures(1, &texture->id);
-    glBindTexture(GL_TEXTURE_2D, texture->id);
+    GL(glGenTextures(1, &texture->id));
+    GL(glBindTexture(GL_TEXTURE_2D, texture->id));
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+    GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
     if (texture->filter)
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     }
     else
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
 
 
     if (texture->channel_count == 4 && texture->sRGB == true)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+    {
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data));
+    }
     else if (texture->channel_count == 3 && texture->sRGB == true)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data);
+    {
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data));
+    }
     else if (texture->channel_count == 4 && texture->sRGB == false)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+    {
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data));
+    }
     else if (texture->channel_count == 3 && texture->sRGB == false)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data);
+    {
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data));
+    }
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+    GL(glGenerateMipmap(GL_TEXTURE_2D));
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 void texture_update_data(texture_t* texture)
 {
     if (texture->channel_count == 4)
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+    {
+        GL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, texture->data));
+    }
     else if (texture->channel_count == 3)
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, GL_RGB, GL_UNSIGNED_BYTE, texture->data);
+    {
+        GL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, GL_RGB, GL_UNSIGNED_BYTE, texture->data));
+    }
 }
 
 void texture_bind(texture_t* texture, u32 index)
 {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glBindTexture(GL_TEXTURE_2D, texture->id);
+    GL(glActiveTexture(GL_TEXTURE0 + index));
+    GL(glBindTexture(GL_TEXTURE_2D, texture->id));
 }
 void texture_unbind(u32 index)
 {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GL(glActiveTexture(GL_TEXTURE0 + index));
+    GL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 void texture_delete(texture_t* texture)
 {
     free(texture->data);
-    glDeleteTextures(1, &texture->id);
+    GL(glDeleteTextures(1, &texture->id));
 }
