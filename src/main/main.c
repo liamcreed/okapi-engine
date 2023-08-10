@@ -2,6 +2,24 @@
  
 int main()
 {
+    /* mat4_t original = {
+        .data = {{1, 2, 3, 4},
+        {0, 1, 2, 3},
+        {0, 0, 1, 2},
+        {0, 0, 0, 1}},
+    };
+
+    mat4_t inverse = mat4_inverse(original);
+    
+    printf("Original matrix:\n");
+    mat4_print(original);
+
+    printf("\nInverse matrix:\n");
+    mat4_print(inverse);
+    mat4_print(mat4_multiply(original, inverse));
+ */
+
+
     window_t window =
     {
         .width = 800 * 2,
@@ -16,15 +34,15 @@ int main()
     {
         .window = &window,
         .clear_color = (vec4_t){.7, .9, 1, .5},
-        .width = 200,
-        .height = 150
+        .width = 300,
+        .height = 300/window.aspect
     };
 
     renderer_create(&renderer);
 
     camera_t camera =
     {
-        .fov = 45,
+        .fov = 30,
         .near = 0.1,
         .far = 100
     };
@@ -50,7 +68,7 @@ int main()
         else
             renderer.proj_mat = mat4_perspective(camera.fov, window.aspect, camera.near, camera.far);
 
-        static vec3_t cam_pos = (vec3_t){0,0,4};
+        static vec3_t cam_pos = (vec3_t){0,1,5};
         float cam_speed = 3;
         if(key_pressed(&window, KEY_LEFT_SHIFT))
             cam_speed = 5;
@@ -68,13 +86,16 @@ int main()
         else if (key_pressed(&window, KEY_SPACE))
             cam_pos.y += cam_speed * window.dt;
 
-        renderer.view_mat = mat4_look_at(cam_pos, (vec3_t) { 0, 0, 0 }, (vec3_t) { 0, 1, 0 });
+        renderer.view_mat = mat4_look_at(cam_pos, vec3_add(cam_pos, (vec3_t){0,0,-1}), (vec3_t) { 0, 1, 0 });
 
         //-------------------------------------------------//
 
         renderer_start(&renderer);
 
-        renderer_draw_model_3D(&renderer, &camera, &player_model, (vec3_t) { 0, 0, 1 }, 1., quat_angle_axis(window.mouse_pos.x / 2, (vec3_t) { 0, 1, 0 }));
+        static float rot = 0;
+        if(key_pressed(&window, KEY_R))
+            rot+=window.dt * 80;
+        renderer_draw_model_3D(&renderer, &camera, &player_model, (vec3_t) { 0, 0, 1 }, 1, quat_angle_axis(rot, (vec3_t){0,1,0}));
         renderer_draw_quad(&renderer,  &texture, (vec4_t) { 1, 1, 1, 1 }, (vec3_t) { 0, 0, 0 }, (vec3_t) { 5, 5, 1 }, (vec4_t) {});
 
         renderer_end(&renderer);

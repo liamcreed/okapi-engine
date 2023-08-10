@@ -8,7 +8,8 @@ struct mesh_joint_t
     mesh_joint_t* children;
     u32 child_count;
     mesh_joint_t* parent;
-    mat4_t local_bind_transform;
+    mat4_t anim_transform;
+    mat4_t model_transform;
     mat4_t inverse_bind_transform;
 };
 
@@ -39,11 +40,13 @@ typedef struct
     key_frame_rot_t key_frame_rot[MAX_KEY_FRAME_COUNT];
 } mesh_animation_t;
 
+#define MAX_JOINT_COUNT 32
 typedef struct
 {
     char name[32];
     mesh_joint_t root_joint;
     u32 joint_count;
+    mesh_joint_t* joints[MAX_JOINT_COUNT];
 } mesh_armature_t;
 
 void mesh_animation_play(mesh_armature_t* armature, mesh_animation_t* animation, f32 dt);
@@ -69,7 +72,7 @@ typedef struct
 #define MAX_ATTRIBUTE_COUNT 7
 typedef struct
 {
-    mesh_material_t* material;
+    u32 material_index;
     vertex_array_t vertex_array;
 
     void* vertices;

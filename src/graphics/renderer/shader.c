@@ -2,7 +2,7 @@
 
 void shader_compile(u32* id, const char* path, u32 type)
 {
-    long length = 0;
+    u32 length = 0;
     FILE* file = fopen(path, "rb");
     if (file == NULL)
         printf(LOG_ERROR "[Shader]: Failed to open: %s\n", path);

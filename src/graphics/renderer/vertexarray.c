@@ -81,13 +81,6 @@ void vertex_array_push_attribute_ub(u32 index, u32 size, size_t stride, size_t o
     GL(glVertexAttribIPointer(index, size, GL_UNSIGNED_BYTE, stride, (void *)offset));
     GL(glEnableVertexAttribArray(index));
 }
-void vertex_array_delete(vertex_array_t *vertex_array)
-{
-    GL(glDeleteBuffers(1, &vertex_array->vbo));
-    GL(glDeleteBuffers(1, &vertex_array->ibo));
-    GL(glDeleteVertexArrays(1, &vertex_array->vao));
-}
-
 void vertex_array_push_vertex_data(size_t size, void *data)
 {
     GL(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
@@ -95,4 +88,12 @@ void vertex_array_push_vertex_data(size_t size, void *data)
 void vertex_array_push_index_data(size_t size, void *data)
 {
     GL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data));
+}
+void vertex_array_delete(vertex_array_t *vertex_array)
+{
+    vertex_array_unbind();
+    vertex_array_unbind_buffers();
+    GL(glDeleteBuffers(1, &vertex_array->vbo));
+    GL(glDeleteBuffers(1, &vertex_array->ibo));
+    GL(glDeleteVertexArrays(1, &vertex_array->vao));
 }

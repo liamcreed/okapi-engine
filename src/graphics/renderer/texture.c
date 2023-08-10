@@ -133,7 +133,6 @@ void texture_create(texture_t* texture)
     }
 
     GL(glGenerateMipmap(GL_TEXTURE_2D));
-
     GL(glBindTexture(GL_TEXTURE_2D, 0));
 }
 

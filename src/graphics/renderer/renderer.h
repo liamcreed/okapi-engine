@@ -38,8 +38,5 @@ void renderer_clear(renderer_t *renderer);
 void renderer_start(renderer_t *renderer);
 void renderer_end(renderer_t *renderer);
 
-void renderer_batch_start(renderer_t *renderer);
-void renderer_batch_end(renderer_t *renderer);
-
 void renderer_draw_model_3D(renderer_t *renderer, camera_t* camera, model_3D_t *model, vec3_t position, f32 size, vec4_t rotation);
 void renderer_draw_quad(renderer_t* renderer, texture_t* tex, vec4_t color, vec3_t position, vec3_t size, vec4_t rotation);

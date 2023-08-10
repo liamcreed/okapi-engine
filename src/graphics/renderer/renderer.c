@@ -188,11 +188,18 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
             {
                 shader_bind(shader);
 
-                texture_bind(&model->meshes[m].primitives[p].material->diffuse_map, 0);
+                texture_bind(&model->materials[model->meshes[m].primitives[p].material_index].diffuse_map, 0);
                 shader_set_uniform_int(shader, "u_diffuse_map", 0);
 
-                vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 
+                mat4_t matrix[4] = {
+                    model->armature.joints[0]->anim_transform,
+                    model->armature.joints[1]->anim_transform,
+                    model->armature.joints[2]->anim_transform
+                };
+                shader_set_uniform_mat4_arr(shader, "joint_matrices", matrix, 4);
+
+                vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 
                 GL(glDrawElements(GL_TRIANGLES, model->meshes[m].primitives[p].index_count, model->meshes[m].primitives[p].index_type, 0));
                 GL_check_error();

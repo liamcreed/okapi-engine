@@ -3,12 +3,32 @@
 #define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
 
-void skeleton_create_hierarchy(mesh_joint_t* root, cgltf_node* node)
+void skeleton_build_joint_hierarchy(mesh_joint_t* root, mesh_armature_t* armature, cgltf_skin* skin, cgltf_node* node)
 {
+    printf("-------------------\n");
+
     strncpy(root->name, node->name, sizeof(root->name) -1);
     root->name[sizeof(root->name) - 1] = '\0';
+    printf("NAME: %s\n", root->name);
 
     root->child_count = node->children_count;
+    printf("CHILD COUNT: %u\n", root->child_count);
+
+    for (i32 i = 0; i < skin->joints_count; i++)
+    {
+        if(node == skin->joints[i])
+            root->id = i;
+    }
+    armature->joints[root->id] = root;
+
+    printf("ID %u\n", root->id); 
+
+    f32 inverse_bind_matrix[16];
+    cgltf_accessor_read_float(skin->inverse_bind_matrices, root->id,inverse_bind_matrix, 16);
+    root->inverse_bind_transform = mat4_1D_to_2D(inverse_bind_matrix);
+    mat4_print(root->inverse_bind_transform);
+
+    root->anim_transform = mat4_new(1);
 
     if (root->child_count > 0)
     {
@@ -16,11 +36,12 @@ void skeleton_create_hierarchy(mesh_joint_t* root, cgltf_node* node)
         for (u32 i = 0; i < root->child_count; i++)
         {
             root->children[i].parent = root;
-            skeleton_create_hierarchy(&root->children[i], node->children[i]);
+            skeleton_build_joint_hierarchy(&root->children[i],armature ,skin,node->children[i]);
+            
         }
     }
+    
 }
-
 
 
 void model_3D_create(model_3D_t* model)
@@ -29,20 +50,6 @@ void model_3D_create(model_3D_t* model)
     {
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
-            bool material_found;
-            for (i32 mat = 0; mat < model->material_count; mat++)
-            {
-                if (model->meshes[m].primitives[p].material->name == model->materials[mat].name)
-                {
-                    model->meshes[m].primitives[p].material = &model->materials[mat];
-                    material_found = true;
-                }
-            }
-            if (!material_found)
-            {
-                model->meshes[m].primitives[p].material = &model->materials[0];
-            }
-
             vertex_array_create(&model->meshes[m].primitives[p].vertex_array);
             vertex_array_create_vbo(&model->meshes[m].primitives[p].vertex_array, model->meshes[m].primitives[p].vertices, model->meshes[m].primitives[p].vertices_size, false);
 
@@ -68,6 +75,18 @@ void model_3D_create(model_3D_t* model)
                 else if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "TEXCOORD_0") == 0)
                 {
                     vertex_array_push_attribute_f(2, 2, atr_stride, atr_offset);
+                }
+                else if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "TANGENT") == 0)
+                {
+                    vertex_array_push_attribute_f(3, 4, atr_stride, atr_offset);
+                }
+                else if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "JOINTS_0") == 0)
+                {
+                    vertex_array_push_attribute_ub(4, 4, atr_stride, atr_offset);
+                }
+                else if (strcmp(model->meshes[m].primitives[p].attributes[atr].name, "WEIGHTS_0") == 0)
+                {
+                    vertex_array_push_attribute_f(5, 4, atr_stride, atr_offset);
                 }
             }
             vertex_array_create_ibo(&model->meshes[m].primitives[p].vertex_array, model->meshes[m].primitives[p].indices, model->meshes[m].primitives[p].indices_size, false);
@@ -101,7 +120,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     }
 
     u8 empty_color_data[] = { 128, 128, 255, 255 };
-    texture_t empty_color_map = (texture_t)
+    texture_t empty_color_map =
     {
         .data = empty_color_data,
         .channel_count = 4,
@@ -112,7 +131,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     texture_create(&empty_color_map);
 
     u8 empty_orm_data[] = { 255, 255, 0, 255 };
-    texture_t empty_orm_map = (texture_t)
+    texture_t empty_orm_map = 
     {
         .data = empty_orm_data,
         .channel_count = 4,
@@ -152,6 +171,13 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
         model->animations[a].name[sizeof(model->animations[a].name)-1] = '\0';
     }
+    if(model->animation_count)
+    {
+        cgltf_node* root_node = gltf_data->skins[0].joints[0];
+        model->armature.joint_count = gltf_data->skins[0].joints_count;
+        skeleton_build_joint_hierarchy(&model->armature.root_joint, &model->armature,gltf_data->skins, root_node);
+
+    }
     
 
     model->mesh_count = gltf_data->meshes_count;
@@ -159,8 +185,6 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     {
         strncpy(model->meshes[m].name, gltf_data->meshes[m].name, sizeof(model->meshes[m].name) - 1);
         model->meshes[m].name[sizeof(model->meshes[m].name) - 1] = '\0';
-
-        printf("%s\n", model->meshes[m].name);
 
         model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
@@ -170,19 +194,16 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             {
                 if (strcmp(gltf_data->meshes[m].primitives[p].material->name, model->materials[mat].name) == 0)
                 {
-                    model->meshes[m].primitives[p].material = &model->materials[mat];
+                    model->meshes[m].primitives[p].material_index = mat;
                     material_found = true;
                 }
             }
             if (!material_found)
             {
-                model->meshes[m].primitives[p].material = &model->materials[0];
+                printf(LOG_ERROR "[GLTF]:NO MATERIAL FOUND!\n");
             }
 
-            model->meshes[m].primitives[p].index_count = gltf_data->meshes[m].primitives[p].indices->count;
-
-            void* buffer = malloc(gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->size);
-            memcpy(buffer, gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->data, gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->size);
+            void* buffer = gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->buffer->data;
 
             size_t vertices_offset = gltf_data->meshes[m].primitives[p].attributes->data->buffer_view->offset;
             size_t indices_offset = gltf_data->meshes[m].primitives[p].indices->buffer_view->offset;
@@ -191,6 +212,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             model->meshes[m].primitives[p].vertices = malloc(model->meshes[m].primitives[p].vertices_size);
             memcpy(model->meshes[m].primitives[p].vertices, buffer + vertices_offset, model->meshes[m].primitives[p].vertices_size);
 
+            model->meshes[m].primitives[p].index_count = gltf_data->meshes[m].primitives[p].indices->count;
             model->meshes[m].primitives[p].indices_size = gltf_data->meshes[m].primitives[p].indices->buffer_view->size;
             model->meshes[m].primitives[p].indices = malloc(model->meshes[m].primitives[p].indices_size);
             memcpy(model->meshes[m].primitives[p].indices, buffer + indices_offset, model->meshes[m].primitives[p].indices_size);
@@ -216,7 +238,6 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                 strncpy(model->meshes[m].primitives[p].attributes[atr].name, gltf_data->meshes[m].primitives[p].attributes[atr].name, sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1);
                 model->meshes[m].name[sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1] = '\0';
             }
-            free(buffer);
         }
     }
     free(gltf_data);

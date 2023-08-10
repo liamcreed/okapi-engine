@@ -10,11 +10,7 @@ check for creating if everthing is initialized
 
 export gltf data as binary
 
-Renderer: support for using custom shadedr like 
-renderer_draw(shader * )
-{
-    shader bind(etc)
-}
+
 
 Math
     - inverse bind matrix
@@ -34,22 +30,22 @@ OPengl
     - vertex array attrubute type in function
     - inversing matrix 3D on the cpu
     - Instanced renderering
-
-2D renderer:
+    
+    2D renderer:
     - QUADs
     - UI
-
-GLTF   
+    
+    GLTF   
     - Identical meshes
     - Lights
     - Mesh name identification for ECS
-
-
-Window:
+    
+    
+    Window:
     - window resize    create framebuffer again;
     - scroll input
     - clean up
-
+    
 Post processing:
     Chromatic abberation
     vec3 col;
@@ -57,7 +53,39 @@ Post processing:
     col.r = texture( u_texture, vec2(v_uv.x+amount,v_uv.y)).r;
     col.g = texture( u_texture, v_uv).g;
     col.b = texture( u_texture, vec2(v_uv.x-amount,v_uv.y)).b;
-
+    
 	col *= (1.0 - amount * 0.5);
     
     f_color = vec4(col, 1.0f);
+
+    /////////////asfasfas:
+
+    shader_t toon_shader =
+    {
+        .v_path = "./res/shaders/toon.vert",
+        .f_path = "./res/shaders/toon.vert",
+    };
+    shader_create(&toon_shader);
+
+    shader_t quad_shader =
+    {
+        .v_path = "./res/shaders/quad.vert",
+        .f_path = "./res/shaders/quad.vert",
+    };
+    shader_create(&quad_shader);
+
+    shader_t pp_shader =
+    {
+        .v_path = "./res/shaders/pp.vert",
+        .f_path = "./res/shaders/pp.vert",
+    };
+    shader_create(&pp_shader);
+
+    shader_t shader[] = {toon_shader, quad_shader, pp_shader};
+
+
+    Renderer: support for using custom shadedr like 
+    renderer( shader array)
+        for shader
+        set matrix
+    draw mesh ( shader* shader)
