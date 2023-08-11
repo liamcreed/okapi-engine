@@ -11,11 +11,13 @@ check for creating if everthing is initialized
 export gltf data as binary
 
 
+dont sttore children and parents as pointer but as index;
 
 Math
     - inverse bind matrix
     - dot product quat
     - more funcs for structs
+    - dont multiply if matrix is mat4_new;
     - rotation on camera direction axis
 
 Lighting

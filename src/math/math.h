@@ -35,6 +35,8 @@ vec3_t vec3_scale(vec3_t v, f32 s);
 void vec3_print(vec3_t vector);
 vec3_t vec3_multiply_quat(vec3_t v, vec4_t q);
 
+vec3_t vec3_multiply_mat4(vec3_t v, mat4_t m);
+
 
 vec4_t quat_angle_axis(f32 angle, vec3_t axis);
 vec4_t quat_from_euler(vec3_t euler);
@@ -55,7 +57,8 @@ mat4_t mat4_from_quat(vec4_t q);
 mat4_t mat4_rotate_x(mat4_t m, f32 deg);
 mat4_t mat4_rotate_y(mat4_t m, f32 deg);
 mat4_t mat4_rotate_z(mat4_t m, f32 deg);
-mat4_t mat4_rotate(mat4_t m, vec3_t v);
+mat4_t mat4_rotate_e(mat4_t m, vec3_t v);
+mat4_t mat4_rotate_q(mat4_t m, vec4_t q);
 mat4_t mat4_translate(mat4_t m, vec3_t vector);
 mat4_t mat4_multiply(mat4_t m1, mat4_t m2);
 mat4_t mat4_inverse(mat4_t m);

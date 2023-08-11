@@ -112,7 +112,7 @@ mat4_t mat4_look_at(vec3_t eye, vec3_t center, vec3_t up)
 }
 mat4_t mat4_translate(mat4_t m, vec3_t v)
 {
-    mat4_t result = m;
+    mat4_t result = mat4_new(1);
     result.data[0][3] = v.x;
     result.data[1][3] = v.y;
     result.data[2][3] = v.z;
@@ -135,14 +135,16 @@ mat4_t mat4_rotate_z(mat4_t m, f32 angle_deg)
     return mat4_multiply(m, mat4_from_quat(q));
 }
 
-mat4_t mat4_rotate(mat4_t m, vec3_t v)
+mat4_t mat4_rotate_q(mat4_t m, vec4_t q)
+{
+    return mat4_multiply(m, mat4_from_quat(q));
+}
+
+mat4_t mat4_rotate_e(mat4_t m, vec3_t v)
 {
     vec4_t q = quat_from_euler(v);
     return mat4_multiply(m, mat4_from_quat(q));
 }
-
-
-
 mat4_t mat4_scale(mat4_t m, vec3_t size)
 {
     mat4_t result = mat4_new(1);
@@ -160,12 +162,12 @@ mat4_t mat4_multiply(mat4_t m1, mat4_t m2)
     {
         for (u32 j = 0; j < 4; j++)
         {
-            f32 sum = 0.0f;  
+            /* f32 sum = 0.0f;   */
             for (u32 k = 0; k < 4; k++)
             {
-                sum += m1.data[i][k] * m2.data[k][j];
+                result.data[i][j] += m1.data[i][k] * m2.data[k][j];
             }
-            result.data[i][j] = sum;
+            /* result.data[i][j] = sum; */
         }
     }
 
@@ -289,8 +291,8 @@ mat4_t mat4_1D_to_2D(f32* m)
     result.data[3][0] = m[12];
     result.data[3][1] = m[13];
     result.data[3][2] = m[14];
-    result.data[3][3] = m[15]; */
-
+    result.data[3][3] = m[15]; 
+ */
     result.data[0][0] = m[0];
     result.data[1][0] = m[1];
     result.data[2][0] = m[2];
@@ -309,7 +311,8 @@ mat4_t mat4_1D_to_2D(f32* m)
     result.data[0][3] = m[12];
     result.data[1][3] = m[13];
     result.data[2][3] = m[14];
-    result.data[3][3] = m[15];
+    result.data[3][3] = m[15]; 
+
     return result;
 
 }

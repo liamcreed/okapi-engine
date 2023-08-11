@@ -21,7 +21,8 @@ void main()
     vec3 normal = texture(u_normal_map, v_uv).rgb;
     normal = normalize(normal * 2.0 - 1.0); 
    
-    vec3 diffuse_color = texture(u_diffuse_map, v_uv).rgb;
+    //vec3 diffuse_color = texture(u_diffuse_map, v_uv).rgb;
+    vec3 diffuse_color = vec3(.4,.3,.4);
 
     vec3 ambient = 0. * diffuse_color;
 

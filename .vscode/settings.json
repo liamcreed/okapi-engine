@@ -10,7 +10,8 @@
         "math.h": "c",
         "vec.h": "c",
         "cgltf.h": "c",
-        "tools.h": "c"
+        "tools.h": "c",
+        "typeinfo": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -61,11 +61,9 @@ static bool GL_check_error()
     }
     return false;
 }
-#define GL(x) GL_clear_error();\
-    x;\
-    assert(!GL_check_error())
+//#define GL(x) GL_clear_error(); x; assert(!GL_check_error())
 
-//#define GL(x) x;
+#define GL(x) x;
 
 
 

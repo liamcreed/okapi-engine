@@ -5,12 +5,17 @@ struct mesh_joint_t
 {
     u32 id;
     char name[32];
-    mesh_joint_t* children;
+
+    i32 parent_id;
     u32 child_count;
-    mesh_joint_t* parent;
+
+    vec4_t rotation;
+    vec3_t location;
+
     mat4_t anim_transform;
-    mat4_t model_transform;
-    mat4_t inverse_bind_transform;
+    mat4_t global_bind_matrix;
+    mat4_t local_bind_matrix;
+    mat4_t inverse_bind_matrix;
 };
 
 typedef struct
@@ -44,9 +49,9 @@ typedef struct
 typedef struct
 {
     char name[32];
-    mesh_joint_t root_joint;
     u32 joint_count;
-    mesh_joint_t* joints[MAX_JOINT_COUNT];
+    mesh_joint_t joints[MAX_JOINT_COUNT];
+    mat4_t joint_matrices[MAX_JOINT_COUNT];
 } mesh_armature_t;
 
 void mesh_animation_play(mesh_armature_t* armature, mesh_animation_t* animation, f32 dt);

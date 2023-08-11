@@ -3,45 +3,70 @@
 #define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
 
-void skeleton_build_joint_hierarchy(mesh_joint_t* root, mesh_armature_t* armature, cgltf_skin* skin, cgltf_node* node)
+void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
 {
-    printf("-------------------\n");
-
-    strncpy(root->name, node->name, sizeof(root->name) -1);
-    root->name[sizeof(root->name) - 1] = '\0';
-    printf("NAME: %s\n", root->name);
-
-    root->child_count = node->children_count;
-    printf("CHILD COUNT: %u\n", root->child_count);
-
-    for (i32 i = 0; i < skin->joints_count; i++)
+    armature->joint_count = skin->joints_count;
+    for (i32 i = 0; i < armature->joint_count; i++)
     {
-        if(node == skin->joints[i])
-            root->id = i;
-    }
-    armature->joints[root->id] = root;
+        printf("-------------------\n");
+        cgltf_node* current_node = skin->joints[i];
+        armature->joints[i].id = i;
+        printf("ID: %u\n", armature->joints[i].id);
 
-    printf("ID %u\n", root->id); 
+        strncpy(armature->joints[i].name, current_node->name, sizeof(armature->joints[i].name) - 1);
+        printf("NAME: %s\n", armature->joints[i].name);
 
-    f32 inverse_bind_matrix[16];
-    cgltf_accessor_read_float(skin->inverse_bind_matrices, root->id,inverse_bind_matrix, 16);
-    root->inverse_bind_transform = mat4_1D_to_2D(inverse_bind_matrix);
-    mat4_print(root->inverse_bind_transform);
+        armature->joints[i].child_count = current_node->children_count;
+        printf("CHILDREN count: %u\n", armature->joints[i].child_count);
 
-    root->anim_transform = mat4_new(1);
+        armature->joints[i].parent_id = -1;
 
-    if (root->child_count > 0)
-    {
-        root->children = malloc(sizeof(mesh_joint_t) * root->child_count);
-        for (u32 i = 0; i < root->child_count; i++)
+        for (i32 j = 0; j < armature->joint_count; j++)
         {
-            root->children[i].parent = root;
-            skeleton_build_joint_hierarchy(&root->children[i],armature ,skin,node->children[i]);
-            
+            if (strcmp(skin->joints[j]->name, skin->joints[i]->parent->name) == 0)
+                armature->joints[i].parent_id = j;
         }
+
+        printf("PARENT ID: %i\n", armature->joints[i].parent_id);
+
+        f32 trans_global[16];
+        cgltf_node_transform_world(current_node, trans_global);
+        armature->joints[i].global_bind_matrix = mat4_1D_to_2D(trans_global);
+        printf("GLOBAL:\n");
+        mat4_print(armature->joints[i].global_bind_matrix);
+
+        f32 inverse_bind_matrix[16];
+        cgltf_accessor_read_float(skin->inverse_bind_matrices, armature->joints[i].id, inverse_bind_matrix, 16);
+        armature->joints[i].inverse_bind_matrix = mat4_1D_to_2D(inverse_bind_matrix);
+        printf("INVERSE:\n");
+        mat4_print(armature->joints[i].inverse_bind_matrix);
+
+        armature->joints[i].anim_transform = mat4_new(1);
+
+        f32 trans_local[16];
+        cgltf_node_transform_local(current_node, trans_local);
+        armature->joints[i].local_bind_matrix = mat4_1D_to_2D(trans_local);
+        printf("LOCAL:\n");
+        mat4_print(armature->joints[i].local_bind_matrix);
+
+        armature->joints[i].rotation = (vec4_t){ 0,0,0,1 };
+        armature->joints[i].location = (vec3_t){ 0,0,0 };
+
+        armature->joints[i].location.x = skin->joints[i]->translation[0];
+        armature->joints[i].location.y = skin->joints[i]->translation[1];
+        armature->joints[i].location.z = skin->joints[i]->translation[2];
+        
+        vec3_print(armature->joints[i].location);
+
+        armature->joints[i].rotation.x = skin->joints[i]->rotation[0];
+        armature->joints[i].rotation.y = skin->joints[i]->rotation[1];
+        armature->joints[i].rotation.z = skin->joints[i]->rotation[2];
+        armature->joints[i].rotation.w = skin->joints[i]->rotation[3];
+        quat_print(armature->joints[i].rotation);
+
     }
-    
 }
+
 
 
 void model_3D_create(model_3D_t* model)
@@ -131,7 +156,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     texture_create(&empty_color_map);
 
     u8 empty_orm_data[] = { 255, 255, 0, 255 };
-    texture_t empty_orm_map = 
+    texture_t empty_orm_map =
     {
         .data = empty_orm_data,
         .channel_count = 4,
@@ -166,19 +191,19 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     }
 
     model->animation_count = gltf_data->animations_count;
-    for (i32 a = 0; a < model->animation_count; a++)
-    {
-        strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
-        model->animations[a].name[sizeof(model->animations[a].name)-1] = '\0';
-    }
-    if(model->animation_count)
-    {
-        cgltf_node* root_node = gltf_data->skins[0].joints[0];
-        model->armature.joint_count = gltf_data->skins[0].joints_count;
-        skeleton_build_joint_hierarchy(&model->armature.root_joint, &model->armature,gltf_data->skins, root_node);
 
+
+    if (model->animation_count)
+    {
+        armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
+
+        for (i32 a = 0; a < model->animation_count; a++)
+        {
+            strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
+            model->animations[a].name[sizeof(model->animations[a].name) - 1] = '\0';
+        }
     }
-    
+
 
     model->mesh_count = gltf_data->meshes_count;
     for (i32 m = 0; m < model->mesh_count; m++)
@@ -241,19 +266,6 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         }
     }
     free(gltf_data);
-
-
-    FILE* file;
-    file = fopen("./res/3D/knight.okp3D", "wb");
-    fwrite(&model->mesh_count, sizeof(u32), 1, file);
-    for (i32 m = 0; m < model->mesh_count; m++)
-    {
-        fwrite(model->meshes[m].name, 1, 32, file);
-        fwrite(&model->meshes[m].primitive_count, sizeof(u32), 1, file);
-
-    }
-
-    fclose(file);
 
 
     model_3D_create(model);
