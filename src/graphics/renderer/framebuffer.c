@@ -5,14 +5,13 @@ void framebuffer_create(framebuffer_t* framebuffer)
     if (framebuffer->texture.width == 0 || framebuffer->texture.height == 0)
         printf(LOG_WARNING"[Framebuffer]: resolution is x: 0, y: 0 !!\n");
 
-    printf("%i\n", framebuffer->color);
     if (framebuffer->color == false && framebuffer->depth == false && framebuffer->stencil == false)
         printf(LOG_WARNING"[Framebuffer]: no color, depth and stencil!!\n");
 
     GL(glGenFramebuffers(1, &framebuffer->fbo));
     GL(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->fbo));
 
-    if (framebuffer->samples != 0)
+    if (framebuffer->sample_count != 0)
     {
         GL(glGenTextures(1, &framebuffer->texture.id));
         GL(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, framebuffer->texture.id));
@@ -24,7 +23,7 @@ void framebuffer_create(framebuffer_t* framebuffer)
         {
             GL(glGenRenderbuffers(1, &framebuffer->rbo));
             GL(glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->rbo));
-            GL(glRenderbufferStorageMultisample(GL_RENDERBUFFER, framebuffer->samples, GL_DEPTH24_STENCIL8, framebuffer->texture.width, framebuffer->texture.height));
+            GL(glRenderbufferStorageMultisample(GL_RENDERBUFFER, framebuffer->sample_count, GL_DEPTH24_STENCIL8, framebuffer->texture.width, framebuffer->texture.height));
             GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, framebuffer->rbo));
         }
     }

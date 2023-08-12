@@ -91,8 +91,14 @@ void renderer_create(renderer_t* renderer)
         .color = true,
         .depth = true,
         .texture.width = renderer->width,
-        .texture.height = renderer->height
+        .texture.height = renderer->height,
     };
+    if (renderer->msaa)
+        renderer->scene_buffer.sample_count = 4;
+    else
+        renderer->scene_buffer.sample_count = 0;
+    framebuffer_create(&renderer->scene_buffer);
+
     renderer->pp_buffer = (framebuffer_t)
     {
         .color = true,
@@ -101,7 +107,6 @@ void renderer_create(renderer_t* renderer)
         .texture.width = renderer->width,
         .texture.height = renderer->height
     };
-    framebuffer_create(&renderer->scene_buffer);
     framebuffer_create(&renderer->pp_buffer);
 
     vertex_array_create(&renderer->scene_buffer_va);
@@ -164,6 +169,7 @@ void renderer_exit(renderer_t* renderer)
     shader_delete(&renderer->anim_mesh_shader);
     shader_delete(&renderer->pp_shader);
     shader_delete(&renderer->quad_shader);
+    vertex_array_delete(&renderer->quad_va);
     vertex_array_delete(&renderer->scene_buffer_va);
 }
 
@@ -184,6 +190,45 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
         shader_set_uniform_mat4(shader, "u_model", transform);
 
 
+        u32 keyframe = 0;
+        if (key_pressed(renderer->window, KEY_I))
+            keyframe = 1;
+        else if (key_pressed(renderer->window, KEY_O))
+            keyframe = 2;
+        if (key_pressed(renderer->window, KEY_P))
+            keyframe = 3;
+
+        for (i32 j = 0; j < model->armature.joint_count; j++)
+        {
+            mesh_joint_t* joint = &model->armature.joints[j];
+
+            joint->rotation = quat_lerp(joint->rotation, model->animations[1].rotations[joint->id][keyframe].rotation, 10 * renderer->window->dt);
+
+            mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
+            mat4_t global_matrix = local_transform;
+
+            mesh_joint_t* next_joint = joint;
+
+            while (next_joint->parent_id != -1)
+            {
+                mesh_joint_t* parent_joint = &model->armature.joints[next_joint->parent_id];
+
+                mat4_t parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
+                global_matrix = mat4_multiply(parent_local_transform, global_matrix);
+
+                next_joint = parent_joint;
+            }
+
+            joint->anim_transform = mat4_multiply(global_matrix, joint->inverse_bind_matrix);
+
+            model->armature.joint_matrices[j] = joint->anim_transform;
+        }
+
+        if (model->armature.joint_count != 0)
+            shader_set_uniform_mat4_arr(shader, "joint_matrices", model->armature.joint_matrices, model->armature.joint_count);
+
+
+
         for (i32 m = 0; m < model->mesh_count; m++)
         {
             for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
@@ -193,38 +238,6 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
                 texture_bind(&model->materials[model->meshes[m].primitives[p].material_index].diffuse_map, 0);
                 shader_set_uniform_int(shader, "u_diffuse_map", 0);
 
-                //normalize?
-                vec4_t rotation = quat_angle_axis(100 * renderer->window->dt, (vec3_t) { 1, 0, 0 });
-                model->armature.joints[1].rotation = quat_multiply(model->armature.joints[1].rotation, rotation);
-
-                for (i32 j = 0; j < model->armature.joint_count; j++)
-                {
-                    mesh_joint_t* joint = &model->armature.joints[j];
-
-                    mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
-                    mat4_t global_matrix = local_transform;
-
-                    mesh_joint_t* next_joint = joint;
-
-                    while (next_joint->parent_id != -1)
-                    {
-                        mesh_joint_t* parent_joint = &model->armature.joints[next_joint->parent_id];
-
-                        mat4_t parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
-                        global_matrix = mat4_multiply(parent_local_transform, global_matrix);
-
-                        next_joint = parent_joint;
-                    }
-
-                    mat4_t transform = mat4_multiply(global_matrix, joint->inverse_bind_matrix);
-
-                    joint->anim_transform = transform;
-
-                    model->armature.joint_matrices[j] = joint->anim_transform;
-                }
-
-
-                shader_set_uniform_mat4_arr(shader, "joint_matrices", model->armature.joint_matrices, model->armature.joint_count);
 
                 vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 

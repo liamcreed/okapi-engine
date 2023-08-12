@@ -2,13 +2,12 @@
 
 #include "graphics/graphics.h"
 
-
-
 typedef struct
 {
     window_t* window;
     u32 width;
     u32 height;
+    bool msaa;
 
     vec4_t clear_color;
 

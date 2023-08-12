@@ -24,15 +24,6 @@ void texture_load_from_TGA(texture_t* texture, const char* path)
         printf(LOG_ERROR"[Texture]: failed to get data from %s\n", path);
 
 
-    for (i32 i = 0; i < length; i += texture->channel_count)
-    {
-        texture->data[i + 0] = image_data[i + 2];
-        texture->data[i + 1] = image_data[i + 1];
-        texture->data[i + 2] = image_data[i + 0];
-        if (texture->channel_count == 4)
-            texture->data[i + 3] = image_data[i + 3];
-    }
-
     for (int y = 0; y < texture->height; y++)
     {
         for (int x = 0; x < texture->width; x++)
@@ -49,6 +40,7 @@ void texture_load_from_TGA(texture_t* texture, const char* path)
     }
 
     free(image_data);
+    
     fclose(file);
 }
 
@@ -134,6 +126,7 @@ void texture_create(texture_t* texture)
 
     GL(glGenerateMipmap(GL_TEXTURE_2D));
     GL(glBindTexture(GL_TEXTURE_2D, 0));
+
 }
 
 void texture_update_data(texture_t* texture)
@@ -161,6 +154,6 @@ void texture_unbind(u32 index)
 
 void texture_delete(texture_t* texture)
 {
-    free(texture->data);
+   // free(texture->data);
     GL(glDeleteTextures(1, &texture->id));
 }

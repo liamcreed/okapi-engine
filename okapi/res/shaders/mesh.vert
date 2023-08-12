@@ -21,25 +21,25 @@ uniform mat4 joint_matrices[MAX_JOINTS];
 
 void main()
 {
-    v_norm = mat3(transpose(inverse(u_model))) * a_norm;
-    v_pos = vec3(u_model * vec4(a_pos, 1.0));   
+    //v_pos = vec3(u_model * vec4(a_pos, 1.0));   
+    v_pos = a_pos;
 
     vec4 total_local_pos = vec4(0);
     vec4 total_norm = vec4(0);
 
+    
     for(int i = 0; i < MAX_WEIGHTS; i++)
     {
         mat4 joint_transform = joint_matrices[a_joints[i]];
 
-        vec4 pose_pos = joint_transform * vec4(a_pos, 1.0);
+        vec4 pose_pos = joint_transform * vec4(v_pos, 1.0);
         total_local_pos += pose_pos * a_weights[i];
 
         vec4 world_normal = joint_transform * vec4(a_norm, 1.0);
-        //total_norm += world_normal * a_weights[i];
-        v_norm = mat3(transpose(inverse(u_model))) * mat3(joint_transform) * a_norm;
+        total_norm += world_normal * a_weights[i];
     }
 
-    //v_norm = total_norm.xyz;
+    v_norm = mat3(transpose(inverse(u_model))) * total_norm.xyz;
     
     
     

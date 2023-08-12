@@ -1,49 +1,60 @@
 TODO:
 
-rework frambuffer system
-
-opengl error checking
-
-geometry shader for skeletons
-
-check for creating if everthing is initialized
-
-export gltf data as binary
+GOALS: 2d rendenderer with simple physics and collision -> 3d collision
 
 
-dont sttore children and parents as pointer but as index;
 
-Math
-    - inverse bind matrix
+
+general:
+    check for creating if everthing is initialized
+
+    shaders not inside renderer but inside game loop; 
+    in renderer start loop through array of shaders and set matrices;
+    when draw quad, model etc, specify what shader
+
+    SHADING DOESNT WORK (kinda)
+
+    fix thing with freeing texture when texture data is from array it doesnt need to be free
+
+    ADD COMMENTS
+
+    GLTF parsing in seperate file
+
+Math:
+    - return matrix instead of multiplying and only multpily when necessery
+    - multiply mat4 with a vector
     - dot product quat
     - more funcs for structs
     - dont multiply if matrix is mat4_new;
     - rotation on camera direction axis
 
-Lighting
+Lighting:
     - lighting system multiple lights;
     - Shadows only for directtional light
     - Bloom
     - mist https://www.youtube.com/watch?v=qslBNLeSPUc
 
-OPengl
+OPengl:
+    - rework frambuffer system
     - uniform buffer matrices
+    - geometry shader for skeletons
     - Framebuffer alpha transparency
     - vertex array attrubute type in function
     - inversing matrix 3D on the cpu
     - Instanced renderering
     
-    2D renderer:
-    - QUADs
+2D renderer:
+    - QUAD batched
     - UI
     
-    GLTF   
+GLTF:   
+    - export gltf data as binary
     - Identical meshes
     - Lights
     - Mesh name identification for ECS
     
     
-    Window:
+Window:
     - window resize    create framebuffer again;
     - scroll input
     - clean up
@@ -51,43 +62,11 @@ OPengl
 Post processing:
     Chromatic abberation
     vec3 col;
-    float amount = 0.001;
-    col.r = texture( u_texture, vec2(v_uv.x+amount,v_uv.y)).r;
-    col.g = texture( u_texture, v_uv).g;
+    float amount = 0.002;
+    col.r = texture( u_texture, vec2(v_uv.x + amount,v_uv.y)).r;
+    col.g = texture(u_texture, v_uv).g;
     col.b = texture( u_texture, vec2(v_uv.x-amount,v_uv.y)).b;
-    
+
 	col *= (1.0 - amount * 0.5);
     
-    f_color = vec4(col, 1.0f);
-
-    /////////////asfasfas:
-
-    shader_t toon_shader =
-    {
-        .v_path = "./res/shaders/toon.vert",
-        .f_path = "./res/shaders/toon.vert",
-    };
-    shader_create(&toon_shader);
-
-    shader_t quad_shader =
-    {
-        .v_path = "./res/shaders/quad.vert",
-        .f_path = "./res/shaders/quad.vert",
-    };
-    shader_create(&quad_shader);
-
-    shader_t pp_shader =
-    {
-        .v_path = "./res/shaders/pp.vert",
-        .f_path = "./res/shaders/pp.vert",
-    };
-    shader_create(&pp_shader);
-
-    shader_t shader[] = {toon_shader, quad_shader, pp_shader};
-
-
-    Renderer: support for using custom shadedr like 
-    renderer( shader array)
-        for shader
-        set matrix
-    draw mesh ( shader* shader)
+    f_color = vec4(col,1); 

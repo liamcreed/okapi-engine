@@ -7,45 +7,42 @@ struct mesh_joint_t
     char name[32];
 
     i32 parent_id;
-    u32 child_count;
 
     vec4_t rotation;
     vec3_t location;
 
     mat4_t anim_transform;
-    mat4_t global_bind_matrix;
+
     mat4_t local_bind_matrix;
     mat4_t inverse_bind_matrix;
 };
 
 typedef struct
 {
-    vec3_t scale;
-    f32 time;
-} key_frame_scale_t;
-
-typedef struct
-{
     vec4_t rotation;
-    f32 time;
+    f32 time_stamp;
 } key_frame_rot_t;
 
 typedef struct
 {
-    vec3_t position;
-    f32 time;
-} key_frame_trans_t;
+    vec3_t location;
+    f32 time_stamp;
+} key_frame_loc_t;
 
+#define MAX_JOINT_COUNT 32
 #define MAX_KEY_FRAME_COUNT 32
+
 typedef struct
 {
     char name[64];
-    key_frame_scale_t key_frame_scale[MAX_KEY_FRAME_COUNT];
-    key_frame_trans_t key_frame_trans[MAX_KEY_FRAME_COUNT];
-    key_frame_rot_t key_frame_rot[MAX_KEY_FRAME_COUNT];
+    f32 duration;
+
+    key_frame_loc_t locations[MAX_JOINT_COUNT][MAX_KEY_FRAME_COUNT];
+    u32 locations_count;
+    key_frame_rot_t rotations[MAX_JOINT_COUNT][MAX_KEY_FRAME_COUNT];
+    u32 rotations_count;
 } mesh_animation_t;
 
-#define MAX_JOINT_COUNT 32
 typedef struct
 {
     char name[32];

@@ -66,17 +66,17 @@ void vertex_array_unbind()
 {
     GL(glBindVertexArray(0));
 }
-void vertex_array_push_attribute_f(u32 index, u32 size, size_t stride, size_t offset)
+void vertex_array_push_attribute_f(u32 index, size_t size, size_t stride, size_t offset)
 {
     GL(glVertexAttribPointer(index, size, GL_FLOAT, GL_FALSE, stride, (void *)offset));
     GL(glEnableVertexAttribArray(index));
 }
-void vertex_array_push_attribute_i(u32 index, u32 size, size_t stride, size_t offset)
+void vertex_array_push_attribute_i(u32 index, size_t size, size_t stride, size_t offset)
 {
     GL(glVertexAttribIPointer(index, size, GL_INT, stride, (void *)offset));
     GL(glEnableVertexAttribArray(index));
 }
-void vertex_array_push_attribute_ub(u32 index, u32 size, size_t stride, size_t offset)
+void vertex_array_push_attribute_ub(u32 index, size_t size, size_t stride, size_t offset)
 {
     GL(glVertexAttribIPointer(index, size, GL_UNSIGNED_BYTE, stride, (void *)offset));
     GL(glEnableVertexAttribArray(index));

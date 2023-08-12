@@ -21,11 +21,13 @@ typedef struct
 typedef struct
 {
     u32 id;
+    bool filter, sRGB;
+
+    //stored in binary
     u32 width;
     u32 height;
     u32 channel_count;
     u8* data;
-    bool filter, sRGB;
 } texture_t;
 
 void texture_load_from_TGA(texture_t *texture, const char *path);

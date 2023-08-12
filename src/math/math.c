@@ -42,15 +42,34 @@ vec4_t quat_multiply(vec4_t q1, vec4_t q2)
         (q1.w * q2.w) - (q1.x * q2.x) - (q1.y * q2.y) - (q1.z * q2.z),  
     };
 }
-void quat_print(vec4_t q)
+void vec4_print(vec4_t q)
 {
     printf("Quaternion: x: %f, y: %f, z: %f, w: %f\n", q.x, q.y, q.z, q.w);
 }
 
+float vec4_dot(vec4_t v1, vec4_t v2)
+{
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
+}
 vec4_t quat_lerp(vec4_t q1, vec4_t q2, f32 f)
 {
     vec4_t result = (vec4_t){0,0,0,1};
-    return result;
+    float dot = vec4_dot(q1, q2);
+    float blend_i = 1.0f - f;
+    if(dot < 0)
+    {
+        result.x = blend_i * q1.x + f * -q2.x;
+        result.y = blend_i * q1.y + f * -q2.y;
+        result.z = blend_i * q1.z + f * -q2.z;
+        result.w = blend_i * q1.w + f * -q2.w;
+    }else
+    {
+        result.x = blend_i * q1.x + f * q2.x;
+        result.y = blend_i * q1.y + f * q2.y;
+        result.z = blend_i * q1.z + f * q2.z;
+        result.w = blend_i * q1.w + f * q2.w;
+    }
+    return vec4_normalize(result);
 }
 f32 lerp(f32 a, f32 b, f32 f)
 {

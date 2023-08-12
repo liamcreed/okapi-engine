@@ -19,7 +19,7 @@ link_directories(dep/glfw)
 include_directories(src)
 add_executable(okapi
 src/main/main.c
-src/tools/tools.c
+
 src/math/math.c
 src/math/vec.c
 src/math/mat4.c
@@ -33,7 +33,9 @@ src/graphics/renderer/texture.c
 src/graphics/renderer/shader.c
 src/graphics/renderer/vertexarray.c
 src/graphics/renderer/framebuffer.c
+
 src/graphics/3D/model.c
+src/graphics/3D/gltf.c
 )
 
 IF (WIN32)
