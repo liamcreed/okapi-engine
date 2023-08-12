@@ -12,7 +12,7 @@ general:
 
     SHADING DOESNT WORK!!!
 
-    GLTF parsing in seperate file
+    GLTF parsing in seperate file (INITIAILZE ALL STRUCTS TO ZERO)
 
     shaders not inside renderer but inside game loop; 
     in renderer start loop through array of shaders and set matrices;

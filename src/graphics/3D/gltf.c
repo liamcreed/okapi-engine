@@ -18,13 +18,12 @@ void texture_load_from_PNG(texture_t* texture, const char* path)
     texture->height = y;
     texture->channel_count = channel_count;
 
-    if(texture->data == NULL)
+    if (texture->data == NULL)
     {
         printf(LOG_ERROR"[texture]: failed to load texture: %s\n", path);
         exit(-1);
     }
 }
-
 
 void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
 {
@@ -32,6 +31,8 @@ void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
     for (i32 i = 0; i < armature->joint_count; i++)
     {
         cgltf_node* current_node = skin->joints[i];
+
+        armature->joints[i] = (mesh_joint_t){};
         armature->joints[i].id = i;
 
         strncpy(armature->joints[i].name, current_node->name, sizeof(armature->joints[i].name) - 1);
@@ -64,18 +65,6 @@ void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
         armature->joints[i].rotation.y = skin->joints[i]->rotation[1];
         armature->joints[i].rotation.z = skin->joints[i]->rotation[2];
         armature->joints[i].rotation.w = skin->joints[i]->rotation[3];
-
-        //printf("ID: %u\n", armature->joints[i].id);
-        //printf("NAME: %s\n", armature->joints[i].name);
-        //printf("PARENT ID: %i\n", armature->joints[i].parent_id);
-        //printf("INVERSE:\n");
-        //mat4_print(armature->joints[i].inverse_bind_matrix);
-
-        //printf("LOCAL:\n");
-        //mat4_print(armature->joints[i].local_bind_matrix);
-        //vec3_print(armature->joints[i].location);
-
-        //vec4_print(armature->joints[i].rotation);
     }
 }
 
@@ -126,7 +115,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         exit(-1);
     }
 
-    printf("%u\n", gltf_data->skins_count);
+    //--------------------------------------------------//
+
     if (gltf_data->skins_count)
     {
         armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
@@ -135,17 +125,26 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
         for (i32 a = 0; a < model->animation_count; a++)
         {
+            model->animations[a] = (mesh_animation_t){};
+
             strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
             model->animations[a].name[sizeof(model->animations[a].name) - 1] = '\0';
+            model->animations[a].duration = 0;
             printf("Animation name: %s\n", model->animations[a].name);
 
-            model->animations[a].locations_count = 0;
-            model->animations[a].rotations_count = 0;
+            for (u32 j = 0; j < model->armature.joint_count; j++)
+            {
+                for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
+                {
+                    model->animations[a].rotations[j][k].rotation = model->armature.joints[j].rotation;
+                    model->animations[a].locations[j][k].location = model->armature.joints[j].location;
+                }
+                model->animations[a].locations_count[j] = 0;
+                model->animations[a].rotations_count[j] = 0;
+            }
 
-            model->animations[a].duration = 0;
 
             u32 channel_count = gltf_data->animations[a].channels_count;
-            //printf("CHANNEL: COUNT: %u\n", channel_count);
 
             float sampler_max = 0;
             for (i32 c = 0; c < channel_count; c++)
@@ -157,6 +156,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         sampler_max = current_anim_channel->sampler->input->max[s];
                 }
             }
+            
             model->animations[a].duration = sampler_max;
 
             for (i32 c = 0; c < channel_count; c++)
@@ -170,12 +170,9 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         current_anim_joint = j;
                 }
 
-                model->animations[a].rotations_count += 1;
 
                 cgltf_accessor* timestamp_accessor = current_anim_channel->sampler->input;
                 cgltf_accessor* transform_accessor = current_anim_channel->sampler->output;
-
-                //printf("current joint: %i %s\n", current_anim_joint, gltf_data->skins->joints[current_anim_joint]->name);
 
                 for (i32 i = 0; i < timestamp_accessor->count; ++i)
                 {
@@ -188,6 +185,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
                     if (current_anim_channel->target_path == cgltf_animation_path_type_rotation)
                     {
+                        model->animations[a].rotations_count[current_anim_joint] += 1;
+
                         f32 rotation[4];
                         cgltf_accessor_read_float(transform_accessor, index, rotation, 4);
 
@@ -199,11 +198,10 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
                         model->animations[a].rotations[current_anim_joint][i].rotation = joint_rotation;
                         model->animations[a].rotations[current_anim_joint][i].time_stamp = time_stamp;
-
-                        //printf("%d: (%f, %f, %f, %f)\n", i, rotation[0], rotation[1], rotation[2], rotation[3]);
                     }
                     else if (current_anim_channel->target_path == cgltf_animation_path_type_translation)
                     {
+                        model->animations[a].locations_count[current_anim_joint] += 1;
                         f32 location[3];
                         cgltf_accessor_read_float(transform_accessor, index, location, 3);
 
@@ -214,10 +212,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
                         model->animations[a].locations[current_anim_joint][i].location = joint_location;
                         model->animations[a].locations[current_anim_joint][i].time_stamp = time_stamp;
-
-                        //printf("%d: (%f, %f, %f)\n", i, location[0], location[1], location[2]);
                     }
-                    //printf("Timestamp: %f\n", time_stamp);
                 }
 
             }
@@ -249,6 +244,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     model->material_count = gltf_data->materials_count;
     for (i32 mat = 0; mat < model->material_count; mat++)
     {
+        model->materials[mat] = (mesh_material_t){};
+
         strncpy(model->materials[mat].name, gltf_data->materials[mat].name, sizeof(model->materials[mat].name) - 1);
         model->materials[mat].name[sizeof(model->materials[mat].name) - 1] = '\0';
 
@@ -269,16 +266,20 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         model->materials[mat].orm_map = empty_orm_map;
         model->materials[mat].normal_map = empty_color_map;
     }
-    
+
     model->mesh_count = gltf_data->meshes_count;
     for (i32 m = 0; m < model->mesh_count; m++)
     {
+        model->meshes[m] = (mesh_t){};
+
         strncpy(model->meshes[m].name, gltf_data->meshes[m].name, sizeof(model->meshes[m].name) - 1);
         model->meshes[m].name[sizeof(model->meshes[m].name) - 1] = '\0';
 
         model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
+            model->meshes[m].primitives[p] = (mesh_primitive_t){};
+
             bool material_found;
             for (i32 mat = 0; mat < model->material_count; mat++)
             {
@@ -324,6 +325,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
             for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
             {
+                model->meshes[m].primitives[p].attributes[atr] = (mesh_vertex_attribute_t){};
+
                 model->meshes[m].primitives[p].attributes[atr].offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
                 model->meshes[m].primitives[p].attributes[atr].stride = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->stride;
                 strncpy(model->meshes[m].primitives[p].attributes[atr].name, gltf_data->meshes[m].primitives[p].attributes[atr].name, sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1);
@@ -332,7 +335,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
         }
     }
-    
+
     free(gltf_data);
 
     model_3D_create(model);

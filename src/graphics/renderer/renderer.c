@@ -172,6 +172,42 @@ void renderer_exit(renderer_t* renderer)
     vertex_array_delete(&renderer->scene_buffer_va);
 }
 
+
+void armature_update_transforms(mesh_armature_t* armature)
+{
+    for (i32 j = 0; j < armature->joint_count; j++)
+    {
+        mesh_joint_t* joint = &armature->joints[j];
+
+        mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
+        mat4_t global_matrix = local_transform;
+
+        mesh_joint_t* next_joint = joint;
+
+        while (next_joint->parent_id != -1)
+        {
+            mesh_joint_t* parent_joint = &armature->joints[next_joint->parent_id];
+
+            mat4_t parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
+            global_matrix = mat4_multiply(parent_local_transform, global_matrix);
+
+            next_joint = parent_joint;
+        }
+
+        joint->anim_transform = mat4_multiply(global_matrix, joint->inverse_bind_matrix);
+
+        armature->joint_matrices[j] = joint->anim_transform;
+    }
+}
+
+
+
+
+
+
+
+
+
 void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* model, vec3_t position, f32 size, vec4_t rotation)
 {
     if (model->mesh_count != 0)
@@ -184,50 +220,37 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
             transform = mat4_scale(transform, (vec3_t) { size, size, size });
 
         shader_t* shader = &renderer->mesh_shader;
-
         shader_set_uniform_mat4(shader, "u_model", transform);
 
 
-        u32 keyframe = 0;
-        if (key_pressed(renderer->window, KEY_I))
-            keyframe = 1;
-        else if (key_pressed(renderer->window, KEY_O))
-            keyframe = 2;
-        if (key_pressed(renderer->window, KEY_P))
-            keyframe = 3;
+        static float time = 0;
+        time += renderer->window->dt;
 
+        u32 keyframe = time;
+
+        //interpolation should start when frame before is reached and end when keyframe is reached
+
+        mesh_animation_t* current_animation = &model->animations[1];
         for (i32 j = 0; j < model->armature.joint_count; j++)
         {
             mesh_joint_t* joint = &model->armature.joints[j];
-
-            joint->rotation = quat_lerp(joint->rotation, model->animations[1].rotations[joint->id][keyframe].rotation, 10 * renderer->window->dt);
-            joint->location = vec3_lerp(joint->location, model->animations[1].locations[joint->id][keyframe].location, 10 * renderer->window->dt);
-
-            mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
-            mat4_t global_matrix = local_transform;
-
-            mesh_joint_t* next_joint = joint;
-
-            while (next_joint->parent_id != -1)
+            for (i32 r = 0; r < current_animation->rotations_count[j]; r++)
             {
-                mesh_joint_t* parent_joint = &model->armature.joints[next_joint->parent_id];
-
-                mat4_t parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
-                global_matrix = mat4_multiply(parent_local_transform, global_matrix);
-
-                next_joint = parent_joint;
+                float time_stamp = current_animation->rotations[j][r].time_stamp;
+                // calc difference bettween frames and interpolate between the the frames
             }
 
-            joint->anim_transform = mat4_multiply(global_matrix, joint->inverse_bind_matrix);
-
-            model->armature.joint_matrices[j] = joint->anim_transform;
+            joint->rotation = quat_lerp(joint->rotation, model->animations[1].rotations[joint->id][keyframe].rotation, 1*renderer->window->dt);
+            joint->location = vec3_lerp(joint->location, model->animations[1].locations[joint->id][keyframe].location, 1*renderer->window->dt);
         }
+        armature_update_transforms(&model->armature);
 
         if (model->armature.joint_count != 0)
         {
             shader_set_uniform_mat4_arr(shader, "joint_matrices", model->armature.joint_matrices, model->armature.joint_count);
             shader_set_uniform_int(shader, "u_skinning", 1);
-        }else
+        }
+        else
         {
             shader_set_uniform_int(shader, "u_skinning", 0);
         }

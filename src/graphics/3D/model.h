@@ -38,9 +38,9 @@ typedef struct
     f32 duration;
 
     key_frame_loc_t locations[MAX_JOINT_COUNT][MAX_KEY_FRAME_COUNT];
-    u32 locations_count;
+    u32 locations_count[MAX_JOINT_COUNT];
     key_frame_rot_t rotations[MAX_JOINT_COUNT][MAX_KEY_FRAME_COUNT];
-    u32 rotations_count;
+    u32 rotations_count[MAX_JOINT_COUNT];
 } mesh_animation_t;
 
 typedef struct
