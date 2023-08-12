@@ -1,4 +1,3 @@
-
 #include "graphics/graphics.h"
 
 void texture_load_from_TGA(texture_t* texture, const char* path)
@@ -43,6 +42,8 @@ void texture_load_from_TGA(texture_t* texture, const char* path)
     
     fclose(file);
 }
+
+
 
 void texture_load_from_bin(texture_t* texture, const char* path)
 {

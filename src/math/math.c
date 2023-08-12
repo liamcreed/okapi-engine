@@ -58,16 +58,16 @@ vec4_t quat_lerp(vec4_t q1, vec4_t q2, f32 f)
     float blend_i = 1.0f - f;
     if(dot < 0)
     {
-        result.x = blend_i * q1.x + f * -q2.x;
-        result.y = blend_i * q1.y + f * -q2.y;
-        result.z = blend_i * q1.z + f * -q2.z;
-        result.w = blend_i * q1.w + f * -q2.w;
+        result.x = (blend_i * q1.x) + (f * -q2.x);
+        result.y = (blend_i * q1.y) + (f * -q2.y);
+        result.z = (blend_i * q1.z) + (f * -q2.z);
+        result.w = (blend_i * q1.w) + (f * -q2.w);
     }else
     {
-        result.x = blend_i * q1.x + f * q2.x;
-        result.y = blend_i * q1.y + f * q2.y;
-        result.z = blend_i * q1.z + f * q2.z;
-        result.w = blend_i * q1.w + f * q2.w;
+        result.x = (blend_i * q1.x) + (f * q2.x);
+        result.y = (blend_i * q1.y) + (f * q2.y);
+        result.z = (blend_i * q1.z) + (f * q2.z);
+        result.w = (blend_i * q1.w) + (f * q2.w);
     }
     return vec4_normalize(result);
 }

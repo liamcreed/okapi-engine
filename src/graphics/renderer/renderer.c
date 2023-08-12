@@ -54,7 +54,6 @@ void renderer_create(renderer_t* renderer)
     };
     shader_create(&renderer->quad_shader);
 
-
     vertex_array_create(&renderer->quad_va);
     vertex_array_create_vbo(&renderer->quad_va, quad_vertices, sizeof(quad_vertices), false);
     vertex_array_push_attribute_f(0, 3, 5 * sizeof(f32), 0);
@@ -173,7 +172,6 @@ void renderer_exit(renderer_t* renderer)
     vertex_array_delete(&renderer->scene_buffer_va);
 }
 
-
 void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* model, vec3_t position, f32 size, vec4_t rotation)
 {
     if (model->mesh_count != 0)
@@ -203,6 +201,7 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
             mesh_joint_t* joint = &model->armature.joints[j];
 
             joint->rotation = quat_lerp(joint->rotation, model->animations[1].rotations[joint->id][keyframe].rotation, 10 * renderer->window->dt);
+            joint->location = vec3_lerp(joint->location, model->animations[1].locations[joint->id][keyframe].location, 10 * renderer->window->dt);
 
             mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
             mat4_t global_matrix = local_transform;
@@ -225,7 +224,13 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
         }
 
         if (model->armature.joint_count != 0)
+        {
             shader_set_uniform_mat4_arr(shader, "joint_matrices", model->armature.joint_matrices, model->armature.joint_count);
+            shader_set_uniform_int(shader, "u_skinning", 1);
+        }else
+        {
+            shader_set_uniform_int(shader, "u_skinning", 0);
+        }
 
 
 

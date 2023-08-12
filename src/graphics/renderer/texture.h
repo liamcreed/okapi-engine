@@ -31,6 +31,7 @@ typedef struct
 } texture_t;
 
 void texture_load_from_TGA(texture_t *texture, const char *path);
+
 void texture_export_to_bin(texture_t* texture, const char* path);
 void texture_TGA_to_bin(const char* TGA, const char* bin);
 void texture_load_from_bin(texture_t *texture, const char *path);

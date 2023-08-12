@@ -33,14 +33,6 @@ int main()
     model_3D_t player_model = {};
     model_3D_load_from_GLTF(&player_model, "./res/3D/knight/knight.gltf");
 
-    texture_t texture =
-    {
-        .sRGB = true,
-        .filter = false
-    };
-    texture_load_from_bin(&texture, "./res/textures/random.okpt");
-    texture_create(&texture);
-
     while (!window.closed)
     {
         window_update(&window);
@@ -49,6 +41,8 @@ int main()
         else
             renderer.proj_mat = mat4_perspective(camera.fov, window.aspect, camera.near, camera.far);
 
+        //-------------------------------------------------//
+        
         static vec3_t cam_pos = { 0,1,6 };
         float cam_speed = 3;
         if (key_pressed(&window, KEY_LEFT_SHIFT))
@@ -78,9 +72,7 @@ int main()
             rot += window.dt * 80;
 
         renderer_draw_model_3D(&renderer, &camera, &player_model, (vec3_t) { 0, 0, 1 }, 1, quat_angle_axis(rot, (vec3_t) { 0, 1, 0 }));
-
-        renderer_draw_quad(&renderer, &texture, (vec4_t) { 1, 1, 1, 1 }, (vec3_t) { 0, 0, 0 }, (vec3_t) { 5, 5, 1 }, (vec4_t) {});
-
+       
         renderer_end(&renderer);
     }
     model_3D_delete(&player_model);

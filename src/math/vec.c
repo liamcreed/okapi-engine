@@ -54,6 +54,15 @@ vec3_t vec3_multiply_mat4(vec3_t v, mat4_t m)
     };
 }
 
+vec3_t vec3_lerp(vec3_t v1, vec3_t v2, f32 f)
+{
+    vec3_t result;
+    float blend_i = 1.0f - f;
+    result.x =  (v1.x * blend_i) + (v2.x * f);
+    result.y =  (v1.y * blend_i) + (v2.y * f);
+    result.z =  (v1.z * blend_i) + (v2.z * f);
+    return result;
+}
 void vec3_print(vec3_t vector)
 {
     printf("V3: x:%f y:%f z:%f\n", vector.x, vector.y, vector.z);

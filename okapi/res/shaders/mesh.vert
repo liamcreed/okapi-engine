@@ -18,32 +18,39 @@ const int MAX_JOINTS = 32;
 const int MAX_WEIGHTS = 4;
 
 uniform mat4 joint_matrices[MAX_JOINTS];
+uniform int u_skinning;
 
 void main()
 {
-    //v_pos = vec3(u_model * vec4(a_pos, 1.0));   
     v_pos = a_pos;
 
     vec4 total_local_pos = vec4(0);
     vec4 total_norm = vec4(0);
 
     
-    for(int i = 0; i < MAX_WEIGHTS; i++)
+    if(u_skinning == 1)
     {
-        mat4 joint_transform = joint_matrices[a_joints[i]];
+        for(int i = 0; i < MAX_WEIGHTS; i++)
+        {
+            mat4 joint_transform = joint_matrices[a_joints[i]];
 
-        vec4 pose_pos = joint_transform * vec4(v_pos, 1.0);
-        total_local_pos += pose_pos * a_weights[i];
+            vec4 pose_pos = joint_transform * vec4(v_pos, 1.0);
+            total_local_pos += pose_pos * a_weights[i];
 
-        vec4 world_normal = joint_transform * vec4(a_norm, 1.0);
-        total_norm += world_normal * a_weights[i];
+            vec4 world_normal = joint_transform * vec4(a_norm, 1.0);
+            total_norm += world_normal * a_weights[i];
+        }
+
+        v_norm = mat3(transpose(inverse(u_model))) * total_norm.xyz;
+    }else
+    {
+        v_norm =  mat3(transpose(inverse(u_model))) * a_norm;
+        total_local_pos = vec4(v_pos, 1);
     }
-
-    v_norm = mat3(transpose(inverse(u_model))) * total_norm.xyz;
     
-    
+    gl_Position = u_proj * u_view * u_model  * total_local_pos;
     
     v_uv = a_uv;
 
-    gl_Position = u_proj * u_view * u_model  * total_local_pos;
+    
 }

@@ -12,7 +12,6 @@ uniform sampler2D u_normal_map;
 
 void main()
 {
-    
     if(texture(u_diffuse_map, v_uv).a < 1)
         discard;
     
@@ -26,7 +25,7 @@ void main()
 
     vec3 ambient = 0.2 * diffuse_color;
 
-    vec3 light_dir = normalize(-vec3(-.2,-1,-0.5));
+    vec3 light_dir = normalize(-vec3(-1,-1, -1));
     float diff = max(dot(v_norm, light_dir), 0.0);
 
     if(diff > 0.2)
@@ -36,9 +35,6 @@ void main()
     else if(diff < 0.1)
         diff = 0;
     
-     
-
-        
     
     vec3 diffuse = diff * diffuse_color;
 

@@ -1,7 +1,29 @@
 #include "graphics/graphics.h"
 
 #define CGLTF_IMPLEMENTATION
-#include "cgltf/cgltf.h"
+#include <cgltf/cgltf.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
+
+void texture_load_from_PNG(texture_t* texture, const char* path)
+{
+    stbi_set_flip_vertically_on_load(1);
+    int channel_count;
+    int x, y;
+    texture->data = stbi_load(path, &x, &y, &channel_count, 0);
+
+    texture->width = x;
+    texture->height = y;
+    texture->channel_count = channel_count;
+
+    if(texture->data == NULL)
+    {
+        printf(LOG_ERROR"[texture]: failed to load texture: %s\n", path);
+        exit(-1);
+    }
+}
 
 
 void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
@@ -104,6 +126,104 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         exit(-1);
     }
 
+    printf("%u\n", gltf_data->skins_count);
+    if (gltf_data->skins_count)
+    {
+        armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
+
+        model->animation_count = gltf_data->animations_count;
+
+        for (i32 a = 0; a < model->animation_count; a++)
+        {
+            strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
+            model->animations[a].name[sizeof(model->animations[a].name) - 1] = '\0';
+            printf("Animation name: %s\n", model->animations[a].name);
+
+            model->animations[a].locations_count = 0;
+            model->animations[a].rotations_count = 0;
+
+            model->animations[a].duration = 0;
+
+            u32 channel_count = gltf_data->animations[a].channels_count;
+            //printf("CHANNEL: COUNT: %u\n", channel_count);
+
+            float sampler_max = 0;
+            for (i32 c = 0; c < channel_count; c++)
+            {
+                cgltf_animation_channel* current_anim_channel = &gltf_data->animations[a].channels[c];
+                for (i32 s = 0; s < current_anim_channel->sampler->input->count; s++)
+                {
+                    if (current_anim_channel->sampler->input->max[s] > sampler_max)
+                        sampler_max = current_anim_channel->sampler->input->max[s];
+                }
+            }
+            model->animations[a].duration = sampler_max;
+
+            for (i32 c = 0; c < channel_count; c++)
+            {
+                cgltf_animation_channel* current_anim_channel = &gltf_data->animations[a].channels[c];
+
+                i32 current_anim_joint = -1;
+                for (i32 j = 0; j < model->armature.joint_count; j++)
+                {
+                    if (current_anim_channel->target_node == gltf_data->skins->joints[j])
+                        current_anim_joint = j;
+                }
+
+                model->animations[a].rotations_count += 1;
+
+                cgltf_accessor* timestamp_accessor = current_anim_channel->sampler->input;
+                cgltf_accessor* transform_accessor = current_anim_channel->sampler->output;
+
+                //printf("current joint: %i %s\n", current_anim_joint, gltf_data->skins->joints[current_anim_joint]->name);
+
+                for (i32 i = 0; i < timestamp_accessor->count; ++i)
+                {
+                    f32 time_stamp;
+                    cgltf_accessor_read_float(timestamp_accessor, i, &time_stamp, 1);
+
+                    i32 index = i;
+                    if (timestamp_accessor->count < transform_accessor->count)
+                        index = i * 3 + 1;
+
+                    if (current_anim_channel->target_path == cgltf_animation_path_type_rotation)
+                    {
+                        f32 rotation[4];
+                        cgltf_accessor_read_float(transform_accessor, index, rotation, 4);
+
+                        vec4_t joint_rotation;
+                        joint_rotation.x = rotation[0];
+                        joint_rotation.y = rotation[1];
+                        joint_rotation.z = rotation[2];
+                        joint_rotation.w = rotation[3];
+
+                        model->animations[a].rotations[current_anim_joint][i].rotation = joint_rotation;
+                        model->animations[a].rotations[current_anim_joint][i].time_stamp = time_stamp;
+
+                        //printf("%d: (%f, %f, %f, %f)\n", i, rotation[0], rotation[1], rotation[2], rotation[3]);
+                    }
+                    else if (current_anim_channel->target_path == cgltf_animation_path_type_translation)
+                    {
+                        f32 location[3];
+                        cgltf_accessor_read_float(transform_accessor, index, location, 3);
+
+                        vec3_t joint_location;
+                        joint_location.x = location[0];
+                        joint_location.y = location[1];
+                        joint_location.z = location[2];
+
+                        model->animations[a].locations[current_anim_joint][i].location = joint_location;
+                        model->animations[a].locations[current_anim_joint][i].time_stamp = time_stamp;
+
+                        //printf("%d: (%f, %f, %f)\n", i, location[0], location[1], location[2]);
+                    }
+                    //printf("Timestamp: %f\n", time_stamp);
+                }
+
+            }
+        }
+    }
+
     u8 empty_color_data[] = { 128, 128, 255, 255 };
     texture_t empty_color_map =
     {
@@ -136,7 +256,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         {
             char* image_path = get_full_path_from_other(path, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
             model->materials[mat].diffuse_map.sRGB = true;
-            texture_load_from_TGA(&model->materials[mat].diffuse_map, image_path);
+            texture_load_from_PNG(&model->materials[mat].diffuse_map, image_path);
             texture_create(&model->materials[mat].diffuse_map);
             free(image_path);
         }
@@ -149,99 +269,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         model->materials[mat].orm_map = empty_orm_map;
         model->materials[mat].normal_map = empty_color_map;
     }
-
-    armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
-
-    model->animation_count = gltf_data->animations_count;
-
-    for (i32 a = 0; a < model->animation_count; a++)
-    {
-        strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
-        model->animations[a].name[sizeof(model->animations[a].name) - 1] = '\0';
-        printf("%s\n", model->animations[a].name);
-
-        model->animations[a].locations_count = 0;
-        model->animations[a].rotations_count = 0;
-
-        model->animations[a].duration = 0;
-
-        u32 channel_count = gltf_data->animations[a].channels_count;
-        printf("CHANNEL: COUNT: %u\n", channel_count);
-
-        float sampler_max = 0;
-        for (i32 c = 0; c < channel_count; c++)
-        {
-            cgltf_animation_channel* current_anim_channel = &gltf_data->animations[a].channels[c];
-            for (i32 s = 0; s < current_anim_channel->sampler->input->count; s++)
-            {
-                if (current_anim_channel->sampler->input->max[s] > sampler_max)
-                    sampler_max = current_anim_channel->sampler->input->max[s];
-            }
-        }
-        model->animations[a].duration = sampler_max;
-
-        for (i32 c = 0; c < channel_count; c++)
-        {
-            cgltf_animation_channel* current_anim_channel = &gltf_data->animations[a].channels[c];
-
-            i32 current_anim_joint = -1;
-            for (i32 j = 0; j < model->armature.joint_count; j++)
-            {
-                if (current_anim_channel->target_node == gltf_data->skins->joints[j])
-                    current_anim_joint = j;
-            }
-
-            model->animations[a].rotations_count += 1;
-            //printf("current joint: %i %s\n", current_anim_joint, gltf_data->skins->joints[current_anim_joint]->name);
-
-            cgltf_accessor* timestamp_accessor = current_anim_channel->sampler->input;
-            cgltf_accessor* transform_accessor = current_anim_channel->sampler->output;
-
-            for (i32 i = 0; i < timestamp_accessor->count; ++i)
-            {
-                f32 time_stamp;
-                cgltf_accessor_read_float(timestamp_accessor, i, &time_stamp, 1);
-                //printf("Timestamp: %f\n", time_stamp);
-
-                i32 index = i;
-                if (timestamp_accessor->count < transform_accessor->count)
-                    index = i * 3 + 1;
-
-                if (current_anim_channel->target_path == cgltf_animation_path_type_rotation)
-                {
-                    f32 rotation[4];
-                    cgltf_accessor_read_float(transform_accessor, index, rotation, 4);
-                    //printf("%d: (%f, %f, %f, %f)\n", i, rotation[0], rotation[1], rotation[2], rotation[3]);
-
-                    vec4_t joint_rotation;
-                    joint_rotation.x = rotation[0];
-                    joint_rotation.y = rotation[1];
-                    joint_rotation.z = rotation[2];
-                    joint_rotation.w = rotation[3];
-
-                    model->animations[a].rotations[current_anim_joint][i].rotation = joint_rotation;
-                    model->animations[a].rotations[current_anim_joint][i].time_stamp = time_stamp;
-                }
-                else if (current_anim_channel->target_path == cgltf_animation_path_type_translation)
-                {
-                    f32 location[3];
-                    cgltf_accessor_read_float(transform_accessor, index, location, 3);
-                    //printf("%d: (%f, %f, %f)\n", i, location[0], location[1], location[2]);
-
-                    vec3_t joint_location;
-                    joint_location.x = location[0];
-                    joint_location.y = location[1];
-                    joint_location.z = location[2];
-                   
-                    model->animations[a].locations[current_anim_joint][i].location = joint_location;
-                    model->animations[a].locations[current_anim_joint][i].time_stamp = time_stamp;
-                }
-            }
-
-        }
-    }
-
-
+    
     model->mesh_count = gltf_data->meshes_count;
     for (i32 m = 0; m < model->mesh_count; m++)
     {
@@ -291,6 +319,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             else if (index_type == cgltf_component_type_r_32f)
                 model->meshes[m].primitives[p].index_type = GL_FLOAT;
 
+
             model->meshes[m].primitives[p].attribute_count = gltf_data->meshes[m].primitives[p].attributes_count;
 
             for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
@@ -300,8 +329,10 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                 strncpy(model->meshes[m].primitives[p].attributes[atr].name, gltf_data->meshes[m].primitives[p].attributes[atr].name, sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1);
                 model->meshes[m].name[sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1] = '\0';
             }
+
         }
     }
+    
     free(gltf_data);
 
     model_3D_create(model);
