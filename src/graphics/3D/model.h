@@ -11,8 +11,6 @@ struct mesh_joint_t
     vec4_t rotation;
     vec3_t location;
 
-    mat4_t anim_transform;
-
     mat4_t local_bind_matrix;
     mat4_t inverse_bind_matrix;
 };
@@ -20,27 +18,22 @@ struct mesh_joint_t
 typedef struct
 {
     vec4_t rotation;
-    f32 time_stamp;
-} key_frame_rot_t;
-
-typedef struct
-{
     vec3_t location;
     f32 time_stamp;
-} key_frame_loc_t;
+} key_frame_t;
+
 
 #define MAX_JOINT_COUNT 32
-#define MAX_KEY_FRAME_COUNT 32
+#define MAX_KEY_FRAME_COUNT 24 * 8
 
 typedef struct
 {
     char name[64];
     f32 duration;
+    i32 frame_rate;
 
-    key_frame_loc_t locations[MAX_JOINT_COUNT][MAX_KEY_FRAME_COUNT];
-    u32 locations_count[MAX_JOINT_COUNT];
-    key_frame_rot_t rotations[MAX_JOINT_COUNT][MAX_KEY_FRAME_COUNT];
-    u32 rotations_count[MAX_JOINT_COUNT];
+    key_frame_t (*key_frames)[MAX_KEY_FRAME_COUNT];
+    u32 key_frame_count[MAX_JOINT_COUNT];
 } mesh_animation_t;
 
 typedef struct
@@ -50,10 +43,6 @@ typedef struct
     mesh_joint_t joints[MAX_JOINT_COUNT];
     mat4_t joint_matrices[MAX_JOINT_COUNT];
 } mesh_armature_t;
-
-void mesh_animation_play(mesh_armature_t* armature, mesh_animation_t* animation, f32 dt);
-
-//-------------------------------------------------------------//
 
 typedef struct
 {
@@ -101,19 +90,19 @@ typedef struct
 
 #define MAX_MATERIAL_COUNT 16
 #define MAX_MESH_COUNT 8
-#define MAX_ANIMATIONS_COUNT 8
+#define MAX_ANIMATIONS_COUNT 16
 typedef struct
 {
-    mesh_t meshes[MAX_MESH_COUNT];
     u32 mesh_count;
+    mesh_t meshes[MAX_MESH_COUNT];
 
-    mesh_material_t materials[MAX_MATERIAL_COUNT];
     u32 material_count;
+    mesh_material_t materials[MAX_MATERIAL_COUNT];
 
     mesh_armature_t armature;
 
-    mesh_animation_t animations[MAX_ANIMATIONS_COUNT];
     u32 animation_count;
+    mesh_animation_t animations[MAX_ANIMATIONS_COUNT];
 } model_3D_t;
 
 void model_3D_load_from_GLTF(model_3D_t* model, const char* path);

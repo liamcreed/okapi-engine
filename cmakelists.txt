@@ -28,7 +28,6 @@ src/ecs/ecs.c
 
 src/graphics/window/window.c
 src/graphics/renderer/renderer.c
-src/graphics/renderer/camera.c
 src/graphics/renderer/texture.c
 src/graphics/renderer/shader.c
 src/graphics/renderer/vertexarray.c

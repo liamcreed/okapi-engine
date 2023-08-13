@@ -39,7 +39,7 @@ void texture_load_from_TGA(texture_t* texture, const char* path)
     }
 
     free(image_data);
-    
+
     fclose(file);
 }
 
@@ -132,14 +132,13 @@ void texture_create(texture_t* texture)
 
 void texture_update_data(texture_t* texture)
 {
+    GLenum format;
     if (texture->channel_count == 4)
-    {
-        GL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, texture->data));
-    }
+        format = GL_RGBA;
     else if (texture->channel_count == 3)
-    {
-        GL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, GL_RGB, GL_UNSIGNED_BYTE, texture->data));
-    }
+        format = GL_RGB;
+
+    GL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, format, GL_UNSIGNED_BYTE, texture->data));
 }
 
 void texture_bind(texture_t* texture, u32 index)
@@ -155,6 +154,6 @@ void texture_unbind(u32 index)
 
 void texture_delete(texture_t* texture)
 {
-   // free(texture->data);
+    // free(texture->data);
     GL(glDeleteTextures(1, &texture->id));
 }

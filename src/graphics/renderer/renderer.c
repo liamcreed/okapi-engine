@@ -194,18 +194,9 @@ void armature_update_transforms(mesh_armature_t* armature)
             next_joint = parent_joint;
         }
 
-        joint->anim_transform = mat4_multiply(global_matrix, joint->inverse_bind_matrix);
-
-        armature->joint_matrices[j] = joint->anim_transform;
+        armature->joint_matrices[j] = mat4_multiply(global_matrix, joint->inverse_bind_matrix);;
     }
 }
-
-
-
-
-
-
-
 
 
 void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* model, vec3_t position, f32 size, vec4_t rotation)
@@ -222,27 +213,37 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
         shader_t* shader = &renderer->mesh_shader;
         shader_set_uniform_mat4(shader, "u_model", transform);
 
+        mesh_animation_t* current_animation = &model->animations[0];
 
+        current_animation->frame_rate = 15;
         static float time = 0;
         time += renderer->window->dt;
+        u32 keyframe = round(time *  current_animation->frame_rate);
 
-        u32 keyframe = time;
-
-        //interpolation should start when frame before is reached and end when keyframe is reached
-
-        mesh_animation_t* current_animation = &model->animations[1];
         for (i32 j = 0; j < model->armature.joint_count; j++)
         {
             mesh_joint_t* joint = &model->armature.joints[j];
-            for (i32 r = 0; r < current_animation->rotations_count[j]; r++)
-            {
-                float time_stamp = current_animation->rotations[j][r].time_stamp;
-                // calc difference bettween frames and interpolate between the the frames
-            }
 
-            joint->rotation = quat_lerp(joint->rotation, model->animations[1].rotations[joint->id][keyframe].rotation, 1*renderer->window->dt);
-            joint->location = vec3_lerp(joint->location, model->animations[1].locations[joint->id][keyframe].location, 1*renderer->window->dt);
+            u32 next_frame;
+
+            if (keyframe == current_animation->key_frame_count[j] - 1)
+                next_frame = 0;
+            else
+                next_frame = keyframe + 1;
+
+            //joint->rotation = model->animations[0].key_frames[j][keyframe].rotation;
+            
+            //joint->location = model->animations[0].key_frames[j][keyframe].location;
+
+            joint->rotation = quat_lerp(joint->rotation,  current_animation->key_frames[j][next_frame].rotation,  renderer->window->dt*current_animation->frame_rate);
+            joint->location = vec3_lerp(joint->location,  current_animation->key_frames[j][next_frame].location,  renderer->window->dt*current_animation->frame_rate);
+
+
+
+            if (keyframe == model->animations[0].key_frame_count[4] - 1) //FIXME:
+                time = 0;
         }
+
         armature_update_transforms(&model->armature);
 
         if (model->armature.joint_count != 0)

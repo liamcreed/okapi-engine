@@ -66,4 +66,9 @@ void model_3D_delete(model_3D_t* model)
             free(model->meshes[m].primitives[p].indices);
         }
     }
+    for (i32 a = 0; a < model->animation_count; a++)
+    {
+        free(model->animations[a].key_frames);
+    }
+    
 }

@@ -14,9 +14,9 @@ int main()
     renderer_t renderer =
     {
         .window = &window,
-        .clear_color = {.9, .9, 1, .5},
-        .width = 800 * 2,
-        .height = 800 * 2 / window.aspect,
+        .clear_color = {.7, .9, 1, .5},
+        .width = 400 ,
+        .height = 400 / window.aspect,
         .msaa = false
     };
     renderer_create(&renderer);
@@ -31,7 +31,21 @@ int main()
     };
 
     model_3D_t player_model = {};
-    model_3D_load_from_GLTF(&player_model, "./res/3D/knight/knight.gltf");
+    model_3D_load_from_GLTF(&player_model, "./res/3D/clone/clone.gltf");
+    model_3D_create(&player_model);
+
+    model_3D_t landscape = {};
+    model_3D_load_from_GLTF(&landscape, "./res/3D/landscape/landscape.gltf");
+    model_3D_create(&landscape);
+
+    
+    typedef struct 
+    {
+        vec3_t position;
+        vec3_t rotation;
+    }player_t;
+    
+    player_t player;
 
     while (!window.closed)
     {
@@ -42,26 +56,10 @@ int main()
             renderer.proj_mat = mat4_perspective(camera.fov, window.aspect, camera.near, camera.far);
 
         //-------------------------------------------------//
-        
-        static vec3_t cam_pos = { 0,1,6 };
-        float cam_speed = 3;
-        if (key_pressed(&window, KEY_LEFT_SHIFT))
-            cam_speed = 5;
 
-        if (key_pressed(&window, KEY_W))
-            cam_pos.z -= cam_speed * window.dt;
-        else if (key_pressed(&window, KEY_S))
-            cam_pos.z += cam_speed * window.dt;
-        if (key_pressed(&window, KEY_A))
-            cam_pos.x -= cam_speed * window.dt;
-        else if (key_pressed(&window, KEY_D))
-            cam_pos.x += cam_speed * window.dt;
-        if (key_pressed(&window, KEY_LEFT_ALT))
-            cam_pos.y -= cam_speed * window.dt;
-        else if (key_pressed(&window, KEY_SPACE))
-            cam_pos.y += cam_speed * window.dt;
+        #include "thirdperson.h"
 
-        renderer.view_mat = mat4_look_at(cam_pos, vec3_add(cam_pos, (vec3_t) { 0, 0, -1 }), (vec3_t) { 0, 1, 0 });
+        renderer.view_mat = mat4_look_at(camera.pos,vec3_add( player.position, (vec3_t){0,1,0}), (vec3_t) { 0, 1, 0 });
 
         //-------------------------------------------------//
 
@@ -71,8 +69,10 @@ int main()
         if (key_pressed(&window, KEY_R))
             rot += window.dt * 80;
 
-        renderer_draw_model_3D(&renderer, &camera, &player_model, (vec3_t) { 0, 0, 1 }, 1, quat_angle_axis(rot, (vec3_t) { 0, 1, 0 }));
-       
+        renderer_draw_model_3D(&renderer, &camera, &player_model, player.position, 1, quat_from_euler(player.rotation));
+
+        renderer_draw_model_3D(&renderer, &camera, &landscape, (vec3_t) { 0, 0, 1 }, .1, (vec4_t) { 0, 0, 0, 1 });
+
         renderer_end(&renderer);
     }
     model_3D_delete(&player_model);

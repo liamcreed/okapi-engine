@@ -27,6 +27,8 @@ void main()
     vec4 total_local_pos = vec4(0);
     vec4 total_norm = vec4(0);
 
+    v_norm = transpose(inverse(mat3(u_model))) * a_norm;
+
     
     if(u_skinning == 1)
     {
@@ -36,15 +38,20 @@ void main()
 
             vec4 pose_pos = joint_transform * vec4(v_pos, 1.0);
             total_local_pos += pose_pos * a_weights[i];
+            
+            mat4 joint_rotation = joint_transform;
+            joint_rotation[3][0] = 0;
+            joint_rotation[3][1] = 0;
+            joint_rotation[3][2] = 0;
+            joint_rotation[3][3] = 1;
 
-            vec4 world_normal = joint_transform * vec4(a_norm, 1.0);
-            total_norm += world_normal * a_weights[i];
+            vec4 world_normal = joint_rotation * vec4(v_norm, 1.0);
+            total_norm += world_normal * a_weights[i]; 
         }
 
-        v_norm = mat3(transpose(inverse(u_model))) * total_norm.xyz;
+        v_norm = normalize(total_norm.xyz);
     }else
     {
-        v_norm =  mat3(transpose(inverse(u_model))) * a_norm;
         total_local_pos = vec4(v_pos, 1);
     }
     

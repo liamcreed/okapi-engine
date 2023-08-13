@@ -6,7 +6,7 @@ typedef struct
     
     bool orthographic;
     f32 orthographic_size;
+
+    vec3_t pos;
+    vec4_t rotation;
 } camera_t;
-/* 
-void camera_create_perspective(camera_t *camera);
-void camera_create_orthographic(camera_t *camera); */

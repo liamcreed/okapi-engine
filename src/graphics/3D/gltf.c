@@ -9,7 +9,7 @@
 
 void texture_load_from_PNG(texture_t* texture, const char* path)
 {
-    stbi_set_flip_vertically_on_load(1);
+    stbi_set_flip_vertically_on_load(false);
     int channel_count;
     int x, y;
     texture->data = stbi_load(path, &x, &y, &channel_count, 0);
@@ -28,6 +28,9 @@ void texture_load_from_PNG(texture_t* texture, const char* path)
 void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
 {
     armature->joint_count = skin->joints_count;
+    if (armature->joint_count > MAX_JOINT_COUNT)
+        printf(LOG_WARNING"[GLTF]: MAX JOINTS REACHED!\n");
+
     for (i32 i = 0; i < armature->joint_count; i++)
     {
         cgltf_node* current_node = skin->joints[i];
@@ -46,12 +49,9 @@ void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
                 armature->joints[i].parent_id = j;
         }
 
-
         f32 inverse_bind_matrix[16];
         cgltf_accessor_read_float(skin->inverse_bind_matrices, armature->joints[i].id, inverse_bind_matrix, 16);
         armature->joints[i].inverse_bind_matrix = mat4_1D_to_2D(inverse_bind_matrix);
-
-        armature->joints[i].anim_transform = mat4_new(1);
 
         f32 trans_local[16];
         cgltf_node_transform_local(current_node, trans_local);
@@ -94,6 +94,8 @@ char* get_full_path_from_other(const char* path, char* file_name)
 
 void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 {
+    *model = (model_3D_t){};
+
     cgltf_options gltf_options = { 0 };
     cgltf_data* gltf_data = NULL;
     cgltf_result gltf_result = cgltf_parse_file(&gltf_options, path, &gltf_data);
@@ -122,6 +124,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
 
         model->animation_count = gltf_data->animations_count;
+        if (model->animation_count > MAX_ANIMATIONS_COUNT)
+            printf(LOG_WARNING"[GLTF]: MAX ANIMATIONS REACHED!\n");
 
         for (i32 a = 0; a < model->animation_count; a++)
         {
@@ -130,19 +134,20 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
             model->animations[a].name[sizeof(model->animations[a].name) - 1] = '\0';
             model->animations[a].duration = 0;
-            printf("Animation name: %s\n", model->animations[a].name);
+            model->animations[a].frame_rate = 24; //FIXME: no magical number
+
+            model->animations[a].key_frames = malloc(sizeof(key_frame_t) * MAX_JOINT_COUNT * MAX_KEY_FRAME_COUNT);
 
             for (u32 j = 0; j < model->armature.joint_count; j++)
             {
                 for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
                 {
-                    model->animations[a].rotations[j][k].rotation = model->armature.joints[j].rotation;
-                    model->animations[a].locations[j][k].location = model->armature.joints[j].location;
+                    model->animations[a].key_frames[j][k].rotation = model->armature.joints[j].rotation;
+                    model->animations[a].key_frames[j][k].location = model->armature.joints[j].location;
+                    model->animations[a].key_frames[j][k].time_stamp = 0;
                 }
-                model->animations[a].locations_count[j] = 0;
-                model->animations[a].rotations_count[j] = 0;
+                model->animations[a].key_frame_count[j] = 0;
             }
-
 
             u32 channel_count = gltf_data->animations[a].channels_count;
 
@@ -156,7 +161,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         sampler_max = current_anim_channel->sampler->input->max[s];
                 }
             }
-            
+
             model->animations[a].duration = sampler_max;
 
             for (i32 c = 0; c < channel_count; c++)
@@ -169,7 +174,6 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                     if (current_anim_channel->target_node == gltf_data->skins->joints[j])
                         current_anim_joint = j;
                 }
-
 
                 cgltf_accessor* timestamp_accessor = current_anim_channel->sampler->input;
                 cgltf_accessor* transform_accessor = current_anim_channel->sampler->output;
@@ -185,7 +189,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
                     if (current_anim_channel->target_path == cgltf_animation_path_type_rotation)
                     {
-                        model->animations[a].rotations_count[current_anim_joint] += 1;
+                        model->animations[a].key_frame_count[current_anim_joint] += 1;
 
                         f32 rotation[4];
                         cgltf_accessor_read_float(transform_accessor, index, rotation, 4);
@@ -196,12 +200,12 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         joint_rotation.z = rotation[2];
                         joint_rotation.w = rotation[3];
 
-                        model->animations[a].rotations[current_anim_joint][i].rotation = joint_rotation;
-                        model->animations[a].rotations[current_anim_joint][i].time_stamp = time_stamp;
+                        model->animations[a].key_frames[current_anim_joint][i].rotation = joint_rotation;
+                        model->animations[a].key_frames[current_anim_joint][i].time_stamp = time_stamp;
                     }
                     else if (current_anim_channel->target_path == cgltf_animation_path_type_translation)
                     {
-                        model->animations[a].locations_count[current_anim_joint] += 1;
+
                         f32 location[3];
                         cgltf_accessor_read_float(transform_accessor, index, location, 3);
 
@@ -210,14 +214,20 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         joint_location.y = location[1];
                         joint_location.z = location[2];
 
-                        model->animations[a].locations[current_anim_joint][i].location = joint_location;
-                        model->animations[a].locations[current_anim_joint][i].time_stamp = time_stamp;
+                        model->animations[a].key_frames[current_anim_joint][i].location = joint_location;
                     }
+                }
+
+                for (i32 j = 0; j < model->armature.joint_count; j++)
+                {
+                    if (model->animations[a].key_frame_count[j] > MAX_KEY_FRAME_COUNT)
+                        printf(LOG_WARNING"[GLTF]: MAX KEYFRAMES REACHED!\n");
                 }
 
             }
         }
     }
+
 
     u8 empty_color_data[] = { 128, 128, 255, 255 };
     texture_t empty_color_map =
@@ -242,6 +252,9 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     texture_create(&empty_orm_map);
 
     model->material_count = gltf_data->materials_count;
+    if (model->material_count > MAX_MATERIAL_COUNT)
+        printf(LOG_WARNING"[GLTF]: MAX MATERIALS REACHED!\n");
+
     for (i32 mat = 0; mat < model->material_count; mat++)
     {
         model->materials[mat] = (mesh_material_t){};
@@ -268,6 +281,9 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     }
 
     model->mesh_count = gltf_data->meshes_count;
+    if (model->mesh_count > MAX_MESH_COUNT)
+        printf(LOG_WARNING"[GLTF]: MAX MESHES REACHED!\n");
+
     for (i32 m = 0; m < model->mesh_count; m++)
     {
         model->meshes[m] = (mesh_t){};
@@ -276,6 +292,9 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         model->meshes[m].name[sizeof(model->meshes[m].name) - 1] = '\0';
 
         model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
+        if (model->meshes[m].primitive_count > MAX_PRIMITIVE_COUNT)
+            printf(LOG_WARNING"[GLTF]: MAX PRIMITIVES REACHED!\n");
+
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
             model->meshes[m].primitives[p] = (mesh_primitive_t){};
@@ -322,6 +341,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
 
             model->meshes[m].primitives[p].attribute_count = gltf_data->meshes[m].primitives[p].attributes_count;
+            if (model->meshes[m].primitives[p].attribute_count > MAX_ATTRIBUTE_COUNT)
+                printf(LOG_WARNING"[GLTF]: MAX ATTRIBUTES REACHED!\n");
 
             for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
             {
@@ -332,11 +353,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                 strncpy(model->meshes[m].primitives[p].attributes[atr].name, gltf_data->meshes[m].primitives[p].attributes[atr].name, sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1);
                 model->meshes[m].name[sizeof(model->meshes[m].primitives[p].attributes[atr].name) - 1] = '\0';
             }
-
         }
     }
 
     free(gltf_data);
-
-    model_3D_create(model);
 }
