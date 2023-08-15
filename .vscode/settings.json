@@ -11,7 +11,9 @@
         "vec.h": "c",
         "cgltf.h": "c",
         "tools.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "cmath": "c",
+        "thirdperson.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -54,8 +54,8 @@ void texture_load_from_bin(texture_t* texture, const char* path)
         printf(LOG_ERROR "[texture]: %s does not exist!\n", path);
     }
     fread(&texture->channel_count, sizeof(u32), 1, file);
-    fread(&texture->width, sizeof(f32), 1, file);
-    fread(&texture->height, sizeof(f32), 1, file);
+    fread(&texture->width, sizeof(u32), 1, file);
+    fread(&texture->height, sizeof(u32), 1, file);
     texture->data = malloc(texture->width * texture->height * texture->channel_count);
     fread(texture->data, texture->width * texture->height * texture->channel_count, 1, file);
 
@@ -154,6 +154,6 @@ void texture_unbind(u32 index)
 
 void texture_delete(texture_t* texture)
 {
-    // free(texture->data);
+    //free(texture->data);
     GL(glDeleteTextures(1, &texture->id));
 }

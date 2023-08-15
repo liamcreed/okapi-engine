@@ -30,8 +30,6 @@ typedef int64_t i64;
 
 #define LOG_GLTF "\033[35m[GLTF]: \033[0m"
 
-
-
 static void GL_clear_error()
 {
     if (!glGetError());

@@ -2,6 +2,7 @@
 
 int main()
 {
+
     window_t window =
     {
         .width = 800 * 2,
@@ -15,9 +16,9 @@ int main()
     {
         .window = &window,
         .clear_color = {.7, .9, 1, .5},
-        .width = 400 ,
-        .height = 400 / window.aspect,
-        .msaa = false
+        .width = 800  ,
+        .height = 800 / window.aspect,
+        .msaa = true
     };
     renderer_create(&renderer);
 
@@ -30,23 +31,32 @@ int main()
         .orthographic_size = 1
     };
 
-    model_3D_t player_model = {};
-    model_3D_load_from_GLTF(&player_model, "./res/3D/clone/clone.gltf");
-    model_3D_create(&player_model);
 
     model_3D_t landscape = {};
     model_3D_load_from_GLTF(&landscape, "./res/3D/landscape/landscape.gltf");
+
     model_3D_create(&landscape);
 
-    
-    typedef struct 
+    typedef struct
     {
         vec3_t position;
-        vec3_t rotation;
+        vec4_t rotation;
     }player_t;
-    
-    player_t player;
 
+    player_t player =
+    {
+        .position = {0,0,0},
+        .rotation = quat_angle_axis(180, (vec3_t) { 0,1,0 })
+    };
+
+    model_3D_t player_model = {};
+    model_3D_load_from_bin(&player_model, "./res/model.3D");
+    model_3D_create(&player_model);
+    
+        mesh_animation_t* walk_animation = mesh_anim_from_name(&player_model, "walking");
+        mesh_animation_t* idle_animation = mesh_anim_from_name(&player_model, "dance");
+        mesh_animation_t* run_animation = mesh_anim_from_name(&player_model, "running");
+     
     while (!window.closed)
     {
         window_update(&window);
@@ -57,19 +67,15 @@ int main()
 
         //-------------------------------------------------//
 
-        #include "thirdperson.h"
+#include "thirdperson.h"
 
-        renderer.view_mat = mat4_look_at(camera.pos,vec3_add( player.position, (vec3_t){0,1,0}), (vec3_t) { 0, 1, 0 });
+        renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3_t) { 0, 1, 0 }), (vec3_t) { 0, 1, 0 });
 
         //-------------------------------------------------//
 
         renderer_start(&renderer);
 
-        static float rot = 0;
-        if (key_pressed(&window, KEY_R))
-            rot += window.dt * 80;
-
-        renderer_draw_model_3D(&renderer, &camera, &player_model, player.position, 1, quat_from_euler(player.rotation));
+        renderer_draw_model_3D(&renderer, &camera, &player_model, player.position, 1, player.rotation);
 
         renderer_draw_model_3D(&renderer, &camera, &landscape, (vec3_t) { 0, 0, 1 }, .1, (vec4_t) { 0, 0, 0, 1 });
 

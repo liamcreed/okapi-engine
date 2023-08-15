@@ -177,7 +177,7 @@ void armature_update_transforms(mesh_armature_t* armature)
 {
     for (i32 j = 0; j < armature->joint_count; j++)
     {
-        mesh_joint_t* joint = &armature->joints[j];
+       mesh_joint_t* joint = &armature->joints[j];
 
         mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
         mat4_t global_matrix = local_transform;
@@ -192,7 +192,7 @@ void armature_update_transforms(mesh_armature_t* armature)
             global_matrix = mat4_multiply(parent_local_transform, global_matrix);
 
             next_joint = parent_joint;
-        }
+        } 
 
         armature->joint_matrices[j] = mat4_multiply(global_matrix, joint->inverse_bind_matrix);;
     }
@@ -203,8 +203,7 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
 {
     if (model->mesh_count != 0)
     {
-        mat4_t transform;
-        transform = mat4_translate(mat4_new(1), position);
+        mat4_t transform = mat4_translate(mat4_new(1), position);
         if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
             transform = mat4_multiply(transform, mat4_from_quat(rotation));
         if (size != 0 || size != 1)
@@ -213,41 +212,54 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
         shader_t* shader = &renderer->mesh_shader;
         shader_set_uniform_mat4(shader, "u_model", transform);
 
-        mesh_animation_t* current_animation = &model->animations[0];
-
-        current_animation->frame_rate = 15;
-        static float time = 0;
-        time += renderer->window->dt;
-        u32 keyframe = round(time *  current_animation->frame_rate);
-
-        for (i32 j = 0; j < model->armature.joint_count; j++)
+        if (model->animation_count)
         {
-            mesh_joint_t* joint = &model->armature.joints[j];
+            mesh_animation_t* walk_animation = mesh_anim_from_name(model, "walking");
+            mesh_animation_t* idle_animation = mesh_anim_from_name(model, "dance");
+            mesh_animation_t* run_animation = mesh_anim_from_name(model, "running");
 
-            u32 next_frame;
-
-            if (keyframe == current_animation->key_frame_count[j] - 1)
-                next_frame = 0;
+            mesh_animation_t* current_animation;
+            if (key_pressed(renderer->window, KEY_W) || key_pressed(renderer->window, KEY_S) || key_pressed(renderer->window, KEY_A) || key_pressed(renderer->window, KEY_D))
+            {
+                if (key_pressed(renderer->window, KEY_LEFT_SHIFT))
+                {
+                    current_animation = run_animation;
+                }
+                else
+                    current_animation = walk_animation;
+            }
             else
-                next_frame = keyframe + 1;
+                current_animation = idle_animation;
 
-            //joint->rotation = model->animations[0].key_frames[j][keyframe].rotation;
-            
-            //joint->location = model->animations[0].key_frames[j][keyframe].location;
+            static float time = 0;
+            u32 keyframe = time * ANIM_FRAMERATE;
 
-            joint->rotation = quat_lerp(joint->rotation,  current_animation->key_frames[j][next_frame].rotation,  renderer->window->dt*current_animation->frame_rate);
-            joint->location = vec3_lerp(joint->location,  current_animation->key_frames[j][next_frame].location,  renderer->window->dt*current_animation->frame_rate);
+            for (i32 j = 0; j < model->armature.joint_count; j++)
+            {
+                mesh_joint_t* joint = &model->armature.joints[j];
 
+                if (keyframe > current_animation->total_keyframe_count - 1)
+                {
+                    time = 0;
+                    keyframe = 0;
+                }
+                u32 next_frame;
 
+                if (keyframe == current_animation->total_keyframe_count - 1)
+                    next_frame = 0;
+                else
+                    next_frame = keyframe + 1;
 
-            if (keyframe == model->animations[0].key_frame_count[4] - 1) //FIXME:
-                time = 0;
-        }
+                float s = renderer->window->dt * ANIM_FRAMERATE;
+                joint->rotation = quat_lerp(joint->rotation, current_animation->key_frames[j][next_frame].rotation, s);
+                joint->location = vec3_lerp(joint->location, current_animation->key_frames[j][next_frame].location, s);
+            }
 
-        armature_update_transforms(&model->armature);
-
+            time += renderer->window->dt;
+        } 
         if (model->armature.joint_count != 0)
         {
+            armature_update_transforms(&model->armature);
             shader_set_uniform_mat4_arr(shader, "joint_matrices", model->armature.joint_matrices, model->armature.joint_count);
             shader_set_uniform_int(shader, "u_skinning", 1);
         }
@@ -293,8 +305,7 @@ void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, 
 
     shader_set_uniform_int(&renderer->quad_shader, "u_texture", 0);
 
-    mat4_t transform;
-    transform = mat4_translate(mat4_new(1), position);
+    mat4_t transform = mat4_translate(mat4_new(1), position);
     if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
         transform = mat4_multiply(transform, mat4_from_quat(rotation));
     if (size.x != 0 || size.y != 0)

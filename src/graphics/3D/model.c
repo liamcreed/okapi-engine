@@ -2,6 +2,14 @@
 
 void model_3D_create(model_3D_t* model)
 {
+    for (i32 mat = 0; mat < model->material_count; mat++)
+    {
+        model->materials[mat].diffuse_map.sRGB = true;
+        texture_create(&model->materials[mat].diffuse_map);
+        texture_create(&model->materials[mat].orm_map);
+        texture_create(&model->materials[mat].normal_map);
+    }
+
     for (i32 m = 0; m < model->mesh_count; m++)
     {
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
@@ -11,7 +19,7 @@ void model_3D_create(model_3D_t* model)
 
             for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
             {
-                if (atr > MAX_ATTRIBUTE_COUNT)
+                if (atr > MAX_VERTEX_ATTRIBUTE_COUNT)
                 {
                     printf(LOG_WARNING"[MODEL 3D]: exceeding maximum attributes for %s!\n", model->meshes[m].name);
                 }
@@ -70,5 +78,227 @@ void model_3D_delete(model_3D_t* model)
     {
         free(model->animations[a].key_frames);
     }
+}
+
+void model_3D_export_to_bin(model_3D_t* model, const char* path)
+{
+    FILE* file = fopen(path, "wb");
+    if (file == NULL)
+        printf(LOG_ERROR"[MODEL 3D]: failed to create file %s\n", path);
+
+    fwrite(&model->material_count, sizeof(model->material_count), 1, file);
+    //printf("material count %zu\n", model->material_count);
+    //printf("EXPORT\n");
+
+    for (i32 i = 0; i < model->material_count; i++)
+    {
+        mesh_material_t* material = &model->materials[i];
+        fwrite(material->name, 32, 1, file);
+
+        fwrite(&material->diffuse_map.channel_count, sizeof(u32), 1, file);
+        fwrite(&material->diffuse_map.width, sizeof(u32), 1, file);
+        fwrite(&material->diffuse_map.height, sizeof(u32), 1, file);
+        //material->diffuse_map.data = malloc(material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count);
+        fwrite(material->diffuse_map.data, material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count, 1, file);
+
+        fwrite(&material->orm_map.channel_count, sizeof(u32), 1, file);
+        fwrite(&material->orm_map.width, sizeof(u32), 1, file);
+        fwrite(&material->orm_map.height, sizeof(u32), 1, file);
+        //material->orm_map.data = malloc(material->orm_map.width * material->orm_map.height * material->orm_map.channel_count);
+        fwrite(material->orm_map.data, material->orm_map.width * material->orm_map.height * material->orm_map.channel_count, 1, file);
+
+        fwrite(&material->normal_map.channel_count, sizeof(u32), 1, file);
+        fwrite(&material->normal_map.width, sizeof(u32), 1, file);
+        fwrite(&material->normal_map.height, sizeof(u32), 1, file);
+        //material->normal_map.data = malloc(material->orm_map.width * material->orm_map.height * material->orm_map.channel_count);
+        fwrite(material->normal_map.data, material->normal_map.width * material->normal_map.height * material->normal_map.channel_count, 1, file);
+    }
+
+    fwrite(&model->mesh_count, sizeof(model->mesh_count), 1, file);
+    //printf("mesh count %zu\n", model->mesh_count);
+
+    for (i32 i = 0; i < model->mesh_count; i++)
+    {
+        mesh_t* mesh = &model->meshes[i];
+        fwrite(mesh->name, 32, 1, file);
+        fwrite(&mesh->primitive_count, sizeof(mesh->primitive_count), 1, file);
+        //printf("primitve count %zu\n", mesh->primitive_count);
+
+        for (i32 p = 0; p < mesh->primitive_count; p++)
+        {
+            mesh_primitive_t* primitive = &mesh->primitives[p];
+            fwrite(&primitive->material_index, sizeof(u32), 1, file);
+
+            fwrite(&primitive->vertices_size, sizeof(size_t), 1, file);
+            //printf("vertices size %zu\n", primitive->vertices_size);
+            //malloc
+            //primitive->vertices = malloc(primitive->vertices_size);
+            fwrite(primitive->vertices, primitive->vertices_size, 1, file);
+
+            fwrite(&primitive->indices_size, sizeof(primitive->indices_size), 1, file);
+            //printf("indices size %zu\n", primitive->indices_size);
+            fwrite(&primitive->index_type, sizeof(primitive->index_type), 1, file);
+            //printf("index type %zu\n", primitive->index_type);
+            fwrite(&primitive->index_count, sizeof(primitive->index_count), 1, file);
+            //printf("indices count %zu\n", primitive->index_count);
+            //primitive->indices = malloc(primitive->indices_size);
+            fwrite(primitive->indices, primitive->indices_size, 1, file);
+
+            fwrite(&primitive->attribute_count, sizeof(u32), 1, file);
+            // printf("attribute count %zu\n", primitive->attribute_count);
+            if (primitive->attribute_count > MAX_VERTEX_ATTRIBUTE_COUNT)
+                exit(-1);
+            for (i32 a = 0; a < primitive->attribute_count; a++)
+            {
+                fwrite(&primitive->attributes[a], sizeof(mesh_vertex_attribute_t), 1, file);
+            }
+        }
+    }
+    fwrite(&model->armature.joint_count, sizeof(u32), 1, file);
+    for (i32 i = 0; i < model->armature.joint_count; i++)
+    {
+        fwrite(&model->armature.joints[i], sizeof(mesh_joint_t), 1, file);
+    }
+
+
+    fwrite(&model->animation_count, sizeof(u32), 1, file);
+    for (i32 a = 0; a < model->animation_count; a++)
+    {
+        mesh_animation_t* animation = &model->animations[a];
+        fwrite(animation->name, 64, 1, file);
+        fwrite(&animation->duration, sizeof(f32), 1, file);
+        fwrite(&animation->total_keyframe_count, sizeof(u32), 1, file);
+
+        for (i32 j = 0; j < MAX_JOINT_COUNT; j++)
+        {
+            fwrite(&animation->key_frame_count[j], sizeof(u32), 1, file);
+            for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
+            {
+                fwrite(&animation->key_frames[j][k].time_stamp, sizeof(f32), 1, file);
+                fwrite(&animation->key_frames[j][k].location, sizeof(vec3_t), 1, file);
+                fwrite(&animation->key_frames[j][k].rotation, sizeof(vec4_t), 1, file);
+            }
+        }
+    }
+
+    fclose(file);
+}
+
+void model_3D_load_from_bin(model_3D_t* model, const char* path)
+{
+    *model = (model_3D_t){};
+    FILE* file = fopen(path, "rb");
+    if (file == NULL)
+        printf(LOG_ERROR"[MODEL 3D]: failed to open file %s\n", path);
+
+    fread(&model->material_count, sizeof(model->material_count), 1, file);
+    //printf("material count %zu\n", model->material_count);
+
+    for (i32 i = 0; i < model->material_count; i++)
+    {
+        model->materials[i] = (mesh_material_t){};
+        mesh_material_t* material = &model->materials[i];
+
+        fread(material->name, 32, 1, file);
+
+        fread(&material->diffuse_map.channel_count, sizeof(u32), 1, file);
+        fread(&material->diffuse_map.width, sizeof(u32), 1, file);
+        fread(&material->diffuse_map.height, sizeof(u32), 1, file);
+        material->diffuse_map.data = malloc(material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count);
+        fread(material->diffuse_map.data, material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count, 1, file);
+
+        fread(&material->orm_map.channel_count, sizeof(u32), 1, file);
+        fread(&material->orm_map.width, sizeof(u32), 1, file);
+        fread(&material->orm_map.height, sizeof(u32), 1, file);
+        material->orm_map.data = malloc(material->orm_map.width * material->orm_map.height * material->orm_map.channel_count);
+        fread(material->orm_map.data, material->orm_map.width * material->orm_map.height * material->orm_map.channel_count, 1, file);
+
+        fread(&material->normal_map.channel_count, sizeof(u32), 1, file);
+        fread(&material->normal_map.width, sizeof(u32), 1, file);
+        fread(&material->normal_map.height, sizeof(u32), 1, file);
+        material->normal_map.data = malloc(material->orm_map.width * material->orm_map.height * material->orm_map.channel_count);
+        fread(material->normal_map.data, material->normal_map.width * material->normal_map.height * material->normal_map.channel_count, 1, file);
+    }
+
+    fread(&model->mesh_count, sizeof(model->mesh_count), 1, file);
+    //printf("mesh count %zu\n", model->mesh_count);
+
+    for (i32 i = 0; i < model->mesh_count; i++)
+    {
+        model->meshes[i] = (mesh_t){};
+        mesh_t* mesh = &model->meshes[i];
+
+        fread(mesh->name, 32, 1, file);
+
+        fread(&mesh->primitive_count, sizeof(mesh->primitive_count), 1, file);
+        //printf("primitve count %zu\n", mesh->primitive_count);
+
+        for (i32 p = 0; p < mesh->primitive_count; p++)
+        {
+            mesh->primitives[p] = (mesh_primitive_t){};
+            mesh_primitive_t* primitive = &mesh->primitives[p];
+
+            fread(&primitive->material_index, sizeof(u32), 1, file);
+
+            fread(&primitive->vertices_size, sizeof(size_t), 1, file);
+            //printf("vertices size %zu\n", primitive->vertices_size);
+
+            primitive->vertices = malloc(primitive->vertices_size);
+            fread(primitive->vertices, primitive->vertices_size, 1, file);
+
+            fread(&primitive->indices_size, sizeof(primitive->indices_size), 1, file);
+            //printf("indices size %zu\n", primitive->indices_size);
+            fread(&primitive->index_type, sizeof(primitive->index_type), 1, file);
+            //printf("index type %zu\n", primitive->index_type);
+            fread(&primitive->index_count, sizeof(primitive->index_count), 1, file);
+            //printf("indices count %zu\n", primitive->index_count);
+            primitive->indices = malloc(primitive->indices_size);
+            fread(primitive->indices, primitive->indices_size, 1, file);
+
+            fread(&primitive->attribute_count, sizeof(u32), 1, file);
+            //printf("attribute count %zu\n", primitive->attribute_count);
+
+            for (i32 a = 0; a < primitive->attribute_count; a++)
+            {
+                fread(&primitive->attributes[a], sizeof(mesh_vertex_attribute_t), 1, file);
+            }
+        }
+    }
+
+    model->armature = (mesh_armature_t){};
+
+    fread(&model->armature.joint_count, sizeof(u32), 1, file);
+    for (i32 i = 0; i < model->armature.joint_count; i++)
+    {
+        fread(&model->armature.joints[i], sizeof(mesh_joint_t), 1, file);
+    }
+
+    fread(&model->animation_count, sizeof(u32), 1, file);
+    printf("anim count %u\n", model->animation_count);
+    for (i32 a = 0; a < model->animation_count; a++)
+    {
+        mesh_animation_t* animation = &model->animations[a];
+        fread(animation->name, 64, 1, file);
+
+        fread(&animation->duration, sizeof(f32), 1, file);
+        fread(&animation->total_keyframe_count, sizeof(u32), 1, file);
+
+        printf("%s\n", animation->name);
+
+        animation->key_frames = malloc(MAX_JOINT_COUNT * MAX_KEY_FRAME_COUNT * sizeof(key_frame_t));
+  
+        for (i32 j = 0; j < MAX_JOINT_COUNT; j++)
+        {
+            fread(&animation->key_frame_count[j], sizeof(u32), 1, file);
+            for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
+            {
+                fread(&animation->key_frames[j][k].time_stamp, sizeof(f32), 1, file);
+                fread(&animation->key_frames[j][k].location, sizeof(vec3_t), 1, file);
+                fread(&animation->key_frames[j][k].rotation, sizeof(vec4_t), 1, file);
+            }
+        }
+        printf("%u\n", model->armature.joint_count);
+    }
     
+    fclose(file);
 }

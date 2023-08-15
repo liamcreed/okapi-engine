@@ -121,11 +121,12 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
     if (gltf_data->skins_count)
     {
+        model->armature = (mesh_armature_t){};
         armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
 
         model->animation_count = gltf_data->animations_count;
         if (model->animation_count > MAX_ANIMATIONS_COUNT)
-            printf(LOG_WARNING"[GLTF]: MAX ANIMATIONS REACHED!\n");
+            printf(LOG_WARNING"[GLTF]: MAX ANIMATIONS REACHED! %u\n",model->animation_count);
 
         for (i32 a = 0; a < model->animation_count; a++)
         {
@@ -133,12 +134,12 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
             strncpy(model->animations[a].name, gltf_data->animations[a].name, sizeof(model->animations[a].name) - 1);
             model->animations[a].name[sizeof(model->animations[a].name) - 1] = '\0';
+
             model->animations[a].duration = 0;
-            model->animations[a].frame_rate = 24; //FIXME: no magical number
 
-            model->animations[a].key_frames = malloc(sizeof(key_frame_t) * MAX_JOINT_COUNT * MAX_KEY_FRAME_COUNT);
+            model->animations[a].key_frames = malloc(MAX_JOINT_COUNT * MAX_KEY_FRAME_COUNT * sizeof(key_frame_t));
 
-            for (u32 j = 0; j < model->armature.joint_count; j++)
+            for (u32 j = 0; j < MAX_JOINT_COUNT; j++)
             {
                 for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
                 {
@@ -161,7 +162,6 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         sampler_max = current_anim_channel->sampler->input->max[s];
                 }
             }
-
             model->animations[a].duration = sampler_max;
 
             for (i32 c = 0; c < channel_count; c++)
@@ -218,16 +218,23 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                     }
                 }
 
-                for (i32 j = 0; j < model->armature.joint_count; j++)
-                {
-                    if (model->animations[a].key_frame_count[j] > MAX_KEY_FRAME_COUNT)
-                        printf(LOG_WARNING"[GLTF]: MAX KEYFRAMES REACHED!\n");
-                }
+
+
 
             }
+            
+            u32 max = 0;
+            for (i32 j = 0; j < model->armature.joint_count; j++)
+            {
+                if (model->animations[a].key_frame_count[j] > MAX_KEY_FRAME_COUNT)
+                    printf(LOG_WARNING"[GLTF]: MAX KEYFRAMES REACHED! %u\n", model->animations[a].key_frame_count[j]);
+
+                if (model->animations[a].key_frame_count[j] > max)
+                    max = model->animations[a].key_frame_count[j];
+            }
+            model->animations[a].total_keyframe_count = max;
         }
     }
-
 
     u8 empty_color_data[] = { 128, 128, 255, 255 };
     texture_t empty_color_map =
@@ -253,7 +260,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
     model->material_count = gltf_data->materials_count;
     if (model->material_count > MAX_MATERIAL_COUNT)
-        printf(LOG_WARNING"[GLTF]: MAX MATERIALS REACHED!\n");
+        printf(LOG_WARNING"[GLTF]: MAX MATERIALS REACHED! %u\n", model->material_count);
 
     for (i32 mat = 0; mat < model->material_count; mat++)
     {
@@ -265,9 +272,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
         {
             char* image_path = get_full_path_from_other(path, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
-            model->materials[mat].diffuse_map.sRGB = true;
+            
             texture_load_from_PNG(&model->materials[mat].diffuse_map, image_path);
-            texture_create(&model->materials[mat].diffuse_map);
             free(image_path);
         }
         else
@@ -282,7 +288,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
     model->mesh_count = gltf_data->meshes_count;
     if (model->mesh_count > MAX_MESH_COUNT)
-        printf(LOG_WARNING"[GLTF]: MAX MESHES REACHED!\n");
+        printf(LOG_WARNING"[GLTF]: MAX MESHES REACHED! %u\n", model->mesh_count);
 
     for (i32 m = 0; m < model->mesh_count; m++)
     {
@@ -293,7 +299,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
         model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
         if (model->meshes[m].primitive_count > MAX_PRIMITIVE_COUNT)
-            printf(LOG_WARNING"[GLTF]: MAX PRIMITIVES REACHED!\n");
+            printf(LOG_WARNING"[GLTF]: MAX PRIMITIVES REACHED! %u\n", model->meshes[m].primitive_count);
 
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
@@ -319,11 +325,13 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             size_t indices_offset = gltf_data->meshes[m].primitives[p].indices->buffer_view->offset;
 
             model->meshes[m].primitives[p].vertices_size = indices_offset - vertices_offset;
+            
             model->meshes[m].primitives[p].vertices = malloc(model->meshes[m].primitives[p].vertices_size);
             memcpy(model->meshes[m].primitives[p].vertices, buffer + vertices_offset, model->meshes[m].primitives[p].vertices_size);
 
             model->meshes[m].primitives[p].index_count = gltf_data->meshes[m].primitives[p].indices->count;
             model->meshes[m].primitives[p].indices_size = gltf_data->meshes[m].primitives[p].indices->buffer_view->size;
+            
             model->meshes[m].primitives[p].indices = malloc(model->meshes[m].primitives[p].indices_size);
             memcpy(model->meshes[m].primitives[p].indices, buffer + indices_offset, model->meshes[m].primitives[p].indices_size);
 
@@ -341,11 +349,12 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
 
             model->meshes[m].primitives[p].attribute_count = gltf_data->meshes[m].primitives[p].attributes_count;
-            if (model->meshes[m].primitives[p].attribute_count > MAX_ATTRIBUTE_COUNT)
-                printf(LOG_WARNING"[GLTF]: MAX ATTRIBUTES REACHED!\n");
+            if (model->meshes[m].primitives[p].attribute_count > MAX_VERTEX_ATTRIBUTE_COUNT)
+                printf(LOG_WARNING"[GLTF]: MAX ATTRIBUTES REACHED! %u\n", model->meshes[m].primitives[p].attribute_count);
 
             for (i32 atr = 0; atr < model->meshes[m].primitives[p].attribute_count; atr++)
             {
+
                 model->meshes[m].primitives[p].attributes[atr] = (mesh_vertex_attribute_t){};
 
                 model->meshes[m].primitives[p].attributes[atr].offset = gltf_data->meshes[m].primitives[p].attributes[atr].data->buffer_view->offset - vertices_offset;
@@ -355,6 +364,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             }
         }
     }
+   
 
     free(gltf_data);
 }

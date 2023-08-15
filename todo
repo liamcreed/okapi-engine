@@ -7,6 +7,12 @@ GOAL: 3D pixelart adventure souls slike psychedelic exploring experience (NOT GA
 
 general:
     create animation system
+        armatture conain time?
+
+    player scaling weird
+    CLEAN UP CODE
+
+    check if all keyframes are correct
 
     FIX: animation speed ding
 
@@ -63,4 +69,7 @@ Window:
     - window resize    create framebuffer again;
     - scroll input
     - clean up
+    
+
+/* 
     

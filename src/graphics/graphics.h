@@ -6,8 +6,11 @@
 #include "graphics/renderer/vertexarray.h"
 #include "graphics/renderer/texture.h"
 #include "graphics/renderer/camera.h"
-#include "graphics/3D/model.h"
 #include "graphics/renderer/framebuffer.h"
+
+#include "graphics/3D/model.h"
+#include "graphics/3D/animation.h"
+
 #include "graphics/renderer/renderer.h"
 
 

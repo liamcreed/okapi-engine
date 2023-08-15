@@ -5,16 +5,18 @@ void shader_compile(u32* id, const char* path, u32 type)
     u32 length = 0;
     FILE* file = fopen(path, "rb");
     if (file == NULL)
+    {
         printf(LOG_ERROR "[Shader]: Failed to open: %s\n", path);
+        exit(-1);
+    }
 
     fseek(file, 0, SEEK_END);
     length = ftell(file);
     fseek(file, 0, SEEK_SET);
     char source[length + 1];
     fread(source, 1, length, file);
-    fclose(file);
     source[length] = '\0';
-
+    fclose(file);
     const char* src = source;
 
     *id = glCreateShader(type);

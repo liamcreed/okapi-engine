@@ -54,19 +54,19 @@ void update()
 
     if (key_pressed(&window, KEY_A))
     {
-        camera.pos = vec3_subtract(camera.pos, vec3_scale(vec3_normalize(vec3_cross(camera.front, camera.up)), cam_speed));
+        camera.positition = vec3_subtract(camera.positition, vec3_scale(vec3_normalize(vec3_cross(camera.front, camera.up)), cam_speed));
     }
     if (key_pressed(&window, KEY_D))
     {
-        camera.pos = vec3_add(camera.pos, vec3_scale(vec3_normalize(vec3_cross(camera.front, camera.up)), cam_speed));
+        camera.positition = vec3_add(camera.positition, vec3_scale(vec3_normalize(vec3_cross(camera.front, camera.up)), cam_speed));
     }
     if (key_pressed(&window, KEY_W))
     {
-        camera.pos = vec3_add(camera.pos, vec3_scale(camera.front, cam_speed));
+        camera.positition = vec3_add(camera.positition, vec3_scale(camera.front, cam_speed));
     }
     if (key_pressed(&window, KEY_S))
     {
-        camera.pos = vec3_subtract(camera.pos, vec3_scale(camera.front, cam_speed));
+        camera.positition = vec3_subtract(camera.positition, vec3_scale(camera.front, cam_speed));
     }
     if (key_pressed(&window, KEY_F))
         fov = 100;
@@ -158,6 +158,6 @@ f32 vert_dist = radius * sin(radians(camera.pitch));
 f32 cam_x_offset = hor_dist * sin(radians(180 - camera.yaw));
 f32 cam_z_offset = hor_dist * cos(radians(180 - camera.yaw));
 
-camera.pos.x = player_pos.x - cam_x_offset;
-camera.pos.y = lerp(camera.pos.y, player_pos.y - vert_dist, 0.8);
-camera.pos.z = player_pos.z - cam_z_offset;
+camera.positition.x = player_pos.x - cam_x_offset;
+camera.positition.y = lerp(camera.positition.y, player_pos.y - vert_dist, 0.8);
+camera.positition.z = player_pos.z - cam_z_offset;

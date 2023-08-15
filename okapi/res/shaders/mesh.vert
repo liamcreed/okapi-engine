@@ -27,7 +27,7 @@ void main()
     vec4 total_local_pos = vec4(0);
     vec4 total_norm = vec4(0);
 
-    v_norm = transpose(inverse(mat3(u_model))) * a_norm;
+    v_norm = normalize(transpose(inverse(mat3(u_model))) * a_norm);
 
     
     if(u_skinning == 1)

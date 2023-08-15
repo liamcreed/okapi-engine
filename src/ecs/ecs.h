@@ -8,14 +8,13 @@ typedef struct
     const char *name;
     const char *type;
     bool active;
-    i32 layer;
 } data_component_s;
 
 typedef struct
 {
-    vec3_t pos;
+    vec3_t position;
     vec3_t scale;
-    vec3_t rot;
+    vec4_t rotation;
 } transform_component_s;
 
 

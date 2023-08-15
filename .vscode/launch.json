@@ -1,0 +1,13 @@
+{
+    
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "program": "${workspaceRoot}/okapi/okapi.exe",
+            "name": "Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": "${workspaceRoot}/okapi"
+        }
+    ]
+}

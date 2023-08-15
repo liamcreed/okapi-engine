@@ -1,7 +1,7 @@
 #include "api.h"
 #include "ecs/ecs.h"
 
-void ecs_init(ecs_scene_t *scene)
+void ecs_init(ecs_scene_t* scene)
 {
     scene->entity_count = 0;
     for (entity_t e = 0; e <= MAX_ENTITIES; e++)
@@ -10,20 +10,22 @@ void ecs_init(ecs_scene_t *scene)
     }
 }
 
-void ecs_reset_entity_values(ecs_scene_t *scene, entity_t e)
+void ecs_reset_entity_values(ecs_scene_t* scene, entity_t e)
 {
-    scene->data_components[e] = (data_component_s){
+    scene->data_components[e] = (data_component_s)
+    {
         .name = NULL,
         .type = NULL,
-        .layer = 0,
     };
-    scene->transform_components[e] = (transform_component_s){
-        .pos = (vec3_t){0.0f, 0.0f, 0.0f},
-        .rot = (vec3_t){0.0f, 0.0f, 0.0f},
-        .scale = (vec3_t){1.0f, 1.0f, 1.0f}};
+    scene->transform_components[e] = (transform_component_s)
+    {
+        .position = {0.0f, 0.0f, 0.0f},
+        .rotation = {0.0f, 0.0f, 0.0f, 1.0f},
+        .scale = {1.0f, 1.0f, 1.0f}
+    };
 }
 
-entity_t ecs_create_entity(ecs_scene_t *scene, const char *name)
+entity_t ecs_create_entity(ecs_scene_t* scene, const char* name)
 {
     u32 e = 0;
 
@@ -48,7 +50,7 @@ entity_t ecs_create_entity(ecs_scene_t *scene, const char *name)
     return e;
 }
 
-void ecs_delete_entity(ecs_scene_t *scene, entity_t *entity)
+void ecs_delete_entity(ecs_scene_t* scene, entity_t* entity)
 {
     if (entity != 0)
     {
@@ -58,7 +60,7 @@ void ecs_delete_entity(ecs_scene_t *scene, entity_t *entity)
     }
 }
 
-void ecs_update(ecs_scene_t *scene, window_t *window, renderer_t *renderer)
+void ecs_update(ecs_scene_t* scene, window_t* window, renderer_t* renderer)
 {
     for (u32 i = 1; i <= scene->entity_count; i++)
     {
@@ -69,7 +71,7 @@ void ecs_update(ecs_scene_t *scene, window_t *window, renderer_t *renderer)
     }
 }
 
-void ecs_exit(ecs_scene_t *scene)
+void ecs_exit(ecs_scene_t* scene)
 {
     for (entity_t e = 0; e <= MAX_ENTITIES + 1; e++)
     {

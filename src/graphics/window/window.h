@@ -5,10 +5,13 @@ typedef struct
     const char *title;
     u32 width;
     u32 height;
+    f32 aspect;
     
-    bool closed, minimized, fullscreen, vsync, cursor, resized;
+    bool closed, minimized, resized;
+    bool fullscreen, cursor, vsync;
+
     GLFWwindow *glfw;
-    f32 dt, aspect;
+    f32 dt;
 
     vec2_t mouse_pos;
 } window_t;
