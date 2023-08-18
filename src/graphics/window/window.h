@@ -160,5 +160,6 @@ typedef enum mouse_button
     MOUSE_BUTTON_MIDDLE = MOUSE_BUTTON_3
 } mouse_button;
 
+bool key_being_pressed(window_t *window, key key);
 bool key_pressed(window_t *window, key key);
 bool mouse_button_pressed(window_t *window, mouse_button button);

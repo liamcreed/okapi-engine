@@ -13,7 +13,8 @@
         "tools.h": "c",
         "typeinfo": "c",
         "cmath": "c",
-        "thirdperson.h": "c"
+        "thirdperson.h": "c",
+        "limits": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

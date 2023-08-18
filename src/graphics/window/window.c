@@ -54,7 +54,7 @@ void window_update(window_t* window)
 
     if (glfwWindowShouldClose(window->glfw))
         window->closed = true;
-    if (key_pressed(window, KEY_BACKSPACE))
+    if (key_being_pressed(window, KEY_BACKSPACE))
         window->closed = true;
     i32 size_x, size_y;
     glfwGetWindowSize(window->glfw, &window->width, &window->height);
@@ -102,16 +102,31 @@ void window_exit(window_t* window)
 }
 
 // Input
-bool key_pressed(window_t* window, key key)
+bool key_being_pressed(window_t* window, key key)
 {
     if (glfwGetKey(window->glfw, key) == GLFW_PRESS)
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 bool mouse_button_pressed(window_t* window, mouse_button button)
 {
     if (glfwGetMouseButton(window->glfw, button) == GLFW_PRESS)
-        return 1;
-    return 0;
+        return true;
+    return false;
+}
+
+bool key_pressed(window_t* window, key key)
+{
+    /* static bool state;
+    if (glfwGetKey(window->glfw, key) == GLFW_PRESS && state == false)
+    {
+        state = true;
+        return true;
+    }
+
+    if (glfwGetKey(window->glfw, key) == GLFW_RELEASE)
+        state = false;
+*/
+    return false;
 }

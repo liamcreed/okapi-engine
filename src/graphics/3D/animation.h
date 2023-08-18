@@ -1,5 +1,8 @@
 #pragma once
 
+
+void armature_update_transforms(mesh_armature_t* armature);
+void animation_play(mesh_armature_t* armature, mesh_animation_t* animation, f32 dt, f32 speed, bool loop);
 typedef struct 
 {
     f32 time;

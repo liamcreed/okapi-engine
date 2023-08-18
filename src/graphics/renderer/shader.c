@@ -154,4 +154,5 @@ void shader_set_uniform_vec3(shader_t* shader, const char* name, vec3_t data)
         exit(-1);
     }
     GL(glProgramUniform3f(shader->id, loc, data.x, data.y, data.z));
+   
 }

@@ -6,29 +6,19 @@ GOAL: 3D pixelart adventure souls slike psychedelic exploring experience (NOT GA
 
 
 general:
-    create animation system
-        armatture conain time?
-
-    player scaling weird
-    CLEAN UP CODE
-
-    check if all keyframes are correct
-
-    FIX: animation speed ding
-
-    bring back 3rd person camera
-
-    SHADING DOESNT WORK!!!
-
-    GLTF parsing in seperate file (INITIAILZE ALL STRUCTS TO ZERO)
-
     shaders not inside renderer but inside game loop; 
+   
+    raytracing
+
+    bloom
+
     in renderer start loop through array of shaders and set matrices;
     when draw quad, model etc, specify what shader
 
     fix thing with freeing texture when texture data is from array it doesnt need to be free
 
     ADD COMMENTS
+    SHADOWS
 
 
 Math:

@@ -27,6 +27,7 @@ typedef struct
 } mat4_t;
 
 f32 vec3_dot(vec3_t v1, vec3_t v2);
+f32 vec3_length(vec3_t v);
 vec3_t vec3_normalize(vec3_t v);
 vec3_t vec3_subtract(vec3_t v1, vec3_t v2);
 vec3_t vec3_add(vec3_t v1, vec3_t v2);

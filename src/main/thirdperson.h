@@ -21,24 +21,20 @@ pitch += y_offset;
 yaw += x_offset;
 
 static f32 radius = 10;
-if (key_pressed(&window, KEY_UP))
-radius += 10 * window.dt;
-else if (key_pressed(&window, KEY_DOWN))
-radius -= 10 * window.dt;
 
 //---------------------------------------------------------------//
 
 f32 x_input;
 f32 z_input;
-if (key_pressed(&window, KEY_A))
+if (key_being_pressed(&window, KEY_A))
 x_input = -1;
-else if (key_pressed(&window, KEY_D))
+else if (key_being_pressed(&window, KEY_D))
 x_input = 1;
 else
 x_input = 0;
-if (key_pressed(&window, KEY_W))
+if (key_being_pressed(&window, KEY_W))
 z_input = -1;
-else if (key_pressed(&window, KEY_S))
+else if (key_being_pressed(&window, KEY_S))
 z_input = 1;
 else
 z_input = 0;
@@ -69,7 +65,7 @@ else if (fabs(x_input + cos(radians(45))) < 0.01 && fabs(z_input + cos(radians(4
     player.rotation = quat_lerp(player.rotation, quat_angle_axis(-yaw - 135, (vec3_t) { 0, 1, 0 }), window.dt * 20);
  
 f32 speed = 2 * window.dt;
-if (key_pressed(&window, KEY_LEFT_SHIFT))
+if (key_being_pressed(&window, KEY_LEFT_SHIFT))
 speed = 8 * window.dt;
 
 vec4_t cam_quat = quat_from_euler((vec3_t) { 0, -yaw, 0 });

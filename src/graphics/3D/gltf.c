@@ -28,8 +28,7 @@ void texture_load_from_PNG(texture_t* texture, const char* path)
 void armature_build_joint_hierarchy(mesh_armature_t* armature, cgltf_skin* skin)
 {
     armature->joint_count = skin->joints_count;
-    if (armature->joint_count > MAX_JOINT_COUNT)
-        printf(LOG_WARNING"[GLTF]: MAX JOINTS REACHED!\n");
+    armature->joints = malloc(sizeof(mesh_joint_t) * armature->joint_count);
 
     for (i32 i = 0; i < armature->joint_count; i++)
     {
@@ -125,8 +124,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         armature_build_joint_hierarchy(&model->armature, gltf_data->skins);
 
         model->animation_count = gltf_data->animations_count;
-        if (model->animation_count > MAX_ANIMATIONS_COUNT)
-            printf(LOG_WARNING"[GLTF]: MAX ANIMATIONS REACHED! %u\n",model->animation_count);
+        model->animations = malloc(sizeof(mesh_animation_t) * model->animation_count);
 
         for (i32 a = 0; a < model->animation_count; a++)
         {
@@ -137,17 +135,19 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
             model->animations[a].duration = 0;
 
-            model->animations[a].key_frames = malloc(MAX_JOINT_COUNT * MAX_KEY_FRAME_COUNT * sizeof(key_frame_t));
-
-            for (u32 j = 0; j < MAX_JOINT_COUNT; j++)
+            model->animations[a].key_frames = malloc(model->armature.joint_count * MAX_KEY_FRAME_COUNT * sizeof(key_frame_t));
+            model->animations[a].key_frame_count = malloc(sizeof(u32) * model->armature.joint_count);
+    
+            for (u32 j = 0; j < model->armature.joint_count; j++)
             {
+                model->animations[a].key_frame_count[j] = 0;
+
                 for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
                 {
                     model->animations[a].key_frames[j][k].rotation = model->armature.joints[j].rotation;
                     model->animations[a].key_frames[j][k].location = model->armature.joints[j].location;
                     model->animations[a].key_frames[j][k].time_stamp = 0;
                 }
-                model->animations[a].key_frame_count[j] = 0;
             }
 
             u32 channel_count = gltf_data->animations[a].channels_count;
@@ -217,26 +217,26 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         model->animations[a].key_frames[current_anim_joint][i].location = joint_location;
                     }
                 }
-
-
-
-
             }
             
-            u32 max = 0;
+            u32 max_keyframes = 0;
             for (i32 j = 0; j < model->armature.joint_count; j++)
             {
                 if (model->animations[a].key_frame_count[j] > MAX_KEY_FRAME_COUNT)
                     printf(LOG_WARNING"[GLTF]: MAX KEYFRAMES REACHED! %u\n", model->animations[a].key_frame_count[j]);
 
-                if (model->animations[a].key_frame_count[j] > max)
-                    max = model->animations[a].key_frame_count[j];
+                if (model->animations[a].key_frame_count[j] > max_keyframes)
+                    max_keyframes = model->animations[a].key_frame_count[j];
             }
-            model->animations[a].total_keyframe_count = max;
+            model->animations[a].total_keyframe_count = max_keyframes;
         }
     }
 
-    u8 empty_color_data[] = { 128, 128, 255, 255 };
+    u8* empty_color_data = malloc(4);
+    empty_color_data[0] = 255;
+    empty_color_data[1] = 255;
+    empty_color_data[2] = 255;
+    empty_color_data[3] = 255;
     texture_t empty_color_map =
     {
         .data = empty_color_data,
@@ -247,7 +247,12 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     };
     texture_create(&empty_color_map);
 
-    u8 empty_orm_data[] = { 255, 255, 0, 255 };
+    u8* empty_orm_data = malloc(4);
+    empty_orm_data[0] = 255;
+    empty_orm_data[1] = 255;
+    empty_orm_data[2] = 0;
+    empty_orm_data[3] = 255;
+    
     texture_t empty_orm_map =
     {
         .data = empty_orm_data,
@@ -259,8 +264,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     texture_create(&empty_orm_map);
 
     model->material_count = gltf_data->materials_count;
-    if (model->material_count > MAX_MATERIAL_COUNT)
-        printf(LOG_WARNING"[GLTF]: MAX MATERIALS REACHED! %u\n", model->material_count);
+    model->materials = malloc(sizeof(mesh_material_t) * model->material_count);
 
     for (i32 mat = 0; mat < model->material_count; mat++)
     {
@@ -279,16 +283,26 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         else
         {
             model->materials[mat].diffuse_map = empty_color_map;
-            printf(LOG_WARNING "[GLTF]: No base color texture in material!\n");
         }
+
+        if(gltf_data->materials[mat].pbr_metallic_roughness.base_color_factor)
+        {
+            float* color = gltf_data->materials[mat].pbr_metallic_roughness.base_color_factor;
+            model->materials[mat].color.x = color[0];
+            model->materials[mat].color.y = color[1];
+            model->materials[mat].color.z = color[2];
+            model->materials[mat].color.w = color[3];
+        }
+        else
+            model->materials[mat].color = (vec4_t){1,1,1,1};
+
 
         model->materials[mat].orm_map = empty_orm_map;
         model->materials[mat].normal_map = empty_color_map;
     }
 
     model->mesh_count = gltf_data->meshes_count;
-    if (model->mesh_count > MAX_MESH_COUNT)
-        printf(LOG_WARNING"[GLTF]: MAX MESHES REACHED! %u\n", model->mesh_count);
+    model->meshes = malloc(sizeof(mesh_t) * model->mesh_count);
 
     for (i32 m = 0; m < model->mesh_count; m++)
     {
@@ -298,9 +312,8 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         model->meshes[m].name[sizeof(model->meshes[m].name) - 1] = '\0';
 
         model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
-        if (model->meshes[m].primitive_count > MAX_PRIMITIVE_COUNT)
-            printf(LOG_WARNING"[GLTF]: MAX PRIMITIVES REACHED! %u\n", model->meshes[m].primitive_count);
-
+        model->meshes[m].primitives = malloc(sizeof(mesh_primitive_t) * model->meshes[m].primitive_count);
+        
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
             model->meshes[m].primitives[p] = (mesh_primitive_t){};

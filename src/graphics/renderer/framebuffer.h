@@ -7,7 +7,6 @@ typedef struct
     texture_t texture;
 
     bool color, depth, stencil;
-    i32 sample_count;
 }framebuffer_t;
 
 void framebuffer_create(framebuffer_t* framebuffer);

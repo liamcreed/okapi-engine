@@ -27,6 +27,7 @@ u32 quad_indices[] =
 
 void renderer_create(renderer_t* renderer)
 {
+    //opengl settings
     GL(glEnable(GL_DEPTH_TEST));
     GL(glDepthFunc(GL_LESS));
     GL(glEnable(GL_CULL_FACE));
@@ -34,26 +35,22 @@ void renderer_create(renderer_t* renderer)
     GL(glEnable(GL_BLEND));
     GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
+    //creating shaders
     renderer->mesh_shader = (shader_t)
     {
-        .v_path = "./res/shaders/mesh.vert",
-        .f_path = "./res/shaders/mesh.frag"
+        .v_path = "./assets/shaders/mesh.vert",
+        .f_path = "./assets/shaders/mesh.frag"
     };
     shader_create(&renderer->mesh_shader);
-    renderer->anim_mesh_shader = (shader_t)
-    {
-        .v_path = "./res/shaders/mesh.vert",
-        .f_path = "./res/shaders/mesh.frag"
-    };
 
-    shader_create(&renderer->anim_mesh_shader);
     renderer->quad_shader = (shader_t)
     {
-        .v_path = "./res/shaders/quad.vert",
-        .f_path = "./res/shaders/quad.frag"
+        .v_path = "./assets/shaders/quad.vert",
+        .f_path = "./assets/shaders/quad.frag"
     };
     shader_create(&renderer->quad_shader);
 
+    //creating vao for quads
     vertex_array_create(&renderer->quad_va);
     vertex_array_create_vbo(&renderer->quad_va, quad_vertices, sizeof(quad_vertices), false);
     vertex_array_push_attribute_f(0, 3, 5 * sizeof(f32), 0);
@@ -72,11 +69,11 @@ void renderer_create(renderer_t* renderer)
     };
     texture_create(&renderer->white_tex);
 
-
+    //postprocessing
     renderer->pp_shader = (shader_t)
     {
-        .v_path = "./res/shaders/pp.vert",
-        .f_path = "./res/shaders/pp.frag"
+        .v_path = "./assets/shaders/pp.vert",
+        .f_path = "./assets/shaders/pp.frag"
     };
     shader_create(&renderer->pp_shader);
 
@@ -85,6 +82,7 @@ void renderer_create(renderer_t* renderer)
     if (renderer->height == 0)
         renderer->height == renderer->window->height;
 
+    //creating framebuffer for the scene
     renderer->scene_buffer = (framebuffer_t)
     {
         .color = true,
@@ -92,21 +90,8 @@ void renderer_create(renderer_t* renderer)
         .texture.width = renderer->width,
         .texture.height = renderer->height,
     };
-    if (renderer->msaa)
-        renderer->scene_buffer.sample_count = 4;
-    else
-        renderer->scene_buffer.sample_count = 0;
-    framebuffer_create(&renderer->scene_buffer);
 
-    renderer->pp_buffer = (framebuffer_t)
-    {
-        .color = true,
-        .depth = true,
-        .stencil = true,
-        .texture.width = renderer->width,
-        .texture.height = renderer->height
-    };
-    framebuffer_create(&renderer->pp_buffer);
+    framebuffer_create(&renderer->scene_buffer);
 
     vertex_array_create(&renderer->scene_buffer_va);
     vertex_array_create_vbo(&renderer->scene_buffer_va, scene_vertices, sizeof(scene_vertices), false);
@@ -118,33 +103,22 @@ void renderer_create(renderer_t* renderer)
 
 void renderer_start(renderer_t* renderer)
 {
+    glEnable(GL_DEPTH_TEST);
     GL(glBindFramebuffer(GL_FRAMEBUFFER, renderer->scene_buffer.fbo));
-    GL(glEnable(GL_DEPTH_TEST));
     GL(glViewport(0, 0, renderer->scene_buffer.texture.width, renderer->scene_buffer.texture.height));
-
     GL(glClearColor(renderer->clear_color.x, renderer->clear_color.y, renderer->clear_color.z, renderer->clear_color.w));
     GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-    shader_set_uniform_mat4(&renderer->mesh_shader, "u_view", renderer->view_mat);
-    shader_set_uniform_mat4(&renderer->mesh_shader, "u_proj", renderer->proj_mat);
 
     shader_set_uniform_mat4(&renderer->quad_shader, "u_view", renderer->view_mat);
     shader_set_uniform_mat4(&renderer->quad_shader, "u_proj", renderer->proj_mat);
 
-    shader_set_uniform_mat4(&renderer->anim_mesh_shader, "u_view", renderer->view_mat);
-    shader_set_uniform_mat4(&renderer->anim_mesh_shader, "u_proj", renderer->proj_mat);
+    shader_set_uniform_mat4(&renderer->mesh_shader, "u_view", renderer->view_mat);
+    shader_set_uniform_mat4(&renderer->mesh_shader, "u_proj", renderer->proj_mat);
 }
 
 void renderer_end(renderer_t* renderer)
 {
-    GL(glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->scene_buffer.fbo));
-    GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderer->pp_buffer.fbo));
-    GL(glBlitFramebuffer(0, 0, renderer->scene_buffer.texture.width,
-        renderer->scene_buffer.texture.height, 0, 0,
-        renderer->scene_buffer.texture.width,
-        renderer->scene_buffer.texture.height,
-        GL_COLOR_BUFFER_BIT, GL_NEAREST));
-
+    //drawing quad with the scene to the screen
     GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL(glDisable(GL_DEPTH_TEST));
 
@@ -152,9 +126,10 @@ void renderer_end(renderer_t* renderer)
     GL(glClear(GL_COLOR_BUFFER_BIT));
     GL(glViewport(0, 0, renderer->window->width, renderer->window->height));
 
+    //drawing the scene quad
     shader_bind(&renderer->pp_shader);
     vertex_array_bind(&renderer->scene_buffer_va);
-    texture_bind(&renderer->pp_buffer.texture, 0);
+    texture_bind(&renderer->scene_buffer.texture, 0);
     GL(glDrawArrays(GL_TRIANGLES, 0, 6));
 }
 
@@ -165,7 +140,6 @@ void renderer_clear(renderer_t* renderer)
 void renderer_exit(renderer_t* renderer)
 {
     shader_delete(&renderer->mesh_shader);
-    shader_delete(&renderer->anim_mesh_shader);
     shader_delete(&renderer->pp_shader);
     shader_delete(&renderer->quad_shader);
     vertex_array_delete(&renderer->quad_va);
@@ -173,33 +147,7 @@ void renderer_exit(renderer_t* renderer)
 }
 
 
-void armature_update_transforms(mesh_armature_t* armature)
-{
-    for (i32 j = 0; j < armature->joint_count; j++)
-    {
-       mesh_joint_t* joint = &armature->joints[j];
-
-        mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
-        mat4_t global_matrix = local_transform;
-
-        mesh_joint_t* next_joint = joint;
-
-        while (next_joint->parent_id != -1)
-        {
-            mesh_joint_t* parent_joint = &armature->joints[next_joint->parent_id];
-
-            mat4_t parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
-            global_matrix = mat4_multiply(parent_local_transform, global_matrix);
-
-            next_joint = parent_joint;
-        } 
-
-        armature->joint_matrices[j] = mat4_multiply(global_matrix, joint->inverse_bind_matrix);;
-    }
-}
-
-
-void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* model, vec3_t position, f32 size, vec4_t rotation)
+void renderer_draw_model_3D(renderer_t* renderer, model_3D_t* model, vec3_t position, f32 size, vec4_t rotation)
 {
     if (model->mesh_count != 0)
     {
@@ -212,52 +160,7 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
         shader_t* shader = &renderer->mesh_shader;
         shader_set_uniform_mat4(shader, "u_model", transform);
 
-        if (model->animation_count)
-        {
-            mesh_animation_t* walk_animation = mesh_anim_from_name(model, "walking");
-            mesh_animation_t* idle_animation = mesh_anim_from_name(model, "dance");
-            mesh_animation_t* run_animation = mesh_anim_from_name(model, "running");
-
-            mesh_animation_t* current_animation;
-            if (key_pressed(renderer->window, KEY_W) || key_pressed(renderer->window, KEY_S) || key_pressed(renderer->window, KEY_A) || key_pressed(renderer->window, KEY_D))
-            {
-                if (key_pressed(renderer->window, KEY_LEFT_SHIFT))
-                {
-                    current_animation = run_animation;
-                }
-                else
-                    current_animation = walk_animation;
-            }
-            else
-                current_animation = idle_animation;
-
-            static float time = 0;
-            u32 keyframe = time * ANIM_FRAMERATE;
-
-            for (i32 j = 0; j < model->armature.joint_count; j++)
-            {
-                mesh_joint_t* joint = &model->armature.joints[j];
-
-                if (keyframe > current_animation->total_keyframe_count - 1)
-                {
-                    time = 0;
-                    keyframe = 0;
-                }
-                u32 next_frame;
-
-                if (keyframe == current_animation->total_keyframe_count - 1)
-                    next_frame = 0;
-                else
-                    next_frame = keyframe + 1;
-
-                float s = renderer->window->dt * ANIM_FRAMERATE;
-                joint->rotation = quat_lerp(joint->rotation, current_animation->key_frames[j][next_frame].rotation, s);
-                joint->location = vec3_lerp(joint->location, current_animation->key_frames[j][next_frame].location, s);
-            }
-
-            time += renderer->window->dt;
-        } 
-        if (model->armature.joint_count != 0)
+        if (model->armature.joint_count > 0)
         {
             armature_update_transforms(&model->armature);
             shader_set_uniform_mat4_arr(shader, "joint_matrices", model->armature.joint_matrices, model->armature.joint_count);
@@ -268,8 +171,6 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
             shader_set_uniform_int(shader, "u_skinning", 0);
         }
 
-
-
         for (i32 m = 0; m < model->mesh_count; m++)
         {
             for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
@@ -279,6 +180,7 @@ void renderer_draw_model_3D(renderer_t* renderer, camera_t* camera, model_3D_t* 
                 texture_bind(&model->materials[model->meshes[m].primitives[p].material_index].diffuse_map, 0);
                 shader_set_uniform_int(shader, "u_diffuse_map", 0);
 
+                shader_set_uniform_vec4(shader, "u_color", model->materials[model->meshes[m].primitives[p].material_index].color);
 
                 vertex_array_bind(&model->meshes[m].primitives[p].vertex_array);
 

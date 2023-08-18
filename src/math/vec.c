@@ -1,5 +1,9 @@
 #include "math/math.h"
 
+f32 vec3_length(vec3_t v)
+{
+    return sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+}
 vec3_t vec3_add(vec3_t v1, vec3_t v2)
 {
     return (vec3_t) { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
@@ -27,7 +31,7 @@ f32 vec3_dot(vec3_t v1, vec3_t v2)
 }
 vec3_t vec3_normalize(vec3_t v)
 {
-    f32 length = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+    f32 length = vec3_length(v);
     return (vec3_t) { v.x / length, v.y / length, v.z / length };
 }
 
@@ -93,16 +97,19 @@ vec4_t quat_from_euler(vec3_t euler)
     return quat_multiply(quat_multiply(x, y), z);
 }
 
+f32 vec4_length(vec4_t v)
+{
+    return sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z) + (v.w * v.w));
+}
 vec4_t vec4_normalize(vec4_t q)
 {
-    f32 lenght = sqrt((q.x * q.x) + (q.y * q.y) + (q.z * q.z) + (q.w * q.w));
-    return (vec4_t){q.x/lenght, q.y/lenght, q.z/lenght, q.w/lenght};
+    f32 length = vec4_length(q);
+    return (vec4_t){q.x/length, q.y/length, q.z/length, q.w/length};
 }
 vec4_t quat_conjugate(vec4_t q)
 {
     return (vec4_t){-q.x, -q.y, -q.z, q.w};
 }
-
 vec4_t quat_multiply(vec4_t q1, vec4_t q2)
 {
     return (vec4_t)
@@ -117,7 +124,6 @@ void vec4_print(vec4_t q)
 {
     printf("Quaternion: x: %f, y: %f, z: %f, w: %f\n", q.x, q.y, q.z, q.w);
 }
-
 float vec4_dot(vec4_t v1, vec4_t v2)
 {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
