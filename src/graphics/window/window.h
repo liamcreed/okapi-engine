@@ -3,12 +3,12 @@
 typedef struct
 {
     const char *title;
-    u32 width;
-    u32 height;
+    i32 width;
+    i32 height;
     f32 aspect;
     
     bool closed, minimized, resized;
-    bool fullscreen, cursor, vsync;
+    bool fullscreen, cursor, vsync, resizable, transparent;
 
     GLFWwindow *glfw;
     f32 dt;

@@ -5,11 +5,10 @@
 #include "graphics/renderer/shader.h"
 #include "graphics/renderer/vertexarray.h"
 #include "graphics/renderer/texture.h"
-#include "graphics/renderer/camera.h"
 #include "graphics/renderer/framebuffer.h"
 
-#include "graphics/3D/model.h"
-#include "graphics/3D/animation.h"
+#include "graphics/mesh/model.h"
+#include "graphics/mesh/animation.h"
 
 #include "graphics/renderer/renderer.h"
 

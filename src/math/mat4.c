@@ -4,7 +4,7 @@ mat4_t mat4_new(f32 value)
 {
     mat4_t m;
     memset(m.data, 0, sizeof(m.data));
-    if(value)
+    if (value)
     {
         for (u32 i = 0; i < 4; i++)
         {
@@ -174,47 +174,7 @@ mat4_t mat4_multiply(mat4_t m1, mat4_t m2)
     return result;
 
 }
-mat4_t mat4_inverse(mat4_t m)
-{
-    mat4_t result;
-    int n = 4;
 
-    // Create an augmented matrix [m | I]
-    mat4_t augmented;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            augmented.data[i][j] = m.data[i][j];
-            augmented.data[i][j + n] = (i == j) ? 1.0f : 0.0f;
-        }
-    }
-
-    // Perform Gauss-Jordan elimination
-    for (int i = 0; i < n; i++) {
-        float pivot = augmented.data[i][i];
-
-        for (int j = 0; j < 2 * n; j++) {
-            augmented.data[i][j] /= pivot;
-        }
-
-        for (int k = 0; k < n; k++) {
-            if (k != i) {
-                float factor = augmented.data[k][i];
-                for (int j = 0; j < 2 * n; j++) {
-                    augmented.data[k][j] -= factor * augmented.data[i][j];
-                }
-            }
-        }
-    }
-
-    // Extract the inverted matrix from the augmented matrix
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            result.data[i][j] = augmented.data[i][j + n];
-        }
-    }
-
-    return result;
-}
 
 mat4_t mat4_from_quat(vec4_t q)
 {
@@ -291,7 +251,7 @@ mat4_t mat4_1D_to_2D(f32* m)
     result.data[3][0] = m[12];
     result.data[3][1] = m[13];
     result.data[3][2] = m[14];
-    result.data[3][3] = m[15]; 
+    result.data[3][3] = m[15];
  */
     result.data[0][0] = m[0];
     result.data[1][0] = m[1];
@@ -311,12 +271,147 @@ mat4_t mat4_1D_to_2D(f32* m)
     result.data[0][3] = m[12];
     result.data[1][3] = m[13];
     result.data[2][3] = m[14];
-    result.data[3][3] = m[15]; 
+    result.data[3][3] = m[15];
 
     return result;
-
 }
 
+mat4_t mat4_inverse(mat4_t m)
+{
+    mat4_t inverse;
+    mat4_t result;
+
+    inverse.data[0][0] = m.data[1][1] * m.data[2][2] * m.data[3][3] -
+        m.data[1][1] * m.data[3][2] * m.data[2][3] -
+        m.data[1][2] * m.data[2][1] * m.data[3][3] +
+        m.data[1][2] * m.data[3][1] * m.data[2][3] +
+        m.data[1][3] * m.data[2][1] * m.data[3][2] -
+        m.data[1][3] * m.data[3][1] * m.data[2][2];
+
+    inverse.data[0][1] = -m.data[0][1] * m.data[2][2] * m.data[3][3] +
+        m.data[0][1] * m.data[3][2] * m.data[2][3] +
+        m.data[0][2] * m.data[2][1] * m.data[3][3] -
+        m.data[0][2] * m.data[3][1] * m.data[2][3] -
+        m.data[0][3] * m.data[2][1] * m.data[3][2] +
+        m.data[0][3] * m.data[3][1] * m.data[2][2];
+
+    inverse.data[0][2] = m.data[0][1] * m.data[1][2] * m.data[3][3] -
+        m.data[0][1] * m.data[3][2] * m.data[1][3] -
+        m.data[0][2] * m.data[1][1] * m.data[3][3] +
+        m.data[0][2] * m.data[3][1] * m.data[1][3] +
+        m.data[0][3] * m.data[1][1] * m.data[3][2] -
+        m.data[0][3] * m.data[3][1] * m.data[1][2];
+
+    inverse.data[0][3] = -m.data[0][1] * m.data[1][2] * m.data[2][3] +
+        m.data[0][1] * m.data[2][2] * m.data[1][3] +
+        m.data[0][2] * m.data[1][1] * m.data[2][3] -
+        m.data[0][2] * m.data[2][1] * m.data[1][3] -
+        m.data[0][3] * m.data[1][1] * m.data[2][2] +
+        m.data[0][3] * m.data[2][1] * m.data[1][2];
+
+    inverse.data[1][0] = -m.data[1][0] * m.data[2][2] * m.data[3][3] +
+        m.data[1][0] * m.data[3][2] * m.data[2][3] +
+        m.data[1][2] * m.data[2][0] * m.data[3][3] -
+        m.data[1][2] * m.data[3][0] * m.data[2][3] -
+        m.data[1][3] * m.data[2][0] * m.data[3][2] +
+        m.data[1][3] * m.data[3][0] * m.data[2][2];
+
+    inverse.data[1][1] = m.data[0][0] * m.data[2][2] * m.data[3][3] -
+        m.data[0][0] * m.data[3][2] * m.data[2][3] -
+        m.data[0][2] * m.data[2][0] * m.data[3][3] +
+        m.data[0][2] * m.data[3][0] * m.data[2][3] +
+        m.data[0][3] * m.data[2][0] * m.data[3][2] -
+        m.data[0][3] * m.data[3][0] * m.data[2][2];
+
+    inverse.data[1][2] = -m.data[0][0] * m.data[1][2] * m.data[3][3] +
+        m.data[0][0] * m.data[3][2] * m.data[1][3] +
+        m.data[0][2] * m.data[1][0] * m.data[3][3] -
+        m.data[0][2] * m.data[3][0] * m.data[1][3] -
+        m.data[0][3] * m.data[1][0] * m.data[3][2] +
+        m.data[0][3] * m.data[3][0] * m.data[1][2];
+
+    inverse.data[1][3] = m.data[0][0] * m.data[1][2] * m.data[2][3] -
+        m.data[0][0] * m.data[2][2] * m.data[1][3] -
+        m.data[0][2] * m.data[1][0] * m.data[2][3] +
+        m.data[0][2] * m.data[2][0] * m.data[1][3] +
+        m.data[0][3] * m.data[1][0] * m.data[2][2] -
+        m.data[0][3] * m.data[2][0] * m.data[1][2];
+
+    inverse.data[2][0] = m.data[1][0] * m.data[2][1] * m.data[3][3] -
+        m.data[1][0] * m.data[3][1] * m.data[2][3] -
+        m.data[1][1] * m.data[2][0] * m.data[3][3] +
+        m.data[1][1] * m.data[3][0] * m.data[2][3] +
+        m.data[1][3] * m.data[2][0] * m.data[3][1] -
+        m.data[1][3] * m.data[3][0] * m.data[2][1];
+
+    inverse.data[2][1] = -m.data[0][0] * m.data[2][1] * m.data[3][3] +
+        m.data[0][0] * m.data[3][1] * m.data[2][3] +
+        m.data[0][1] * m.data[2][0] * m.data[3][3] -
+        m.data[0][1] * m.data[3][0] * m.data[2][3] -
+        m.data[0][3] * m.data[2][0] * m.data[3][1] +
+        m.data[0][3] * m.data[3][0] * m.data[2][1];
+
+    inverse.data[2][2] = m.data[0][0] * m.data[1][1] * m.data[3][3] -
+        m.data[0][0] * m.data[3][1] * m.data[1][3] -
+        m.data[0][1] * m.data[1][0] * m.data[3][3] +
+        m.data[0][1] * m.data[3][0] * m.data[1][3] +
+        m.data[0][3] * m.data[1][0] * m.data[3][1] -
+        m.data[0][3] * m.data[3][0] * m.data[1][1];
+
+    inverse.data[2][3] = -m.data[0][0] * m.data[1][1] * m.data[2][3] +
+        m.data[0][0] * m.data[2][1] * m.data[1][3] +
+        m.data[0][1] * m.data[1][0] * m.data[2][3] -
+        m.data[0][1] * m.data[2][0] * m.data[1][3] -
+        m.data[0][3] * m.data[1][0] * m.data[2][1] +
+        m.data[0][3] * m.data[2][0] * m.data[1][1];
+
+    inverse.data[3][0] = -m.data[1][0] * m.data[2][1] * m.data[3][2] +
+        m.data[1][0] * m.data[3][1] * m.data[2][2] +
+        m.data[1][1] * m.data[2][0] * m.data[3][2] -
+        m.data[1][1] * m.data[3][0] * m.data[2][2] -
+        m.data[1][2] * m.data[2][0] * m.data[3][1] +
+        m.data[1][2] * m.data[3][0] * m.data[2][1];
+
+    inverse.data[3][1] = m.data[0][0] * m.data[2][1] * m.data[3][2] -
+        m.data[0][0] * m.data[3][1] * m.data[2][2] -
+        m.data[0][1] * m.data[2][0] * m.data[3][2] +
+        m.data[0][1] * m.data[3][0] * m.data[2][2] +
+        m.data[0][2] * m.data[2][0] * m.data[3][1] -
+        m.data[0][2] * m.data[3][0] * m.data[2][1];
+
+    inverse.data[3][2] = -m.data[0][0] * m.data[1][1] * m.data[3][2] +
+        m.data[0][0] * m.data[3][1] * m.data[1][2] +
+        m.data[0][1] * m.data[1][0] * m.data[3][2] -
+        m.data[0][1] * m.data[3][0] * m.data[1][2] -
+        m.data[0][2] * m.data[1][0] * m.data[3][1] +
+        m.data[0][2] * m.data[3][0] * m.data[1][1];
+
+    inverse.data[3][3] = m.data[0][0] * m.data[1][1] * m.data[2][2] -
+        m.data[0][0] * m.data[2][1] * m.data[1][2] -
+        m.data[0][1] * m.data[1][0] * m.data[2][2] +
+        m.data[0][1] * m.data[2][0] * m.data[1][2] +
+        m.data[0][2] * m.data[1][0] * m.data[2][1] -
+        m.data[0][2] * m.data[2][0] * m.data[1][1];
+
+    f64 det = m.data[0][0] * inverse.data[0][0] + m.data[1][0] * inverse.data[0][1] + m.data[2][0] * inverse.data[0][2] + m.data[3][0] * inverse.data[0][3];
+
+    if (det == 0)
+    {
+        printf("ERROR\n");
+        return mat4_new(1);
+    }
+
+    det = 1.0 / det;
+    for (i32 i = 0; i < 4; i++)
+    {
+        for (i32 j = 0; j < 4; j++)
+        {
+            result.data[i][j] = inverse.data[i][j] * det;
+        }
+
+    }
+    return result;
+}
 void mat4_print(mat4_t mat)
 {
     printf("Matrix\n");

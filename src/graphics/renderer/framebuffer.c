@@ -16,7 +16,7 @@ void framebuffer_create(framebuffer_t* framebuffer)
 
     if (framebuffer->color)
     {
-        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer->texture.width, framebuffer->texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL));
+        GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer->texture.width, framebuffer->texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
     }
     else if (framebuffer->color)
     {

@@ -14,7 +14,12 @@
         "typeinfo": "c",
         "cmath": "c",
         "thirdperson.h": "c",
-        "limits": "c"
+        "limits": "c",
+        "renderer.h": "c",
+        "game.h": "c",
+        "array": "c",
+        "vector": "c",
+        "raytracing.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

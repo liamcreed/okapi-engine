@@ -23,7 +23,6 @@ typedef struct
     u32 id;
     bool filter, sRGB;
 
-    //stored in binary
     u32 width;
     u32 height;
     u32 channel_count;

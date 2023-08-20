@@ -18,7 +18,6 @@ void vertex_array_unbind();
 void vertex_array_bind_buffers(vertex_array_t *vertex_array);
 void vertex_array_unbind_buffers();
 
-
 void vertex_array_delete(vertex_array_t *vertex_array);
 
 void vertex_array_push_vertex_data(size_t size, void *data);

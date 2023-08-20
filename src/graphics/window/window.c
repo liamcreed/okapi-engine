@@ -3,7 +3,7 @@
 void window_create(window_t* window)
 {
     window->closed = true;
-    window->aspect = window->width / window->height;
+    window->aspect = (f32)window->width / (f32)window->height;
 
     window->minimized = false;
 
@@ -15,10 +15,14 @@ void window_create(window_t* window)
 
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if(window->resizable == false)
+        glfwWindowHint(GLFW_RESIZABLE, 0);
+    if(window->transparent)
+        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, 1);
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
 #endif
 
 

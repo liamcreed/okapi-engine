@@ -12,7 +12,7 @@ void main()
 {
     vec4 tex_color = texture(u_texture, v_uv);
     f_color = tex_color;
-    float gamma = 2.2;
-    f_color.rgb = pow(f_color.rgb, vec3(1.0/gamma));
+   /*  float gamma = 2.2;
+    f_color.rgb = pow(f_color.rgb, vec3(1.0/gamma)); */
     f_color *= u_color;
 }

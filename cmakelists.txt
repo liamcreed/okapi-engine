@@ -33,9 +33,9 @@ src/graphics/renderer/shader.c
 src/graphics/renderer/vertexarray.c
 src/graphics/renderer/framebuffer.c
 
-src/graphics/3D/model.c
-src/graphics/3D/animation.c
-src/graphics/3D/gltf.c
+src/graphics/mesh/model.c
+src/graphics/mesh/animation.c
+src/graphics/mesh/gltf.c
 )
 
 IF (WIN32)

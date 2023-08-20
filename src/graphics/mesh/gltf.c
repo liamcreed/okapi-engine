@@ -137,7 +137,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
             model->animations[a].key_frames = malloc(model->armature.joint_count * MAX_KEY_FRAME_COUNT * sizeof(key_frame_t));
             model->animations[a].key_frame_count = malloc(sizeof(u32) * model->armature.joint_count);
-    
+
             for (u32 j = 0; j < model->armature.joint_count; j++)
             {
                 model->animations[a].key_frame_count[j] = 0;
@@ -218,7 +218,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                     }
                 }
             }
-            
+
             u32 max_keyframes = 0;
             for (i32 j = 0; j < model->armature.joint_count; j++)
             {
@@ -252,7 +252,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
     empty_orm_data[1] = 255;
     empty_orm_data[2] = 0;
     empty_orm_data[3] = 255;
-    
+
     texture_t empty_orm_map =
     {
         .data = empty_orm_data,
@@ -276,7 +276,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
         if (gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture != NULL)
         {
             char* image_path = get_full_path_from_other(path, gltf_data->materials[mat].pbr_metallic_roughness.base_color_texture.texture->image->uri);
-            
+
             texture_load_from_PNG(&model->materials[mat].diffuse_map, image_path);
             free(image_path);
         }
@@ -285,17 +285,11 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             model->materials[mat].diffuse_map = empty_color_map;
         }
 
-        if(gltf_data->materials[mat].pbr_metallic_roughness.base_color_factor)
-        {
-            float* color = gltf_data->materials[mat].pbr_metallic_roughness.base_color_factor;
-            model->materials[mat].color.x = color[0];
-            model->materials[mat].color.y = color[1];
-            model->materials[mat].color.z = color[2];
-            model->materials[mat].color.w = color[3];
-        }
-        else
-            model->materials[mat].color = (vec4_t){1,1,1,1};
-
+        float* color = gltf_data->materials[mat].pbr_metallic_roughness.base_color_factor;
+        model->materials[mat].color.x = color[0];
+        model->materials[mat].color.y = color[1];
+        model->materials[mat].color.z = color[2];
+        model->materials[mat].color.w = color[3];
 
         model->materials[mat].orm_map = empty_orm_map;
         model->materials[mat].normal_map = empty_color_map;
@@ -313,7 +307,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
 
         model->meshes[m].primitive_count = gltf_data->meshes[m].primitives_count;
         model->meshes[m].primitives = malloc(sizeof(mesh_primitive_t) * model->meshes[m].primitive_count);
-        
+
         for (i32 p = 0; p < model->meshes[m].primitive_count; p++)
         {
             model->meshes[m].primitives[p] = (mesh_primitive_t){};
@@ -338,13 +332,13 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             size_t indices_offset = gltf_data->meshes[m].primitives[p].indices->buffer_view->offset;
 
             model->meshes[m].primitives[p].vertices_size = indices_offset - vertices_offset;
-            
+
             model->meshes[m].primitives[p].vertices = malloc(model->meshes[m].primitives[p].vertices_size);
             memcpy(model->meshes[m].primitives[p].vertices, buffer + vertices_offset, model->meshes[m].primitives[p].vertices_size);
 
             model->meshes[m].primitives[p].index_count = gltf_data->meshes[m].primitives[p].indices->count;
             model->meshes[m].primitives[p].indices_size = gltf_data->meshes[m].primitives[p].indices->buffer_view->size;
-            
+
             model->meshes[m].primitives[p].indices = malloc(model->meshes[m].primitives[p].indices_size);
             memcpy(model->meshes[m].primitives[p].indices, buffer + indices_offset, model->meshes[m].primitives[p].indices_size);
 
@@ -377,7 +371,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
             }
         }
     }
-   
+
 
     free(gltf_data);
 }

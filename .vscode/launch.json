@@ -3,11 +3,16 @@
     "version": "2.0.0",
     "configurations": [
         {
-            "program": "${workspaceRoot}/okapi/okapi.exe",
-            "name": "Debug",
+            "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "cwd": "${workspaceRoot}/okapi"
+            "program": "${workspaceRoot}/okapi/okapi",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}/okapi",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
         }
     ]
 }

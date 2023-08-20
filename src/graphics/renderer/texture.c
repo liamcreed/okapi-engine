@@ -137,7 +137,7 @@ void texture_update_data(texture_t* texture)
         format = GL_RGBA;
     else if (texture->channel_count == 3)
         format = GL_RGB;
-
+    GL(glBindTexture(GL_TEXTURE_2D, texture->id));
     GL(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, format, GL_UNSIGNED_BYTE, texture->data));
 }
 

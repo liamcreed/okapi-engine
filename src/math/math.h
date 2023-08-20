@@ -34,12 +34,15 @@ vec3_t vec3_add(vec3_t v1, vec3_t v2);
 vec3_t vec3_cross(vec3_t v1, vec3_t v2);
 vec3_t vec3_scale(vec3_t v, f32 s);
 vec3_t vec3_multiply_quat(vec3_t v, vec4_t q);
+vec3_t vec3_multiply(vec3_t v1, vec3_t v2);
 vec3_t vec3_multiply_mat4(vec3_t v, mat4_t m);
 vec3_t vec3_lerp(vec3_t v1, vec3_t v2, f32 f);
+
 
 void vec3_print(vec3_t vector);
 
 vec4_t vec4_normalize(vec4_t q);
+vec4_t vec4_clamp(vec4_t v, vec4_t min, vec4_t max);
 float vec4_dot(vec4_t v1, vec4_t v2);
 void vec4_print(vec4_t q);
 
@@ -69,3 +72,4 @@ void mat4_print(mat4_t mat);
 
 f32 lerp(f32 a, f32 b, f32 f);
 f32 radians(f32 deg);
+f32 f32_max(f32 f1, f32 f2);

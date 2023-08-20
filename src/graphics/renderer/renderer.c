@@ -78,9 +78,9 @@ void renderer_create(renderer_t* renderer)
     shader_create(&renderer->pp_shader);
 
     if (renderer->width == 0)
-        renderer->width == renderer->window->width;
+        renderer->width = renderer->window->width;
     if (renderer->height == 0)
-        renderer->height == renderer->window->height;
+        renderer->height = renderer->window->height;
 
     //creating framebuffer for the scene
     renderer->scene_buffer = (framebuffer_t)
@@ -122,9 +122,9 @@ void renderer_end(renderer_t* renderer)
     GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL(glDisable(GL_DEPTH_TEST));
 
-    GL(glClearColor(1.0f, 1.0f, 1.0f, 1.0f));
+    GL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
     GL(glClear(GL_COLOR_BUFFER_BIT));
-    GL(glViewport(0, 0, renderer->window->width, renderer->window->height));
+    GL(glViewport(0, 0, renderer->window->width * 2, renderer->window->height * 2));
 
     //drawing the scene quad
     shader_bind(&renderer->pp_shader);

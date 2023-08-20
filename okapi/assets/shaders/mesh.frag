@@ -27,24 +27,22 @@ void main()
             
         vec3 diffuse_color = texture(u_diffuse_map, v_uv).rgb * color;
 
-        float ambient_factor = 0.5;
+        float ambient_factor = 0.9;
         vec3 ambient = diffuse_color * ambient_factor;
 
         vec3 light_dir = normalize(-u_light_dir.xyz);
         float diff =  max(dot(v_norm, light_dir), 0.0);
 
-        float sun_strenght = 1;
         if(diff > 0.2)
-            diff = (1 - ambient_factor) * sun_strenght;
+            diff = (1 - ambient_factor);
         else if(diff < 0.2)
             diff = 0;
-        vec3 diffuse =  diff * diffuse_color ;
+        vec3 diffuse =  diff * diffuse_color;
 
         vec3 result = ambient + diffuse;
     
         float gamma = 2.2;
         f_color.rgb = pow(result, vec3(1.0/gamma));
         f_color.a = texture(u_diffuse_map, v_uv).a;
-    
     }
 }
