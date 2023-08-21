@@ -4,7 +4,7 @@ window_t window =
 {
     .width = 800,
     .height = 600,
-    .vsync = false,
+    .vsync = true,
     .title = "okapi",
     .cursor = false
 };
@@ -62,7 +62,7 @@ typedef struct
 
 directional_light_t sun =
 {
-    .direction = {1,-1,-1},
+    .direction = {0,-1,-1},
     .strenght = 1,
     .color = {1,1,1,1}
 };
@@ -74,7 +74,7 @@ model_3D_t player_model = {};
 void render()
 {
     renderer_draw_model_3D(&renderer, &player_model, player.position, player.scale, player.rotation);
-    renderer_draw_model_3D(&renderer, &landscape_model, (vec3_t) { 0, 0, 1 }, .3, (vec4_t) { 0, 0, 0, 1 });
+    renderer_draw_model_3D(&renderer, &landscape_model, (vec3_t) { 0, 0, 1 }, 1, (vec4_t) { 0, 0, 0, 1 });
 }
 
 int main()
@@ -82,13 +82,14 @@ int main()
     window_create(&window);
     renderer_create(&renderer);
 
-    model_3D_load_from_bin(&landscape_model, "./assets/meshes/landscape.okp3d");
+    model_3D_load_from_bin(&landscape_model, "./assets/meshes/forest.okp3d");
     model_3D_create(&landscape_model);
 
-    model_3D_load_from_bin(&player_model, "./assets/meshes/animation.okp3d");
+
+    model_3D_load_from_bin(&player_model, "./assets/meshes/nude.okp3d");
     model_3D_create(&player_model);
 
-    mesh_animation_t* dance_animation = mesh_anim_from_name(&player_model, "dance");
+    mesh_animation_t* dance_animation = mesh_anim_from_name(&player_model, "running");
 
     while (!window.closed)
     {
