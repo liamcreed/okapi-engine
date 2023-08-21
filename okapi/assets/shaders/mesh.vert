@@ -20,11 +20,6 @@ const int MAX_WEIGHTS = 4;
 uniform mat4 joint_matrices[MAX_JOINTS];
 uniform int u_skinning;
 
-uniform mat4 u_shadow_view;
-uniform mat4 u_shadow_proj;
-
-out vec4 v_pos_shadow_space;
-
 void main()
 {
     v_pos = a_pos;
@@ -61,9 +56,6 @@ void main()
     }
     v_pos =(u_model * total_local_pos).xyz;
     gl_Position = u_proj * u_view * u_model  * total_local_pos;
-    
-    v_pos_shadow_space = u_shadow_proj * u_shadow_view * u_model * total_local_pos;
+  
     v_uv = a_uv;
-
-    
 }
