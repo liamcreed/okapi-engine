@@ -11,7 +11,7 @@ typedef struct
     bool fullscreen, cursor, vsync, resizable, transparent;
 
     GLFWwindow *glfw;
-    f32 dt;
+    f64 dt;
 
     vec2_t mouse_pos;
 } window_t;

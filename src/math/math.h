@@ -38,7 +38,6 @@ vec3_t vec3_multiply(vec3_t v1, vec3_t v2);
 vec3_t vec3_multiply_mat4(vec3_t v, mat4_t m);
 vec3_t vec3_lerp(vec3_t v1, vec3_t v2, f32 f);
 
-
 void vec3_print(vec3_t vector);
 
 vec4_t vec4_normalize(vec4_t q);

@@ -27,7 +27,7 @@ void main()
             
         vec3 diffuse_color = texture(u_diffuse_map, v_uv).rgb * color;
 
-        float ambient_factor = 0.9;
+        float ambient_factor = 0.7;
         vec3 ambient = diffuse_color * ambient_factor;
 
         vec3 light_dir = normalize(-u_light_dir.xyz);

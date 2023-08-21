@@ -23,7 +23,7 @@ typedef struct
 
 
 
-#define MAX_KEY_FRAME_COUNT 24 * 4
+#define MAX_KEY_FRAME_COUNT 24 * 20
 
 typedef struct
 {

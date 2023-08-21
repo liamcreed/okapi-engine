@@ -2,9 +2,9 @@
 
 window_t window =
 {
-    .width = 1280,
-    .height = 720,
-    .vsync = true,
+    .width = 800,
+    .height = 600,
+    .vsync = false,
     .title = "okapi",
     .cursor = false
 };
@@ -13,8 +13,8 @@ renderer_t renderer =
 {
     .window = &window,
     .clear_color = {.9, .9,1, 1},
-    .width = 1280 * 2 ,
-    .height = 720 * 2
+    .width = 800 * 2 ,
+    .height = 600 * 2
 };
 
 typedef struct
@@ -48,7 +48,7 @@ typedef struct
 player_t player =
 {
     .position = {0,0,0},
-    .scale = .01,
+    .scale = .01f,
     .rotation = (vec4_t){0,0,0,1}
 };
 
@@ -69,14 +69,12 @@ directional_light_t sun =
 
 
 model_3D_t landscape_model = {};
-
 model_3D_t player_model = {};
-
 
 void render()
 {
     renderer_draw_model_3D(&renderer, &player_model, player.position, player.scale, player.rotation);
-    renderer_draw_model_3D(&renderer, &landscape_model, (vec3_t) { 0, 0, 1 }, 1, (vec4_t) { 0, 0, 0, 1 });
+    renderer_draw_model_3D(&renderer, &landscape_model, (vec3_t) { 0, 0, 1 }, .3, (vec4_t) { 0, 0, 0, 1 });
 }
 
 int main()
@@ -85,13 +83,12 @@ int main()
     renderer_create(&renderer);
 
     model_3D_load_from_bin(&landscape_model, "./assets/meshes/landscape.okp3d");
-
     model_3D_create(&landscape_model);
 
-    model_3D_load_from_bin(&player_model, "./assets/meshes/character.okp3d");
+    model_3D_load_from_bin(&player_model, "./assets/meshes/animation.okp3d");
     model_3D_create(&player_model);
 
-    mesh_animation_t* run_animation = mesh_anim_from_name(&player_model, "running");
+    mesh_animation_t* dance_animation = mesh_anim_from_name(&player_model, "dance");
 
     while (!window.closed)
     {
@@ -102,8 +99,7 @@ int main()
         renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3_t) { 0, 1, 0 }), (vec3_t) { 0, 1, 0 });
 
         //-------------------------------------------------//
-        if (x_input || z_input)
-            animation_play(&player_model.armature, run_animation, window.dt, 1, true);
+        animation_play(&player_model.armature, dance_animation, window.dt, 1, true);
         //-------------------------------------------------//
 
         renderer_start(&renderer);

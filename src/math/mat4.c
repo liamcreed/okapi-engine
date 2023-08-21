@@ -17,6 +17,7 @@ mat4_t mat4_new(f32 value)
     }
     return m;
 }
+
 mat4_t mat4_ortho(f32 left, f32 right, f32 top, f32 bottom, f32 near, f32 far)
 {
     mat4_t result;
@@ -43,6 +44,7 @@ mat4_t mat4_ortho(f32 left, f32 right, f32 top, f32 bottom, f32 near, f32 far)
 
     return result;
 }
+
 mat4_t mat4_ortho_aspect(f32 aspect, f32 size, f32 near, f32 far)
 {
     return mat4_ortho(-aspect * size, aspect * size, size, -size, near, far);
@@ -110,6 +112,7 @@ mat4_t mat4_look_at(vec3_t eye, vec3_t center, vec3_t up)
     result.data[3][3] = 1.0f;
     return result;
 }
+
 mat4_t mat4_translate(mat4_t m, vec3_t v)
 {
     mat4_t result = mat4_new(1);
@@ -119,16 +122,19 @@ mat4_t mat4_translate(mat4_t m, vec3_t v)
     result.data[3][3] = 1;
     return mat4_multiply(m, result);
 }
+
 mat4_t mat4_rotate_x(mat4_t m, f32 angle_deg)
 {
     vec4_t q = quat_angle_axis(angle_deg, (vec3_t) { 1, 0, 0 });
     return mat4_multiply(m, mat4_from_quat(q));
 }
+
 mat4_t mat4_rotate_y(mat4_t m, f32 angle_deg)
 {
     vec4_t q = quat_angle_axis(angle_deg, (vec3_t) { 0, 1, 0 });
     return mat4_multiply(m, mat4_from_quat(q));
 }
+
 mat4_t mat4_rotate_z(mat4_t m, f32 angle_deg)
 {
     vec4_t q = quat_angle_axis(angle_deg, (vec3_t) { 0, 0, 1 });
@@ -145,6 +151,7 @@ mat4_t mat4_rotate_e(mat4_t m, vec3_t v)
     vec4_t q = quat_from_euler(v);
     return mat4_multiply(m, mat4_from_quat(q));
 }
+
 mat4_t mat4_scale(mat4_t m, vec3_t size)
 {
     mat4_t result = mat4_new(1);
@@ -154,6 +161,7 @@ mat4_t mat4_scale(mat4_t m, vec3_t size)
     result = mat4_multiply(m, result);
     return result;
 }
+
 mat4_t mat4_multiply(mat4_t m1, mat4_t m2)
 {
     mat4_t result = mat4_new(0);
@@ -175,7 +183,6 @@ mat4_t mat4_multiply(mat4_t m1, mat4_t m2)
 
 }
 
-
 mat4_t mat4_from_quat(vec4_t q)
 {
     f32 xy = q.x * q.y;
@@ -189,25 +196,6 @@ mat4_t mat4_from_quat(vec4_t q)
     f32 zz = q.z * q.z;
 
     mat4_t result;
-    /* result.data[0][0] = 1 - 2 * (yy + zz);
-    result.data[1][0] = 2 * (xy - zw);
-    result.data[2][0] = 2 * (xz + yw);
-    result.data[3][0] = 0;
-
-    result.data[0][1] = 2 * (xy + zw);
-    result.data[1][1] = 1 - 2 * (xx + zz);
-    result.data[2][1] = 2 * (yz - xw);
-    result.data[3][1] = 0;
-
-    result.data[0][2] = 2 * (xz - yw);
-    result.data[1][2] = 2 * (yz + xw);
-    result.data[2][2] = 1 - 2 * (xx + yy);
-    result.data[3][2] = 0;
-
-    result.data[0][3] = 0;
-    result.data[1][3] = 0;
-    result.data[2][3] = 0;
-    result.data[3][3] = 1; */
 
     result.data[0][0] = 1 - 2 * (yy + zz);
     result.data[0][1] = 2 * (xy - zw);
@@ -233,26 +221,6 @@ mat4_t mat4_from_quat(vec4_t q)
 mat4_t mat4_1D_to_2D(f32* m)
 {
     mat4_t result;
-    /* result.data[0][0] = m[0];
-    result.data[0][1] = m[1];
-    result.data[0][2] = m[2];
-    result.data[0][3] = m[3];
-
-    result.data[1][0] = m[4];
-    result.data[1][1] = m[5];
-    result.data[1][2] = m[6];
-    result.data[1][3] = m[7];
-
-    result.data[2][0] = m[8];
-    result.data[2][1] = m[9];
-    result.data[2][2] = m[10];
-    result.data[2][3] = m[11];
-
-    result.data[3][0] = m[12];
-    result.data[3][1] = m[13];
-    result.data[3][2] = m[14];
-    result.data[3][3] = m[15];
- */
     result.data[0][0] = m[0];
     result.data[1][0] = m[1];
     result.data[2][0] = m[2];
@@ -412,6 +380,7 @@ mat4_t mat4_inverse(mat4_t m)
     }
     return result;
 }
+
 void mat4_print(mat4_t mat)
 {
     printf("Matrix\n");

@@ -4,14 +4,17 @@ f32 vec3_length(vec3_t v)
 {
     return sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 }
+
 vec3_t vec3_add(vec3_t v1, vec3_t v2)
 {
     return (vec3_t) { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
 }
+
 vec3_t vec3_subtract(vec3_t v1, vec3_t v2)
 {
     return (vec3_t) { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
 }
+
 vec3_t vec3_cross(vec3_t v1, vec3_t v2)
 {
     return (vec3_t) {
@@ -20,6 +23,7 @@ vec3_t vec3_cross(vec3_t v1, vec3_t v2)
             v1.x* v2.y - v1.y * v2.x
     };
 }
+
 vec3_t vec3_scale(vec3_t v, f32 s)
 {
     return (vec3_t) { v.x* s, v.y* s, v.z* s };
@@ -29,6 +33,7 @@ f32 vec3_dot(vec3_t v1, vec3_t v2)
 {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
+
 vec3_t vec3_normalize(vec3_t v)
 {
     f32 length = vec3_length(v);
@@ -46,6 +51,7 @@ vec3_t vec3_multiply_quat(vec3_t v, vec4_t q)
 
     return vec3_add(vec3_add(a, b), c);
 }
+
 vec3_t vec3_multiply(vec3_t v1, vec3_t v2)
 {
     return (vec3_t) {v1.x * v2.x, v1.y * v2.y, v1.z * v2.z};
@@ -71,12 +77,11 @@ vec3_t vec3_lerp(vec3_t v1, vec3_t v2, f32 f)
 
     return result;
 }
+
 void vec3_print(vec3_t vector)
 {
     printf("V3: x:%f y:%f z:%f\n", vector.x, vector.y, vector.z);
 }
-
-//------------------------------------------------------------//
 
 vec4_t quat_angle_axis(f32 angle, vec3_t axis)
 {
@@ -104,11 +109,13 @@ f32 vec4_length(vec4_t v)
 {
     return sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z) + (v.w * v.w));
 }
+
 vec4_t vec4_normalize(vec4_t q)
 {
     f32 length = vec4_length(q);
     return (vec4_t) { q.x / length, q.y / length, q.z / length, q.w / length };
 }
+
 vec4_t vec4_clamp(vec4_t v, vec4_t min, vec4_t max)
 {
     vec4_t result = v;
@@ -129,10 +136,12 @@ vec4_t vec4_clamp(vec4_t v, vec4_t min, vec4_t max)
 
     return result;
 }
+
 vec4_t quat_conjugate(vec4_t q)
 {
     return (vec4_t) { -q.x, -q.y, -q.z, q.w };
 }
+
 vec4_t quat_multiply(vec4_t q1, vec4_t q2)
 {
     return (vec4_t)
@@ -143,14 +152,17 @@ vec4_t quat_multiply(vec4_t q1, vec4_t q2)
             (q1.w * q2.w) - (q1.x * q2.x) - (q1.y * q2.y) - (q1.z * q2.z),
     };
 }
+
 void vec4_print(vec4_t q)
 {
-    printf("Quaternion: x: %f, y: %f, z: %f, w: %f\n", q.x, q.y, q.z, q.w);
+    printf("Vec4: x: %f, y: %f, z: %f, w: %f\n", q.x, q.y, q.z, q.w);
 }
+
 float vec4_dot(vec4_t v1, vec4_t v2)
 {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 }
+
 vec4_t quat_lerp(vec4_t q1, vec4_t q2, f32 f)
 {
     vec4_t result = (vec4_t){ 0,0,0,1 };

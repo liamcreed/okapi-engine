@@ -30,8 +30,8 @@ void renderer_create(renderer_t* renderer)
     //opengl settings
     GL(glEnable(GL_DEPTH_TEST));
     GL(glDepthFunc(GL_LESS));
-    GL(glEnable(GL_CULL_FACE));
-
+/*     GL(glEnable(GL_CULL_FACE));
+ */
     GL(glEnable(GL_BLEND));
     GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
@@ -197,7 +197,7 @@ void renderer_draw_model_3D(renderer_t* renderer, model_3D_t* model, vec3_t posi
 
 void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, vec3_t position, vec3_t size, vec4_t rotation)
 {
-    GL(glDisable(GL_CULL_FACE));
+    /* GL(glDisable(GL_CULL_FACE)); */
     shader_bind(&renderer->quad_shader);
 
     if (texture == NULL)
@@ -219,5 +219,5 @@ void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, 
     vertex_array_bind(&renderer->quad_va);
     GL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
     vertex_array_unbind();
-    GL(glEnable(GL_CULL_FACE));
+   /*  GL(glEnable(GL_CULL_FACE)); */
 }
