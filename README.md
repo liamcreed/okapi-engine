@@ -11,7 +11,7 @@ Features:
 
 - Simple 3D rendering engine
   
-- GLTF parsing and exporting to custom binary format
+- GLTF parsing using cgltf and exporting to custom binary format
   
 - Simple 3D Animation system
   
