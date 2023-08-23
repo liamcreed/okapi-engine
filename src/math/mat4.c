@@ -361,7 +361,7 @@ mat4_t mat4_inverse(mat4_t m)
         m.data[0][2] * m.data[1][0] * m.data[2][1] -
         m.data[0][2] * m.data[2][0] * m.data[1][1];
 
-    f64 det = m.data[0][0] * inverse.data[0][0] + m.data[1][0] * inverse.data[0][1] + m.data[2][0] * inverse.data[0][2] + m.data[3][0] * inverse.data[0][3];
+    f32 det = m.data[0][0] * inverse.data[0][0] + m.data[1][0] * inverse.data[0][1] + m.data[2][0] * inverse.data[0][2] + m.data[3][0] * inverse.data[0][3];
 
     if (det == 0)
     {

@@ -100,7 +100,9 @@ int main()
         renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3_t) { 0, 1, 0 }), (vec3_t) { 0, 1, 0 });
 
         //-------------------------------------------------//
-        animation_play(&player_model.armature, dance_animation, window.dt, 1, true);
+        if(x_input || z_input)
+            animation_play(&player_model.armature, dance_animation, window.dt, 1, true);
+       
         //-------------------------------------------------//
 
         renderer_start(&renderer);
