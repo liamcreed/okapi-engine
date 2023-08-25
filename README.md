@@ -13,9 +13,9 @@ Features:
     - matrix 4x4
     - quaternions
 
-- Simple 3D rendering engine
+- Simple 3D rendering engine (opengl)
   
-- GLTF parsing using cgltf and exporting to custom binary format
+- GLTF parsing using cgltf and stbi_image and exporting to custom binary format
   
 https://github.com/liamcreed/okapi-engine/assets/90063109/c0a5c8b4-d001-4202-afb4-d345d51fe6af
 
