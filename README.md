@@ -1,6 +1,10 @@
 # okapi-engine
 
-It should be able to run on windows and on mac.
+It should be able to run on windows and on mac. 
+
+Build
+- Install CMAKE and a c compiler. 
+- Run build.sh on mac or build.bat on windows
 
 Features:
 
