@@ -90,7 +90,7 @@ void shader_delete(shader_t* shader)
     GL(glDeleteProgram(shader->id));
 }
 
-void shader_set_uniform_mat4(shader_t* shader, const char* name, mat4_t matrix)
+void shader_set_uniform_mat4(shader_t* shader, const char* name, mat4 matrix)
 {
     i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
@@ -101,7 +101,7 @@ void shader_set_uniform_mat4(shader_t* shader, const char* name, mat4_t matrix)
 
     GL(glProgramUniformMatrix4fv(shader->id, loc, 1, GL_TRUE, &matrix.data[0][0]));
 }
-void shader_set_uniform_mat4_arr(shader_t* shader, const char* name, mat4_t* matrices, u32 count)
+void shader_set_uniform_mat4_arr(shader_t* shader, const char* name, mat4* matrices, u32 count)
 {
     i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
@@ -134,7 +134,7 @@ void shader_set_uniform_int_arr(shader_t* shader, const char* name, i32* data, u
     }
     GL(glProgramUniform1iv(shader->id, loc, count, data));
 }
-void shader_set_uniform_vec4(shader_t* shader, const char* name, vec4_t data)
+void shader_set_uniform_vec4(shader_t* shader, const char* name, vec4 data)
 {
     i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)
@@ -145,7 +145,7 @@ void shader_set_uniform_vec4(shader_t* shader, const char* name, vec4_t data)
     GL(glProgramUniform4f(shader->id, loc, data.x, data.y, data.z, data.w));
 }
 
-void shader_set_uniform_vec3(shader_t* shader, const char* name, vec3_t data)
+void shader_set_uniform_vec3(shader_t* shader, const char* name, vec3 data)
 {
     i32 loc = glGetUniformLocation(shader->id, name);
     if (loc == -1)

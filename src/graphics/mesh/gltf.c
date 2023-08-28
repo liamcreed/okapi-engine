@@ -194,7 +194,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         f32 rotation[4];
                         cgltf_accessor_read_float(transform_accessor, index, rotation, 4);
 
-                        vec4_t joint_rotation;
+                        vec4 joint_rotation;
                         joint_rotation.x = rotation[0];
                         joint_rotation.y = rotation[1];
                         joint_rotation.z = rotation[2];
@@ -209,7 +209,7 @@ void model_3D_load_from_GLTF(model_3D_t* model, const char* path)
                         f32 location[3];
                         cgltf_accessor_read_float(transform_accessor, index, location, 3);
 
-                        vec3_t joint_location;
+                        vec3 joint_location;
                         joint_location.x = location[0];
                         joint_location.y = location[1];
                         joint_location.z = location[2];

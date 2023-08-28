@@ -24,8 +24,8 @@ typedef struct
     bool orthographic;
     f32 orthographic_size;
 
-    vec3_t positition;
-    vec4_t rotation;
+    vec3 positition;
+    vec4 rotation;
 } camera_t;
 
 camera_t camera =
@@ -40,8 +40,8 @@ camera_t camera =
 
 typedef struct
 {
-    vec3_t position;
-    vec4_t rotation;
+    vec3 position;
+    vec4 rotation;
     f32 scale;
 }player_t;
 
@@ -49,14 +49,14 @@ player_t player =
 {
     .position = {0,0,0},
     .scale = .01f,
-    .rotation = (vec4_t){0,0,0,1}
+    .rotation = (vec4){0,0,0,1}
 };
 
 typedef struct
 {
-    vec3_t direction;
+    vec3 direction;
     float strenght;
-    vec4_t color;
+    vec4 color;
 }directional_light_t;
 
 
@@ -74,7 +74,7 @@ model_3D_t player_model = {};
 void render()
 {
     renderer_draw_model_3D(&renderer, &player_model, player.position, player.scale, player.rotation);
-    renderer_draw_model_3D(&renderer, &landscape_model, (vec3_t) { 0, 0, 1 }, 1, (vec4_t) { 0, 0, 0, 1 });
+    renderer_draw_model_3D(&renderer, &landscape_model, (vec3) { 0, 0, 1 }, 1, (vec4) { 0, 0, 0, 1 });
 }
 
 int main()
@@ -97,7 +97,7 @@ int main()
 
 #include "thirdperson.h"
         renderer.proj_mat = mat4_perspective(camera.fov, window.aspect, camera.near, camera.far);
-        renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3_t) { 0, 1, 0 }), (vec3_t) { 0, 1, 0 });
+        renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3) { 0, 1, 0 }), (vec3) { 0, 1, 0 });
 
         //-------------------------------------------------//
         if(x_input || z_input)

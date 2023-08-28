@@ -147,15 +147,15 @@ void renderer_exit(renderer_t* renderer)
 }
 
 
-void renderer_draw_model_3D(renderer_t* renderer, model_3D_t* model, vec3_t position, f32 size, vec4_t rotation)
+void renderer_draw_model_3D(renderer_t* renderer, model_3D_t* model, vec3 position, f32 size, vec4 rotation)
 {
     if (model->mesh_count != 0)
     {
-        mat4_t transform = mat4_translate(mat4_new(1), position);
+        mat4 transform = mat4_translate(mat4_new(1), position);
         if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
             transform = mat4_multiply(transform, mat4_from_quat(rotation));
         if (size != 0 || size != 1)
-            transform = mat4_scale(transform, (vec3_t) { size, size, size });
+            transform = mat4_scale(transform, (vec3) { size, size, size });
 
         shader_t* shader = &renderer->mesh_shader;
         shader_set_uniform_mat4(shader, "u_model", transform);
@@ -195,7 +195,7 @@ void renderer_draw_model_3D(renderer_t* renderer, model_3D_t* model, vec3_t posi
     }
 }
 
-void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, vec3_t position, vec3_t size, vec4_t rotation)
+void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4 color, vec3 position, vec3 size, vec4 rotation)
 {
     /* GL(glDisable(GL_CULL_FACE)); */
     shader_bind(&renderer->quad_shader);
@@ -207,7 +207,7 @@ void renderer_draw_quad(renderer_t* renderer, texture_t* texture, vec4_t color, 
 
     shader_set_uniform_int(&renderer->quad_shader, "u_texture", 0);
 
-    mat4_t transform = mat4_translate(mat4_new(1), position);
+    mat4 transform = mat4_translate(mat4_new(1), position);
     if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
         transform = mat4_multiply(transform, mat4_from_quat(rotation));
     if (size.x != 0 || size.y != 0)

@@ -7,17 +7,17 @@ typedef struct
 
     i32 parent_id;
 
-    vec4_t rotation;
-    vec3_t location;
+    vec4 rotation;
+    vec3 location;
 
-    mat4_t local_bind_matrix;
-    mat4_t inverse_bind_matrix;
+    mat4 local_bind_matrix;
+    mat4 inverse_bind_matrix;
 }mesh_joint_t;
 
 typedef struct
 {
-    vec4_t rotation;
-    vec3_t location;
+    vec4 rotation;
+    vec3 location;
     f32 time_stamp;
 } key_frame_t;
 
@@ -40,7 +40,7 @@ typedef struct
 {
     u32 joint_count;
     mesh_joint_t* joints;
-    mat4_t* joint_matrices;
+    mat4* joint_matrices;
 
     f32 time;
     bool playing_anim;
@@ -50,7 +50,7 @@ typedef struct
 typedef struct
 {
     texture_t diffuse_map;
-    vec4_t color;
+    vec4 color;
     texture_t orm_map;
     texture_t normal_map;
     char name[32];

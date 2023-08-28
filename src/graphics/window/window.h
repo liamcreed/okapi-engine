@@ -13,7 +13,7 @@ typedef struct
     GLFWwindow *glfw;
     f32 dt;
 
-    vec2_t mouse_pos;
+    vec2 mouse_pos;
 } window_t;
 
 void window_create(window_t *window);

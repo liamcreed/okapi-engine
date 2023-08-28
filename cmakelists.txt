@@ -20,9 +20,12 @@ include_directories(src)
 add_executable(okapi
 src/main/main.c
 
-src/math/math.c
-src/math/vec.c
+
 src/math/mat4.c
+src/math/quat.c
+src/math/vec3.c
+src/math/vec4.c
+src/math/utility.c
 
 src/ecs/ecs.c
 

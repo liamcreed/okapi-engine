@@ -8,10 +8,10 @@ typedef struct
     u32 width;
     u32 height;
 
-    vec4_t clear_color;
+    vec4 clear_color;
 
-    mat4_t view_mat;
-    mat4_t proj_mat;
+    mat4 view_mat;
+    mat4 proj_mat;
 
     shader_t mesh_shader;
 
@@ -32,5 +32,5 @@ void renderer_clear(renderer_t *renderer);
 void renderer_start(renderer_t *renderer);
 void renderer_end(renderer_t *renderer);
 
-void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3_t position, f32 size, vec4_t rotation);
-void renderer_draw_quad(renderer_t* renderer, texture_t* tex, vec4_t color, vec3_t position, vec3_t size, vec4_t rotation);
+void renderer_draw_model_3D(renderer_t *renderer, model_3D_t *model, vec3 position, f32 size, vec4 rotation);
+void renderer_draw_quad(renderer_t* renderer, texture_t* tex, vec4 color, vec3 position, vec3 size, vec4 rotation);

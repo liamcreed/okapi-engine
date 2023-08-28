@@ -20,8 +20,8 @@ void armature_update_transforms(mesh_armature_t* armature)
     {
         mesh_joint_t* joint = &armature->joints[j];
 
-        mat4_t local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
-        mat4_t global_matrix = local_transform;
+        mat4 local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), joint->location), joint->rotation);
+        mat4 global_matrix = local_transform;
 
         mesh_joint_t* next_joint = joint;
 
@@ -29,7 +29,7 @@ void armature_update_transforms(mesh_armature_t* armature)
         {
             mesh_joint_t* parent_joint = &armature->joints[next_joint->parent_id];
 
-            mat4_t parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
+            mat4 parent_local_transform = mat4_rotate_q(mat4_translate(mat4_new(1), parent_joint->location), parent_joint->rotation);
             global_matrix = mat4_multiply(parent_local_transform, global_matrix);
 
             next_joint = parent_joint;

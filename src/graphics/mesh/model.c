@@ -16,7 +16,7 @@ void model_3D_create(model_3D_t* model)
         model->animations[a].frame_rate = model->animations[a].total_keyframe_count / model->animations[a].duration;
     }
 
-    model->armature.joint_matrices = malloc(sizeof(mat4_t) * model->armature.joint_count);
+    model->armature.joint_matrices = malloc(sizeof(mat4) * model->armature.joint_count);
 
     model->armature.time = 0;
     model->armature.playing_anim = false;
@@ -112,7 +112,7 @@ void model_3D_export_to_bin(model_3D_t* model, const char* path)
         fwrite(&material->diffuse_map.height, sizeof(u32), 1, file);
 
         fwrite(material->diffuse_map.data, material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count, 1, file);
-        fwrite(&material->color, sizeof(vec4_t), 1, file);
+        fwrite(&material->color, sizeof(vec4), 1, file);
 
         fwrite(&material->orm_map.channel_count, sizeof(u32), 1, file);
         fwrite(&material->orm_map.width, sizeof(u32), 1, file);
@@ -179,8 +179,8 @@ void model_3D_export_to_bin(model_3D_t* model, const char* path)
             for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
             {
                 fwrite(&animation->key_frames[j][k].time_stamp, sizeof(f32), 1, file);
-                fwrite(&animation->key_frames[j][k].location, sizeof(vec3_t), 1, file);
-                fwrite(&animation->key_frames[j][k].rotation, sizeof(vec4_t), 1, file);
+                fwrite(&animation->key_frames[j][k].location, sizeof(vec3), 1, file);
+                fwrite(&animation->key_frames[j][k].rotation, sizeof(vec4), 1, file);
             }
         }
     }
@@ -211,7 +211,7 @@ void model_3D_load_from_bin(model_3D_t* model, const char* path)
         material->diffuse_map.data = malloc(material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count);
         fread(material->diffuse_map.data, material->diffuse_map.width * material->diffuse_map.height * material->diffuse_map.channel_count, 1, file);
 
-        fread(&material->color, sizeof(vec4_t), 1, file);
+        fread(&material->color, sizeof(vec4), 1, file);
 
         fread(&material->orm_map.channel_count, sizeof(u32), 1, file);
         fread(&material->orm_map.width, sizeof(u32), 1, file);
@@ -299,8 +299,8 @@ void model_3D_load_from_bin(model_3D_t* model, const char* path)
             for (i32 k = 0; k < MAX_KEY_FRAME_COUNT; k++)
             {
                 fread(&animation->key_frames[j][k].time_stamp, sizeof(f32), 1, file);
-                fread(&animation->key_frames[j][k].location, sizeof(vec3_t), 1, file);
-                fread(&animation->key_frames[j][k].rotation, sizeof(vec4_t), 1, file);
+                fread(&animation->key_frames[j][k].location, sizeof(vec3), 1, file);
+                fread(&animation->key_frames[j][k].rotation, sizeof(vec4), 1, file);
             }
         }
     }

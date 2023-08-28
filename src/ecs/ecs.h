@@ -12,9 +12,9 @@ typedef struct
 
 typedef struct
 {
-    vec3_t position;
-    vec3_t scale;
-    vec4_t rotation;
+    vec3 position;
+    vec3 scale;
+    vec4 rotation;
 } transform_component_s;
 
 
