@@ -17,7 +17,11 @@ Features:
   
 - GLTF parsing using cgltf and stbi_image and exporting to custom binary format
   
-https://github.com/liamcreed/okapi-engine/assets/90063109/c0a5c8b4-d001-4202-afb4-d345d51fe6af
+
+
+https://github.com/liamcreed/okapi-engine/assets/90063109/4625e1f6-7b50-4cd7-9cca-4d3444caa796
+
+
 
 - Simple 3D Animation system
 
