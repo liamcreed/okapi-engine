@@ -1,5 +1,9 @@
 #include "math/math.h"
 
+f64 vec3_length_2(vec3 v1)
+{
+    return (v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+}
 
 f32 vec3_length(vec3 v)
 {
@@ -25,7 +29,7 @@ vec3 vec3_cross(vec3 v1, vec3 v2)
     };
 }
 
-vec3 vec3_scale(vec3 v, f32 s)
+vec3 vec3_multiply_f32(vec3 v, f32 s)
 {
     return (vec3) { v.x* s, v.y* s, v.z* s };
 }
@@ -46,9 +50,9 @@ vec3 vec3_multiply_quat(vec3 v, vec4 q)
     vec3 u = (vec3){ q.x, q.y, q.z };
     f32 s = q.w;
 
-    vec3 a = vec3_scale(u, 2.0f * vec3_dot(u, v));
-    vec3 b = vec3_scale(v, s * s - vec3_dot(u, u));
-    vec3 c = vec3_scale(vec3_cross(u, v), (2.0f * s));
+    vec3 a = vec3_multiply_f32(u, 2.0f * vec3_dot(u, v));
+    vec3 b = vec3_multiply_f32(v, s * s - vec3_dot(u, u));
+    vec3 c = vec3_multiply_f32(vec3_cross(u, v), (2.0f * s));
 
     return vec3_add(vec3_add(a, b), c);
 }
@@ -107,7 +111,7 @@ vec3 vec3_random_f32(f32 min, f32 max)
 
 vec3 vec3_reflect(vec3 v, vec3 n) 
 {
-    return vec3_subtract(v, vec3_scale(n, 2*vec3_dot(v,n)));
+    return vec3_subtract(v, vec3_multiply_f32(n, 2*vec3_dot(v,n)));
 }
 
 void vec3_print(vec3 vector)

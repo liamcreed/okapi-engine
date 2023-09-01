@@ -29,6 +29,12 @@ void main()
     vec3 light_dir = normalize(-u_light_dir.xyz);
     float diff =  max(dot(v_norm, light_dir), 0.0);
 
+    if(diff > 0.90)
+        diff = 1;
+    else if(diff > 0.2)
+        diff = (1 - ambient_factor);
+    else if(diff < 0.2)
+        diff = 0;
     vec3 diffuse =  diff * diffuse_color;
 
       

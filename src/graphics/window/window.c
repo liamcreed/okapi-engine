@@ -32,7 +32,6 @@ void window_create(window_t* window)
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-
         printf(LOG_ERROR "[OPENGL]: failed to init GLAD!\n");
         exit(-1);
     }
@@ -86,9 +85,9 @@ void window_update(window_t* window)
     static f32 count;
     count++;
     static f32 average;
-    if (count <= 100)
+    if (count <= 10)
     {
-        average += 1 / window->dt / 100;
+        average += 1 / window->dt / 10.0;
     }
     else
     {
@@ -122,15 +121,6 @@ bool mouse_button_pressed(window_t* window, mouse_button button)
 
 bool key_pressed(window_t* window, key key)
 {
-    /* static bool state;
-    if (glfwGetKey(window->glfw, key) == GLFW_PRESS && state == false)
-    {
-        state = true;
-        return true;
-    }
-
-    if (glfwGetKey(window->glfw, key) == GLFW_RELEASE)
-        state = false;
-*/
+   
     return false;
 }

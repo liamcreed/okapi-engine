@@ -2,9 +2,9 @@
 
 window_t window =
 {
-    .width = 800,
-    .height = 600,
-    .vsync = true,
+    .width = 800 * 0.7,
+    .height = 600 * 0.7,
+    .vsync = false,
     .title = "okapi",
     .cursor = false
 };
@@ -13,8 +13,8 @@ renderer_t renderer =
 {
     .window = &window,
     .clear_color = {.9, .9,1, 1},
-    .width = 800 * 2 ,
-    .height = 600 * 2
+    .width = 200 * 2.1 ,
+    .height = 200 * 2.1 * (800.0/600.0)
 };
 
 typedef struct
@@ -95,9 +95,9 @@ int main()
     {
         window_update(&window);
 
-#include "thirdperson.h"
+#include "camera.h"
         renderer.proj_mat = mat4_perspective(camera.fov, window.aspect, camera.near, camera.far);
-        renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3) { 0, 1, 0 }), (vec3) { 0, 1, 0 });
+        renderer.view_mat = mat4_look_at(camera.positition, vec3_add(player.position, (vec3) { 0, 3, 3 }), (vec3) { 0, 1, 0 });
 
         //-------------------------------------------------//
         if(x_input || z_input)

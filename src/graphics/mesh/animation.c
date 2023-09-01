@@ -79,7 +79,7 @@ void animation_play(mesh_armature_t* armature, mesh_animation_t* animation, f32 
         else
             next_frame = keyframe + 1;
 
-        f32 s = dt * armature->animation->frame_rate * speed / 2;
+        f64 s = dt * armature->animation->frame_rate * speed / 2;
         joint->rotation = quat_lerp(joint->rotation, armature->animation->key_frames[j][next_frame].rotation, s);
         joint->location = vec3_lerp(joint->location, armature->animation->key_frames[j][next_frame].location, s);
     }

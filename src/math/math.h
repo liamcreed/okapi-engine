@@ -28,6 +28,7 @@ typedef struct
 
 
 f32 vec3_dot(vec3 v1, vec3 v2);
+f64 vec3_length_2(vec3 v1);
 f32 vec3_length(vec3 v);
 vec3 vec3_normalize(vec3 v);
 
@@ -35,7 +36,7 @@ vec3 vec3_subtract(vec3 v1, vec3 v2);
 vec3 vec3_add(vec3 v1, vec3 v2);
 vec3 vec3_multiply(vec3 v1, vec3 v2);
 vec3 vec3_cross(vec3 v1, vec3 v2);
-vec3 vec3_scale(vec3 v, f32 s);
+vec3 vec3_multiply_f32(vec3 v, f32 s);
 vec3 vec3_divide(vec3 v1, vec3 v2);
 vec3 vec3_divide_f32(vec3 v1, f32 f);
 vec3 vec3_multiply_quat(vec3 v, vec4 q);

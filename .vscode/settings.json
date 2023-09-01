@@ -19,7 +19,9 @@
         "game.h": "c",
         "array": "c",
         "vector": "c",
-        "raytracing.h": "c"
+        "raytracing.h": "c",
+        "raytracer.h": "c",
+        "complex": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
