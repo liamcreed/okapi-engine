@@ -39,7 +39,7 @@ else if (fabs(x_input - cos(deg_to_rad(45))) < 0.01 && fabs(z_input + cos(deg_to
     player.rotation = quat_lerp(player.rotation, quat_angle_axis(135, (vec3) { 0, 1, 0 }), window.dt * 20);
 else if (fabs(x_input + cos(deg_to_rad(45))) < 0.01 && fabs(z_input + cos(deg_to_rad(45))) < 0.01)
     player.rotation = quat_lerp(player.rotation, quat_angle_axis(-135, (vec3) { 0, 1, 0 }), window.dt * 20);
- 
+
 f32 speed = 2 * window.dt;
 if (key_being_pressed(&window, KEY_LEFT_SHIFT))
 speed = 8 * window.dt;
@@ -49,5 +49,5 @@ player.position = vec3_add(player.position, speed_vec);
 
 
 camera.positition.x = player.position.x;
-camera.positition.y = player.position.y + 6;
+camera.positition.y = player.position.y + 5;
 camera.positition.z = player.position.z + 16;
