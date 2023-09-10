@@ -27,6 +27,4 @@ https://github.com/liamcreed/okapi-engine/assets/90063109/538a448d-53f7-4864-b78
 
 - Image loading from TGA and PNG and exporter to custom binary file
 
-https://github.com/liamcreed/okapi-engine/assets/90063109/4625e1f6-7b50-4cd7-9cca-4d3444caa796
-
 
